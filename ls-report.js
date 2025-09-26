@@ -1,4 +1,4 @@
-const LIVE_URL = "./live.json";
+const LIVE_URL = "./web/live.json";
 const REFRESH_MS = 30_000;
 
 const fmt = new Intl.NumberFormat("ko-KR");
