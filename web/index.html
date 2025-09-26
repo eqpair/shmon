@@ -4,66 +4,157 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>L/S 포지션 현황 (Snapshot)</title>
+    <title>L/S 포지션 리포트</title>
     <link rel="icon" href="./favicon.svg" />
     <link rel="stylesheet" href="./styles.css" />
+    <!-- Tailwind (pair-report 느낌의 미세한 여백/그리드에 사용) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .panel {
+        /* ===== pair-report 스타일에 맞춘 톤 ===== */
+        .wrap {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 18px;
+        }
+
+        .report-title {
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .kpi-card {
+            background: #fff;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
-            background: #fff;
-            padding: 14px
+            padding: 14px 16px;
+        }
+
+        .chip {
+            font-size: .76rem;
+            padding: .15rem .5rem;
+            border-radius: .5rem;
+            border: 1px solid #e5e7eb;
         }
 
         .num {
-            font-variant-numeric: tabular-nums
+            font-variant-numeric: tabular-nums;
         }
 
         .gain {
             color: #059669
         }
 
+        /* green-600 */
         .loss {
             color: #dc2626
         }
 
-        .chip {
-            padding: .15rem .45rem;
-            border: 1px solid #d1d5db;
-            border-radius: .375rem;
-            font-size: .75rem
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 1.3fr .8fr .8fr 1fr 1fr 1fr 1fr .8fr;
-            gap: .25rem;
-            padding: .35rem .4rem;
-            border-radius: .5rem
-        }
-
-        .row:hover {
-            background: #f9fafb
-        }
+        /* red-600 */
 
         .section {
             background: #f3f4f6;
+            border-radius: 12px;
             padding: 10px;
-            border-radius: 12px
+        }
+
+        .section-hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .section-hdr .meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        /* 행 레이아웃: pair-report처럼 단정한 8열 */
+        .grid-head,
+        .grid-row {
+            display: grid;
+            grid-template-columns: 1.2fr .9fr .8fr 1fr 1fr 1.2fr 1.2fr .8fr;
+            gap: .25rem;
+            align-items: center;
+        }
+
+        .grid-head {
+            font-size: .78rem;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .grid-row {
+            font-size: .95rem;
+            padding: .35rem .25rem;
+            border-radius: .5rem;
+        }
+
+        .grid-row:hover {
+            background: #f9fafb;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 56px;
+            height: 24px;
+            border-radius: 9999px;
+            font-size: .75rem;
+            font-weight: 600;
+            border: 1px solid #d1d5db;
+        }
+
+        .tag-long {
+            color: #059669;
+            border-color: #bbf7d0;
+            background: #f0fdf4;
+        }
+
+        .tag-short {
+            color: #dc2626;
+            border-color: #fecaca;
+            background: #fef2f2;
+        }
+
+        .muted {
+            color: #6b7280
+        }
+
+        footer {
+            color: #9ca3af;
+            font-size: .78rem;
+            margin-top: 18px
         }
     </style>
 </head>
 
 <body class="bg-gray-100">
-    <div class="max-w-5xl mx-auto p-4">
-        <h1 class="text-xl font-bold mb-3">L/S 포지션 현황</h1>
-        <div id="summary" class="panel mb-4">로딩중…</div>
+    <div class="wrap">
+        <h1 class="text-xl report-title mb-3">L/S 포지션 리포트</h1>
+
+        <!-- 상단 KPI (pair-report 상단 박스 느낌) -->
+        <div id="summary" class="kpi-card mb-4">
+            로딩중…
+        </div>
+
+        <!-- 섹션들 -->
         <div id="sections" class="space-y-4"></div>
-        <footer class="mt-10 text-xs text-gray-500">
-            기준시각: <span id="asOf">-</span> · 통화: <span id="ccy">-</span> · 페이지는 30초마다 새로고침됨
+
+        <footer>
+            기준시각: <span id="asOf">-</span> · 통화: <span id="ccy">-</span> · 30초마다 자동 갱신
         </footer>
     </div>
+
     <script src="./app.js" defer></script>
 </body>
 
