@@ -82,7 +82,7 @@ async function loadReport() {
         body.innerHTML =
             `<tr><td colspan="9" class="text-center text-red-500 py-4">데이터 로드 실패: ${err}</td></tr>`;
     }
-}
+} 
 
 // 최초 실행 + 30초마다 갱신
 loadReport();
