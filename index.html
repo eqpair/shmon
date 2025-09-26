@@ -13,17 +13,18 @@
         table {
             border-collapse: collapse;
             width: 100%;
+            font-size: 14px;
         }
 
         th,
         td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 6px 8px;
             text-align: right;
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #f5f5f5;
         }
 
         td:first-child,
@@ -31,36 +32,46 @@
             text-align: left;
         }
 
-        .negative {
-            color: red;
-        }
-
         .positive {
             color: blue;
+            font-weight: bold;
+        }
+
+        .negative {
+            color: red;
+            font-weight: bold;
+        }
+
+        #last-update {
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #555;
         }
     </style>
 </head>
 
 <body>
-    <h2>Trading REPORT</h2>
+    <h2>보유 포지션 리포트</h2>
     <div id="last-update"></div>
     <table id="report">
         <thead>
             <tr>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>Ref P</th>
-                <th>I Exp</th> <!-- 새로 추가 -->
-                <th>Val P</th>
-                <th>I Profit</th>
-                <th>I Profit</th>
-                <th>I %</th>
+                <th>종목</th>
+                <th>수량</th>
+                <th>평균단가</th>
+                <th>매입금액</th> <!-- 새로 추가 -->
+                <th>현재가</th>
+                <th>평가금액</th>
+                <th>손익</th>
+                <th>손익률</th>
             </tr>
         </thead>
         <tbody></tbody>
         <tfoot>
             <tr>
-                <th colspan="5">Total</th>
+                <th colspan="3">합계</th>
+                <th id="total-cost"></th> <!-- 총 매입금액 -->
+                <th></th>
                 <th id="total-mv"></th>
                 <th id="total-pnl"></th>
                 <th id="total-pnl-ratio"></th>
@@ -78,14 +89,18 @@
             const tbody = document.querySelector("#report tbody");
             tbody.innerHTML = "";
 
+            let totalCost = 0;
+
             data.positions.forEach(p => {
+                const cost = p.avg_price * p.qty; // 매입금액
+                totalCost += cost;
+
                 const tr = document.createElement("tr");
-                const cost = (p.avg_price * p.qty).toFixed(0); // 매입금액 계산
                 tr.innerHTML = `
           <td>${p.name}</td>
           <td>${p.qty.toLocaleString()}</td>
           <td>${p.avg_price.toLocaleString()}</td>
-          <td>${Number(cost).toLocaleString()}</td>
+          <td>${cost.toLocaleString()}</td>
           <td>${p.last_price.toLocaleString()}</td>
           <td>${p.mv.toLocaleString()}</td>
           <td class="${p.pnl >= 0 ? 'positive' : 'negative'}">${p.pnl.toFixed(0).toLocaleString()}</td>
@@ -94,9 +109,11 @@
                 tbody.appendChild(tr);
             });
 
+            document.getElementById("total-cost").innerText = totalCost.toLocaleString();
             document.getElementById("total-mv").innerText = data.total_exposure.toLocaleString();
             document.getElementById("total-pnl").innerText = data.total_pnl.toFixed(0).toLocaleString();
             document.getElementById("total-pnl-ratio").innerText = (data.total_pnl_ratio * 100).toFixed(2) + "%";
+
             document.getElementById("total-pnl").className = data.total_pnl >= 0 ? "positive" : "negative";
             document.getElementById("total-pnl-ratio").className = data.total_pnl_ratio >= 0 ? "positive" : "negative";
         }
