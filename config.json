@@ -1,0 +1,45 @@
+{
+    "currency": "KRW",
+    "positions": [
+        {
+            "symbol": "000210",
+            "name": "DL",
+            "side": "LONG",
+            "qty": 6183,
+            "avg_price": 59894.0,
+            "group": "DL"
+        },
+        {
+            "symbol": "036810",
+            "name": "알에프텍",
+            "side": "LONG",
+            "qty": 10370,
+            "avg_price": 10370.0004,
+            "group": "알에프텍"
+        },
+        {
+            "symbol": "018260",
+            "name": "삼성SDS",
+            "side": "LONG",
+            "qty": 1150,
+            "avg_price": 167970.0,
+            "group": "SAMSUNG SDS"
+        },
+        {
+            "symbol": "005935",
+            "name": "삼성전자우",
+            "side": "LONG",
+            "qty": 5050,
+            "avg_price": 60887.996,
+            "group": "삼성전자우"
+        },
+        {
+            "symbol": "005930",
+            "name": "삼성전자",
+            "side": "LONG",
+            "qty": 3520,
+            "avg_price": 70488.4148,
+            "group": "삼성전자"
+        }
+    ]
+}

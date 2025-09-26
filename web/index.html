@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>L/S 포지션 현황 (Snapshot)</title>
+    <link rel="icon" href="./favicon.svg" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .panel {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            padding: 14px
+        }
+
+        .num {
+            font-variant-numeric: tabular-nums
+        }
+
+        .gain {
+            color: #059669
+        }
+
+        .loss {
+            color: #dc2626
+        }
+
+        .chip {
+            padding: .15rem .45rem;
+            border: 1px solid #d1d5db;
+            border-radius: .375rem;
+            font-size: .75rem
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1.3fr .8fr .8fr 1fr 1fr 1fr 1fr .8fr;
+            gap: .25rem;
+            padding: .35rem .4rem;
+            border-radius: .5rem
+        }
+
+        .row:hover {
+            background: #f9fafb
+        }
+
+        .section {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 12px
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div class="max-w-5xl mx-auto p-4">
+        <h1 class="text-xl font-bold mb-3">L/S 포지션 현황</h1>
+        <div id="summary" class="panel mb-4">로딩중…</div>
+        <div id="sections" class="space-y-4"></div>
+        <footer class="mt-10 text-xs text-gray-500">
+            기준시각: <span id="asOf">-</span> · 통화: <span id="ccy">-</span> · 페이지는 30초마다 새로고침됨
+        </footer>
+    </div>
+    <script src="./app.js" defer></script>
+</body>
+
+</html>
