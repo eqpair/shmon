@@ -34,19 +34,20 @@ function render(data) {
         const ratio = Number(p.pnl_ratio) || 0;
 
         const tr = document.createElement("tr");
-      const cost = p.avg_price * p.qty;
+        const cost = p.avg_price * p.qty;
 
-          tr.innerHTML = `
-      <td>${p.name}</td>   <!-- 종목 -->
-      <td>${p.side}</td>   <!-- DIR -->
-      <td>${p.qty.toLocaleString()}</td>
-      <td>${p.avg_price.toLocaleString()}</td>
-      <td>${cost.toLocaleString()}</td>
-      <td>${p.last_price.toLocaleString()}</td>
-      <td>${p.mv.toLocaleString()}</td>
-      <td class="${p.pnl >= 0 ? 'text-blue-600' : 'text-red-600'}">${p.pnl.toFixed(0).toLocaleString()}</td>
-      <td class="${p.pnl_ratio >= 0 ? 'text-blue-600' : 'text-red-600'}">${(p.pnl_ratio * 100).toFixed(2)}%</td>
-    `;
+        tr.innerHTML = `
+  <td class="px-3 py-2 text-left">${p.name}</td>
+  <td class="px-3 py-2">${p.side}</td>
+  <td class="px-3 py-2">${p.qty.toLocaleString()}</td>
+  <td class="px-3 py-2">${p.avg_price.toLocaleString()}</td>
+  <td class="px-3 py-2">${cost.toLocaleString()}</td>
+  <td class="px-3 py-2 font-bold text-green-600">${p.last_price.toLocaleString()}</td> <!-- 🔹 초록색 굵게 -->
+  <td class="px-3 py-2">${p.mv.toLocaleString()}</td>
+  <td class="px-3 py-2 ${p.pnl >= 0 ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'}">${p.pnl.toFixed(0).toLocaleString()}</td>
+  <td class="px-3 py-2 ${p.pnl_ratio >= 0 ? 'text-blue-600 font-bold' : 'text-red-600 font-bold'}">${(p.pnl_ratio * 100).toFixed(2)}%</td>
+`;
+
 
         tbody.appendChild(tr);
     }
