@@ -40,6 +40,62 @@
             "qty": 3520,
             "avg_price": 70488.4148,
             "group": "삼성전자"
+        },
+        {
+            "symbol": "000725",
+            "name": "현대건설우",
+            "side": "LONG",
+            "qty": 32,
+            "avg_price": 88100.0,
+            "group": "현대건설우"
+        },
+        {
+            "symbol": "034220",
+            "name": "LGD",
+            "side": "LONG",
+            "qty": 20000,
+            "avg_price": 12322.75,
+            "group": "LGD"
+        },
+        {
+            "symbol": "009150",
+            "name": "SEMCO",
+            "side": "LONG",
+            "qty": 2800,
+            "avg_price": 137483.5714,
+            "group": "SEMCO"
+        },
+        {
+            "symbol": "307950",
+            "name": "HYUNDAI AUTOEVER",
+            "side": "LONG",
+            "qty": 3030,
+            "avg_price": 133207.1713,
+            "group": "HYUNDAI AUTOEVER"
+        },
+        {
+            "symbol": "274090",
+            "name": "켄코아에어로스페이스",
+            "side": "LONG",
+            "qty": 25000,
+            "avg_price": 13165.48,
+            "group": "켄코아에어로스페이스"
+        },
+        {
+            "symbol": "117460",
+            "name": "KODEX에너지화학",
+            "side": "LONG",
+            "qty": 26125,
+            "avg_price": 11637.0096,
+            "group": "KODEX에너지화학"
+        },
+        {
+            "symbol": "440110",
+            "name": "FADU",
+            "side": "LONG",
+            "qty": 29000,
+            "avg_price": 19120.0,
+            "group": "FADU"
         }
-    ]
-}
+        ]
+        }
