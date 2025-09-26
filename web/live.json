@@ -1,0 +1,69 @@
+{
+  "as_of": "2025-09-26T02:16:50Z",
+  "currency": "KRW",
+  "positions": [
+    {
+      "symbol": "000210",
+      "name": "DL",
+      "side": "LONG",
+      "qty": 6183,
+      "avg_price": 59894.0,
+      "group": "DL",
+      "last_price": 35750.0,
+      "mv": 221042250.0,
+      "pnl": -149282352.0,
+      "pnl_ratio": -0.6753566433566434
+    },
+    {
+      "symbol": "036810",
+      "name": "알에프텍",
+      "side": "LONG",
+      "qty": 10370,
+      "avg_price": 10370.0004,
+      "group": "알에프텍",
+      "last_price": 29600.0,
+      "mv": 306952000.0,
+      "pnl": 199415095.852,
+      "pnl_ratio": 0.6496621486486487
+    },
+    {
+      "symbol": "018260",
+      "name": "삼성SDS",
+      "side": "LONG",
+      "qty": 1150,
+      "avg_price": 167970.0,
+      "group": "SAMSUNG SDS",
+      "last_price": 163100.0,
+      "mv": 187565000.0,
+      "pnl": -5600500.0,
+      "pnl_ratio": -0.029858982219497242
+    },
+    {
+      "symbol": "005935",
+      "name": "삼성전자우",
+      "side": "LONG",
+      "qty": 5050,
+      "avg_price": 60887.996,
+      "group": "삼성전자우",
+      "last_price": 66200.0,
+      "mv": 334310000.0,
+      "pnl": 26825620.200000003,
+      "pnl_ratio": 0.08024175226586104
+    },
+    {
+      "symbol": "005930",
+      "name": "삼성전자",
+      "side": "LONG",
+      "qty": 3520,
+      "avg_price": 70488.4148,
+      "group": "삼성전자",
+      "last_price": 83700.0,
+      "mv": 294624000.0,
+      "pnl": 46504779.90400001,
+      "pnl_ratio": 0.15784450657108723
+    }
+  ],
+  "total_exposure": 1344493250.0,
+  "total_pnl": 117862643.956,
+  "total_pnl_ratio": 0.08766324706799383
+}
