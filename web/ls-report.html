@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>L/S Trading REPORT</title>
+    <link rel="icon" href="./favicon.svg" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="./ls-report.css" />
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">L/S Trading REPORT</h1>
+                    <div class="text-sm text-gray-600 mt-1">
+                        Last Update: <span id="lastUpdated" class="font-medium">-</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-600 font-bold">Total Exposure</div>
+                    <div id="totalExposure" class="text-xl font-bold text-green-600">-</div>
+                    <div class="text-sm text-gray-500 mt-1">
+                        <span id="totalPnL" class="font-medium">-</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Table -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="overflow-x-auto">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>DIR</th>
+                            <th>종목</th>
+                            <th>수량</th>
+                            <th>평단</th>
+                            <th>현재가</th>
+                            <th>평가금액</th>
+                            <th>손익</th>
+                            <th>손익률</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body">
+                        <tr>
+                            <td colspan="8" style="text-align:center;">Loading…</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
+            <p>© L/S Position Monitor</p>
+        </div>
+    </footer>
+
+    <script src="./ls-report.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+/* === pair-report 스타일 기반 === */
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+.report-table th,
+.report-table td {
+    padding: .65rem;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+}
+
+.report-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    font-size: .8rem;
+    color: #6b7280;
+}
+
+.report-table td:last-child,
+.report-table th:last-child {
+    text-align: center;
+}
+
+.profit-plus {
+    color: #dc2626;
+    font-weight: 700;
+}
+
+/* + 손익 빨강 */
+.profit-minus {
+    color: #0284c7;
+    font-weight: 700;
+}
+
+/* - 손익 파랑 */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .15rem .55rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: .75rem;
+    border: 1px solid;
+}
+
+.badge-L {
+    color: #16a34a;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.badge-S {
+    color: #dc2626;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
