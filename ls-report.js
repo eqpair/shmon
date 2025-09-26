@@ -1,49 +1,71 @@
-async function loadData() {
-    const res = await fetch("./web/live.json?_=" + Date.now());
-    const data = await res.json();
+async function loadReport() {
+    try {
+        const res = await fetch("./web/live.json?_=" + Date.now());
+        if (!res.ok) throw new Error("fetch failed: " + res.status);
+        const data = await res.json();
 
-    // 한국시간 변환
-    const utcDate = new Date(data.as_of);
-    const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
-    document.getElementById("lastUpdated").innerText = kstDate.toLocaleString("ko-KR");
+        const body = document.getElementById("report-body");
+        body.innerHTML = "";
 
-    const tbody = document.getElementById("report-body");
-    tbody.innerHTML = "";
+        data.positions.forEach(pos => {
+            // 매입금액 = qty * avg_price
+            const cost = pos.qty * pos.avg_price;
 
-    let totalCost = 0;
+            // 손익 포맷 (소수점 제거 + 천단위 콤마)
+            const pnl = pos.pnl.toLocaleString("ko-KR", { maximumFractionDigits: 0 });
+            const pnlColor =
+                pos.pnl > 0 ? "text-red-600 font-bold"
+                    : pos.pnl < 0 ? "text-blue-600 font-bold"
+                        : "text-gray-600";
 
-    data.positions.forEach(p => {
-        const cost = Math.round(p.avg_price * p.qty); // 매입금액 정수
-        totalCost += cost;
+            // 손익률 포맷 (소수점 1자리)
+            const pnlRatio = (pos.pnl_ratio * 100).toFixed(1) + "%";
+            const pnlRatioColor =
+                pos.pnl_ratio > 0 ? "text-red-600 font-bold"
+                    : pos.pnl_ratio < 0 ? "text-blue-600 font-bold"
+                        : "text-gray-600";
 
-        // DIR 아이콘 (L/S)
-        const dirBadge =
-            p.side === "LONG"
-                ? `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs font-bold">L</span>`
-                : `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold">S</span>`;
+            // DIR (L/S 표시 - 동그라미 배경)
+            const dirBadge =
+                `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 font-bold">
+          ${pos.side.startsWith("L") ? "L" : "S"}
+        </span>`;
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-      <td class="px-3 py-2 text-left">${p.name}</td>
-      <td class="px-3 py-2 text-center">${dirBadge}</td>
-      <td class="px-3 py-2">${p.qty.toLocaleString()}</td>
-      <td class="px-3 py-2">${Math.round(p.avg_price).toLocaleString()}</td>
-      <td class="px-3 py-2">${cost.toLocaleString()}</td>
-      <td class="px-3 py-2 font-bold text-green-600">${p.last_price.toLocaleString()}</td>
-      <td class="px-3 py-2">${p.mv.toLocaleString()}</td>
-      <td class="px-3 py-2 ${p.pnl >= 0 ? "text-blue-600 font-bold" : "text-red-600 font-bold"}">${p.pnl.toLocaleString()}</td>
-      <td class="px-3 py-2 ${p.pnl_ratio >= 0 ? "text-blue-600 font-bold" : "text-red-600 font-bold"}">${(p.pnl_ratio * 100).toFixed(2)}%</td>
-    `;
-        tbody.appendChild(tr);
-    });
+            const row = `
+        <tr class="border-b">
+          <td class="px-2 py-2 text-gray-800 font-medium">${pos.name}</td>
+          <td class="px-2 py-2 text-center">${dirBadge}</td>
+          <td class="px-2 py-2 text-right">${pos.qty.toLocaleString("ko-KR")}</td>
+          <td class="px-2 py-2 text-right">${Math.round(pos.avg_price).toLocaleString("ko-KR")}</td>
+          <td class="px-2 py-2 text-right">${cost.toLocaleString("ko-KR")}</td>
+          <td class="px-2 py-2 text-right text-green-700 font-bold">${pos.last_price.toLocaleString("ko-KR")}</td>
+          <td class="px-2 py-2 text-right">${pos.mv.toLocaleString("ko-KR")}</td>
+          <td class="px-2 py-2 text-right ${pnlColor}">${pnl}</td>
+          <td class="px-2 py-2 text-right ${pnlRatioColor}">${pnlRatio}</td>
+        </tr>
+      `;
+            body.insertAdjacentHTML("beforeend", row);
+        });
 
-    // 합계 반영
-    document.getElementById("totalExposure").innerText = data.total_exposure.toLocaleString();
-    document.getElementById("totalPnL").innerText =
-        (data.total_pnl >= 0 ? "+" : "") + data.total_pnl.toLocaleString();
-    document.getElementById("totalPnL").className =
-        data.total_pnl >= 0 ? "text-blue-600 font-bold" : "text-red-600 font-bold";
+        // 업데이트 시각 (한국시간)
+        const updated = new Date(data.as_of);
+        document.getElementById("lastUpdated").textContent =
+            updated.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+
+        // Total Exposure & PnL
+        document.getElementById("totalExposure").textContent =
+            data.total_exposure.toLocaleString("ko-KR");
+        document.getElementById("totalPnL").textContent =
+            (data.total_pnl > 0 ? "+" : "") +
+            data.total_pnl.toLocaleString("ko-KR", { maximumFractionDigits: 0 });
+
+    } catch (err) {
+        console.error(err);
+        const body = document.getElementById("report-body");
+        body.innerHTML = `<tr><td colspan="9" class="text-center text-red-500 py-4">데이터 로드 실패: ${err}</td></tr>`;
+    }
 }
 
-loadData();
-setInterval(loadData, 30000); // 30초마다 갱신
+// 최초 실행 + 30초마다 갱신
+loadReport();
+setInterval(loadReport, 30000);
