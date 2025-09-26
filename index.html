@@ -34,23 +34,23 @@
         <!-- Table -->
         <div class="bg-white rounded-lg shadow-md p-4">
             <div class="overflow-x-auto">
-                <table class="report-table">
+                <table class="min-w-full text-sm text-gray-700">
                     <thead>
-                        <tr>
-                            <th></th> <!-- 🔹 종목을 맨 앞으로 -->
-                            <th>DIR</th>
-                            <th>Qty</th>
-                            <th>Ref P</th>
-                            <th>Exp</th>
-                            <th>Val P</th>
-                            <th>Profit</th>
-                            <th>N Profit</th>
-                            <th>N %</th>
+                        <tr class="bg-gray-100 text-gray-800">
+                            <th class="px-3 py-2 text-left">종목</th>
+                            <th class="px-3 py-2">DIR</th>
+                            <th class="px-3 py-2">수량</th>
+                            <th class="px-3 py-2">평단</th>
+                            <th class="px-3 py-2">매입금액</th> <!-- 🔹 추가 -->
+                            <th class="px-3 py-2">현재가</th>
+                            <th class="px-3 py-2">평가금액</th>
+                            <th class="px-3 py-2">손익</th>
+                            <th class="px-3 py-2">손익률</th>
                         </tr>
                     </thead>
                     <tbody id="report-body">
                         <tr>
-                            <td colspan="9" style="text-align:center;">Loading…</td>
+                            <td colspan="9" class="text-center py-4">Loading…</td>
                         </tr>
                     </tbody>
                 </table>
@@ -60,7 +60,7 @@
 
     <footer class="bg-white py-6 mt-8">
         <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
-            <p>© L/S Position Monitor</p>
+            <p>© Position Monitor</p>
         </div>
     </footer>
 
