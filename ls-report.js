@@ -35,10 +35,10 @@ async function loadReport() {
         <tr class="border-b">
           <td class="px-2 py-2 text-gray-800 font-medium">${pos.name}</td>
           <td class="px-2 py-2 text-center">${dirBadge}</td>
-          <td class="px-2 py-2 text-right">${pos.qty.toLocaleString("ko-KR")}</td>
           <td class="px-2 py-2 text-right">${Math.round(pos.avg_price).toLocaleString("ko-KR")}</td>
-          <td class="px-2 py-2 text-right">${cost.toLocaleString("ko-KR")}</td>
           <td class="px-2 py-2 text-right text-green-700 font-bold">${pos.last_price.toLocaleString("ko-KR")}</td>
+          <td class="px-2 py-2 text-right">${pos.qty.toLocaleString("ko-KR")}</td>
+          <td class="px-2 py-2 text-right">${Math.round(cost).toLocaleString("ko-KR")}</td>
           <td class="px-2 py-2 text-right">${pos.mv.toLocaleString("ko-KR")}</td>
           <td class="px-2 py-2 text-right ${pnlColor}">${pnl}</td>
           <td class="px-2 py-2 text-right ${pnlRatioColor}">${pnlRatio}</td>
@@ -52,12 +52,21 @@ async function loadReport() {
         document.getElementById("lastUpdated").textContent =
             updated.toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
 
-        // Total Exposure & PnL
+        // Total Exposure
         document.getElementById("totalExposure").textContent =
             data.total_exposure.toLocaleString("ko-KR");
-        document.getElementById("totalPnL").textContent =
-            (data.total_pnl > 0 ? "+" : "") +
-            data.total_pnl.toLocaleString("ko-KR", { maximumFractionDigits: 0 });
+
+        // Total PnL (+/- 색상 적용)
+        const totalPnL = data.total_pnl;
+        const totalPnLElem = document.getElementById("totalPnL");
+        totalPnLElem.textContent =
+            (totalPnL > 0 ? "+" : "") +
+            totalPnL.toLocaleString("ko-KR", { maximumFractionDigits: 0 });
+
+        totalPnLElem.className =
+            totalPnL > 0 ? "text-red-600 font-bold"
+                : totalPnL < 0 ? "text-blue-600 font-bold"
+                    : "text-gray-600 font-bold";
 
     } catch (err) {
         console.error(err);
