@@ -1,5 +1,5 @@
 async function loadData() {
-    const res = await fetch("live.json?_=" + Date.now());
+    const res = await fetch("./web/live.json?_=" + Date.now());
     const data = await res.json();
 
     // 한국시간 변환
