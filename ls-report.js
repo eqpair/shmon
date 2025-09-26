@@ -34,20 +34,20 @@ function render(data) {
         const ratio = Number(p.pnl_ratio) || 0;
 
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-      <td>
-        <span class="badge ${(p.side || "").toUpperCase() === "SHORT" ? "badge-S" : "badge-L"}">
-          ${(p.side || "").toUpperCase() === "SHORT" ? "S" : "L"}
-        </span>
-      </td>
-      <td>${p.name || p.symbol}</td>
-      <td>${n(p.qty)}</td>
-      <td>${n(p.avg_price)}</td>
-      <td>${n(p.last_price)}</td>
-      <td>${n(p.mv)}</td>
-      <td class="${pClass(pnl)}">${n(p.pnl)}</td>
-      <td class="${pClass(pnl)}">${pct(ratio)}</td>
+      const cost = p.avg_price * p.qty;
+
+          tr.innerHTML = `
+      <td>${p.name}</td>   <!-- 종목 -->
+      <td>${p.side}</td>   <!-- DIR -->
+      <td>${p.qty.toLocaleString()}</td>
+      <td>${p.avg_price.toLocaleString()}</td>
+      <td>${cost.toLocaleString()}</td>
+      <td>${p.last_price.toLocaleString()}</td>
+      <td>${p.mv.toLocaleString()}</td>
+      <td class="${p.pnl >= 0 ? 'text-blue-600' : 'text-red-600'}">${p.pnl.toFixed(0).toLocaleString()}</td>
+      <td class="${p.pnl_ratio >= 0 ? 'text-blue-600' : 'text-red-600'}">${(p.pnl_ratio * 100).toFixed(2)}%</td>
     `;
+
         tbody.appendChild(tr);
     }
 }
