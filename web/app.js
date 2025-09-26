@@ -1,4 +1,4 @@
-// web/app.js — LS Position Monitor (static, GitHub Pages)
+// web/app.js — Position Monitor (static, GitHub Pages)
 
 const LIVE_URL = "./live.json";
 const REFRESH_MS = 30_000;
