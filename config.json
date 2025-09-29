@@ -69,8 +69,8 @@
             "symbol": "307950",
             "name": "HYUNDAI AUTOEVER",
             "side": "LONG",
-            "qty": 3030,
-            "avg_price": 133207.1713,
+            "qty": 3230,
+            "avg_price": 134405.7985,
             "group": "HYUNDAI AUTOEVER"
         },
         {
@@ -85,8 +85,8 @@
             "symbol": "117460",
             "name": "KODEX에너지화학",
             "side": "LONG",
-            "qty": 26125,
-            "avg_price": 11637.0096,
+            "qty": 31125,
+            "avg_price": 11600.8635,
             "group": "KODEX에너지화학"
         },
         {
@@ -96,6 +96,14 @@
             "qty": 29000,
             "avg_price": 19120.0,
             "group": "FADU"
+        },
+        {
+            "symbol": "034020",
+            "name": "두산에너빌리티",
+            "side": "LONG",
+            "qty": 3000,
+            "avg_price": 63323.0,
+            "group": "두산에너빌리티"
         }
         ]
         }
