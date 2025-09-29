@@ -37,8 +37,8 @@
             "symbol": "000210",
             "name": "DL",
             "side": "LONG",
-            "qty": 6183,
-            "avg_price": 59894.0,
+            "qty": 7183,
+            "avg_price": 56496.0,
             "group": "DL"
         },
         {
@@ -101,8 +101,8 @@
             "symbol": "034020",
             "name": "두산에너빌리티",
             "side": "LONG",
-            "qty": 3000,
-            "avg_price": 63323.0,
+            "qty": 4500,
+            "avg_price": 63314.3333,
             "group": "두산에너빌리티"
         }
         ]
