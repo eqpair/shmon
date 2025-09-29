@@ -1,57 +1,69 @@
 #!/usr/bin/env python3
-import os
-import json
-import subprocess
-from datetime import datetime, timezone, timedelta
+import os, json, asyncio, aiohttp, subprocess
+from datetime import datetime, timedelta, timezone
 
-import aiohttp
-import asyncio
-
-# 한국 시간
 KST = timezone(timedelta(hours=9))
 
-# config.json 읽기
 with open("config.json", "r", encoding="utf-8") as f:
     CONFIG = json.load(f)
+POSITIONS = CONFIG.get("positions", [])
 
-POSITIONS = CONFIG["positions"]
+HEADERS = {
+    # 일부 프록시/방화벽이 UA 없으면 차단하거나 text/plain으로 내려줌
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+    "Accept": "*/*",
+}
 
-# 네이버 API 호출
-async def fetch_price(session, symbol):
+async def fetch_price(session, symbol: str) -> float | None:
     url = f"https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:{symbol}"
-    async with session.get(url) as resp:
-        data = await resp.json()
-        try:
+    try:
+        async with session.get(url, headers=HEADERS, timeout=aiohttp.ClientTimeout(total=8)) as resp:
+            # ➜ 여기! resp.json() 대신 문자열로 받고 json.loads()
+            text = await resp.text()  # euc-kr도 알아서 str로 디코드됨
+            data = json.loads(text)
             return data["result"]["areas"][0]["datas"][0]["nv"]
-        except Exception:
-            return None
+    except Exception as e:
+        print(f"[WARN] price fetch failed {symbol}: {e}")
+        return None
 
 async def main():
     results = []
-    total_exposure = 0
-    total_pnl = 0
+    total_exposure = 0.0
+    total_pnl = 0.0
 
-    async with aiohttp.ClientSession() as session:
+    conn = aiohttp.TCPConnector(ssl=False)
+    async with aiohttp.ClientSession(connector=conn) as session:
         for pos in POSITIONS:
             price = await fetch_price(session, pos["symbol"])
             if price is None:
+                # 가격 못 받으면 스킵(원하면 마지막가 그대로 두도록 바꿀 수 있음)
                 continue
 
-            mv = pos["qty"] * price
-            pnl = (price - pos["avg_price"]) * pos["qty"] if pos["side"] == "LONG" else (pos["avg_price"] - price) * pos["qty"]
-            pnl_ratio = pnl / (pos["avg_price"] * pos["qty"])
+            qty = float(pos["qty"])
+            avg = float(pos["avg_price"])
+            side = (pos.get("side") or "LONG").upper()
+
+            mv = qty * price
+            if side.startswith("S"):  # SHORT
+                pnl = (avg - price) * qty
+            else:                     # LONG
+                pnl = (price - avg) * qty
+
+            cost = avg * qty
+            pnl_ratio = (pnl / cost) if cost else 0.0
 
             results.append({
                 "symbol": pos["symbol"],
                 "name": pos["name"],
-                "side": pos["side"],
-                "qty": pos["qty"],
-                "avg_price": pos["avg_price"],
-                "group": pos["group"],
+                "side": side,
+                "qty": qty,
+                "avg_price": avg,
+                "group": pos.get("group", pos["name"]),
                 "last_price": price,
                 "mv": mv,
                 "pnl": pnl,
-                "pnl_ratio": pnl_ratio
+                "pnl_ratio": pnl_ratio,
             })
 
             total_exposure += mv
@@ -63,18 +75,18 @@ async def main():
         "positions": results,
         "total_exposure": total_exposure,
         "total_pnl": total_pnl,
-        "total_pnl_ratio": total_pnl / total_exposure if total_exposure else 0
+        "total_pnl_ratio": (total_pnl / total_exposure) if total_exposure else 0.0,
     }
 
-    # 저장
     out_path = "web/live.json"
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(snapshot, f, indent=2, ensure_ascii=False)
+        json.dump(snapshot, f, ensure_ascii=False, indent=2)
 
-    # GitHub 커밋 & 푸시
-    subprocess.run("git add web/live.json", shell=True)
-    subprocess.run(f'git commit -m "chore: update live {snapshot["as_of"]}"', shell=True)
-    subprocess.run("git push", shell=True)
+    # git add/commit/push
+    subprocess.run("git add web/live.json", shell=True, check=False)
+    subprocess.run(f'git commit -m "chore: update live {snapshot["as_of"]}"', shell=True, check=False)
+    subprocess.run("git push", shell=True, check=False)
 
 if __name__ == "__main__":
     asyncio.run(main())
