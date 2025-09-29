@@ -15,9 +15,9 @@ async function loadReport() {
             const last = Number(pos.last_price) || 0;
 
             // 🔁 프론트에서 재계산 (서버 값 신뢰하지 않음)
-            const cost = avg * qty;        // 매입금액
-            const mv = last * qty;       // 평가금액
-            const pnl = mv - cost;        // 손익 (LONG 기준; SHORT면 서버에서 last가 음수 아님 -> 여기선 일괄 계산)
+            const cost = avg * qty;       // 매입금액
+            const mv = last * qty;      // 평가금액
+            const pnl = mv - cost;       // 손익
             const ratio = cost ? (pnl / cost) : 0;  // 손익률
 
             // 손익 표기 (정수 + 천단위)
@@ -34,34 +34,37 @@ async function loadReport() {
                     : ratio < 0 ? "text-blue-600 font-bold"
                         : "text-gray-600";
 
-            // DIR (L/S 표시 - 동그라미 배경) — 기존 디자인 유지 (롱: 초록 원 L)
+            // DIR (L/S 표시 - 동그라미 배경)
             const dirBadge = `
-        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 font-bold">
-          ${String(pos.side || "").startsWith("L") ? "L" : "S"}
-        </span>
-      `;
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 font-bold">
+                  ${String(pos.side || "").startsWith("L") ? "L" : "S"}
+                </span>
+            `;
 
-            const row = `
-        <tr class="border-b">
-          <td class="px-2 py-2 text-gray-800 font-medium">${pos.name}</td>
-          <td class="px-2 py-2 text-center">${dirBadge}</td>
-          <td class="px-2 py-2 text-right">${Math.round(avg).toLocaleString("ko-KR")}</td>
-          <td class="px-2 py-2 text-right text-green-700 font-bold">${last.toLocaleString("ko-KR")}</td>
-          <td class="px-2 py-2 text-right">${qty.toLocaleString("ko-KR")}</td>
-          <td class="px-2 py-2 text-right">${Math.round(cost).toLocaleString("ko-KR")}</td>
-          <td class="px-2 py-2 text-right">${mv.toLocaleString("ko-KR")}</td>
-          <td class="px-2 py-2 text-right ${pnlColor}">${pnlFmt}</td>
-          <td class="px-2 py-2 text-right ${pnlRatioColor}">${pnlRatioFmt}</td>
-        </tr>
-      `;
-            // 만약 종목명이 "삼성전자"라면, 굵은 구분선 행 추가
+            // 테이블 행
+            let row = `
+                <tr class="border-b">
+                  <td class="px-2 py-2 text-gray-800 font-medium">${pos.name}</td>
+                  <td class="px-2 py-2 text-center">${dirBadge}</td>
+                  <td class="px-2 py-2 text-right">${Math.round(avg).toLocaleString("ko-KR")}</td>
+                  <td class="px-2 py-2 text-right text-green-700 font-bold">${last.toLocaleString("ko-KR")}</td>
+                  <td class="px-2 py-2 text-right">${qty.toLocaleString("ko-KR")}</td>
+                  <td class="px-2 py-2 text-right">${Math.round(cost).toLocaleString("ko-KR")}</td>
+                  <td class="px-2 py-2 text-right">${mv.toLocaleString("ko-KR")}</td>
+                  <td class="px-2 py-2 text-right ${pnlColor}">${pnlFmt}</td>
+                  <td class="px-2 py-2 text-right ${pnlRatioColor}">${pnlRatioFmt}</td>
+                </tr>
+            `;
+
+            // 📌 삼성전자일 경우 구분선 추가
             if (pos.name === "삼성전자") {
                 row += `
-                <tr>
-                    <td colspan="9" class="border-b-2 border-gray-400"></td>
-                </tr>
+                    <tr>
+                        <td colspan="9" class="border-b-2 border-gray-400"></td>
+                    </tr>
                 `;
-                        }
+            }
+
             body.insertAdjacentHTML("beforeend", row);
         });
 
@@ -90,8 +93,8 @@ async function loadReport() {
         body.innerHTML =
             `<tr><td colspan="9" class="text-center text-red-500 py-4">데이터 로드 실패: ${err}</td></tr>`;
     }
-} 
+}
 
-// 최초 실행 + 30초마다 갱신
+// 최초 실행 + 60초마다 갱신
 loadReport();
-setInterval(loadReport, 30000);
+setInterval(loadReport, 60000);
