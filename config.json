@@ -2,14 +2,6 @@
     "currency": "KRW",
     "positions": [
         {
-            "symbol": "000210",
-            "name": "DL",
-            "side": "LONG",
-            "qty": 6183,
-            "avg_price": 59894.0,
-            "group": "DL"
-        },
-        {
             "symbol": "061040",
             "name": "알에프텍",
             "side": "LONG",
@@ -40,6 +32,14 @@
             "qty": 3520,
             "avg_price": 70488.4148,
             "group": "삼성전자"
+        },
+        {
+            "symbol": "000210",
+            "name": "DL",
+            "side": "LONG",
+            "qty": 6183,
+            "avg_price": 59894.0,
+            "group": "DL"
         },
         {
             "symbol": "000725",

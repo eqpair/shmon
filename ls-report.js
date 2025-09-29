@@ -54,6 +54,14 @@ async function loadReport() {
           <td class="px-2 py-2 text-right ${pnlRatioColor}">${pnlRatioFmt}</td>
         </tr>
       `;
+            // 만약 종목명이 "삼성전자"라면, 굵은 구분선 행 추가
+            if (pos.name === "삼성전자") {
+                row += `
+                <tr>
+                    <td colspan="9" class="border-b-2 border-gray-400"></td>
+                </tr>
+                `;
+                        }
             body.insertAdjacentHTML("beforeend", row);
         });
 
