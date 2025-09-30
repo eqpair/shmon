@@ -9,7 +9,6 @@ with open("config.json", "r", encoding="utf-8") as f:
 POSITIONS = CONFIG.get("positions", [])
 
 HEADERS = {
-    # 일부 프록시/방화벽이 UA 없으면 차단하거나 text/plain으로 내려줌
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/120.0 Safari/537.36",
     "Accept": "*/*",
@@ -19,8 +18,7 @@ async def fetch_price(session, symbol: str) -> float | None:
     url = f"https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:{symbol}"
     try:
         async with session.get(url, headers=HEADERS, timeout=aiohttp.ClientTimeout(total=8)) as resp:
-            # ➜ 여기! resp.json() 대신 문자열로 받고 json.loads()
-            text = await resp.text()  # euc-kr도 알아서 str로 디코드됨
+            text = await resp.text()
             data = json.loads(text)
             return data["result"]["areas"][0]["datas"][0]["nv"]
     except Exception as e:
@@ -29,7 +27,7 @@ async def fetch_price(session, symbol: str) -> float | None:
 
 async def main():
     results = []
-    total_exposure = 0.0
+    total_exposure = 0.0   # ← Ref P × Qty 합계(고정)
     total_pnl = 0.0
 
     conn = aiohttp.TCPConnector(ssl=False)
@@ -37,20 +35,25 @@ async def main():
         for pos in POSITIONS:
             price = await fetch_price(session, pos["symbol"])
             if price is None:
-                # 가격 못 받으면 스킵(원하면 마지막가 그대로 두도록 바꿀 수 있음)
-                continue
+                # 가격 실패 시에도 노출(Exposure)은 난이 고정이므로 그대로 기록 가능
+                price = float(pos.get("avg_price", 0))  # 최소한의 fallback
 
-            qty = float(pos["qty"])
-            avg = float(pos["avg_price"])
+            qty  = float(pos["qty"])
+            avg  = float(pos["avg_price"])
             side = (pos.get("side") or "LONG").upper()
 
+            # ★ 고정 노출(Exposure) = Ref P × Qty
+            exp = avg * qty
+
+            # 시가 기준 현재 평가가치(Value)
             mv = qty * price
+
             if side.startswith("S"):  # SHORT
                 pnl = (avg - price) * qty
             else:                     # LONG
                 pnl = (price - avg) * qty
 
-            cost = avg * qty
+            cost = exp  # Ref P × Qty
             pnl_ratio = (pnl / cost) if cost else 0.0
 
             results.append({
@@ -58,22 +61,23 @@ async def main():
                 "name": pos["name"],
                 "side": side,
                 "qty": qty,
-                "avg_price": avg,
+                "avg_price": avg,       # (= Ref P)
                 "group": pos.get("group", pos["name"]),
-                "last_price": price,
-                "mv": mv,
+                "last_price": price,    # (= Val P)
+                "exposure": exp,        # ★ EXP(고정)
+                "mv": mv,               # VAL(변동)
                 "pnl": pnl,
                 "pnl_ratio": pnl_ratio,
             })
 
-            total_exposure += mv
+            total_exposure += exp
             total_pnl += pnl
 
     snapshot = {
         "as_of": datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
         "currency": CONFIG.get("currency", "KRW"),
         "positions": results,
-        "total_exposure": total_exposure,
+        "total_exposure": total_exposure,                     # ★ 이제 고정값
         "total_pnl": total_pnl,
         "total_pnl_ratio": (total_pnl / total_exposure) if total_exposure else 0.0,
     }
