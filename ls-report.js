@@ -75,7 +75,7 @@ async function loadReport() {
 
         // Total Exposure
         document.getElementById("totalExposure").textContent =
-            (Number(data.total_exposure) || 0).toLocaleString("ko-KR");
+            Math.round(Number(data.total_exposure) || 0).toLocaleString("ko-KR"); // ★ 소수점 제거
 
         // Total PnL (+/- 색상 적용, 정수 표기)
         const totalPnL = Number(data.total_pnl) || 0;
