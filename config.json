@@ -42,27 +42,19 @@
             "group": "DL"
         },
         {
-            "symbol": "000725",
-            "name": "현대건설우",
-            "side": "LONG",
-            "qty": 32,
-            "avg_price": 88100.0,
-            "group": "현대건설우"
-        },
-        {
             "symbol": "034220",
             "name": "LGD",
             "side": "LONG",
-            "qty": 20000,
-            "avg_price": 12322.75,
+            "qty": 18150,
+            "avg_price": 12264.5234,
             "group": "LGD"
         },
         {
             "symbol": "009150",
             "name": "SEMCO",
             "side": "LONG",
-            "qty": 2800,
-            "avg_price": 137483.5714,
+            "qty": 2550,
+            "avg_price": 137238.3333,
             "group": "SEMCO"
         },
         {
