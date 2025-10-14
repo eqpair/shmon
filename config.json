@@ -34,6 +34,22 @@
             "group": "삼성전자"
         },
         {
+            "symbol": "440110",
+            "name": "FADU",
+            "side": "LONG",
+            "qty": 29000,
+            "avg_price": 19120.0,
+            "group": "FADU"
+        },
+        {
+            "symbol": "034020",
+            "name": "두산에너빌리티",
+            "side": "LONG",
+            "qty": 4500,
+            "avg_price": 63314.3333,
+            "group": "두산에너빌리티"
+        },
+        {
             "symbol": "000210",
             "name": "DL",
             "side": "LONG",
@@ -80,22 +96,6 @@
             "qty": 31125,
             "avg_price": 11600.8635,
             "group": "KODEX에너지화학"
-        },
-        {
-            "symbol": "440110",
-            "name": "FADU",
-            "side": "LONG",
-            "qty": 29000,
-            "avg_price": 19120.0,
-            "group": "FADU"
-        },
-        {
-            "symbol": "034020",
-            "name": "두산에너빌리티",
-            "side": "LONG",
-            "qty": 4500,
-            "avg_price": 63314.3333,
-            "group": "두산에너빌리티"
         }
         ]
         }
