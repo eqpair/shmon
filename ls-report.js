@@ -56,8 +56,8 @@ async function loadReport() {
                 </tr>
             `;
 
-            // 📌 삼성전자일 경우 구분선 추가
-            if (pos.name === "삼성전자") {
+            // 📌 구분선 추가
+            if (pos.name === "KODEX에너지화학") {
                 row += `
                     <tr>
                         <td colspan="9" class="border-b-2 border-gray-400"></td>
