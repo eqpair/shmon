@@ -37,7 +37,7 @@
             "symbol": "440110",
             "name": "FADU",
             "side": "LONG",
-            "qty": 29000,
+            "qty": 29000, 
             "avg_price": 19120.0,
             "group": "FADU"
         },
