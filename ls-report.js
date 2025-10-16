@@ -41,10 +41,14 @@ async function loadReport() {
                 </span>
             `;
 
+            // 네이버 금융 링크
+            const naverFinanceUrl = `https://finance.naver.com/item/main.naver?code=${pos.symbol}`;
+            const stockNameLink = `<a href="${naverFinanceUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline">${pos.name}</a>`;
+
             // 테이블 행
             let row = `
                 <tr class="border-b">
-                  <td class="px-2 py-2 text-gray-800 font-medium">${pos.name}</td>
+                  <td class="px-2 py-2 text-gray-800 font-medium">${stockNameLink}</td>
                   <td class="px-2 py-2 text-center">${dirBadge}</td>
                   <td class="px-2 py-2 text-right">${Math.round(avg).toLocaleString("ko-KR")}</td>
                   <td class="px-2 py-2 text-right text-green-700 font-bold">${last.toLocaleString("ko-KR")}</td>
@@ -75,7 +79,7 @@ async function loadReport() {
 
         // Total Exposure
         document.getElementById("totalExposure").textContent =
-            Math.round(Number(data.total_exposure) || 0).toLocaleString("ko-KR"); // ★ 소수점 제거
+            Math.round(Number(data.total_exposure) || 0).toLocaleString("ko-KR");
 
         // Total PnL (+/- 색상 적용, 정수 표기)
         const totalPnL = Number(data.total_pnl) || 0;
