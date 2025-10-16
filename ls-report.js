@@ -43,7 +43,7 @@ async function loadReport() {
 
             // 네이버 금융 링크
             const naverFinanceUrl = `https://finance.naver.com/item/main.naver?code=${pos.symbol}`;
-            const stockNameLink = `<a href="${naverFinanceUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline font-bold">${pos.name}</a>`;
+            const stockNameLink = `<a href="${naverFinanceUrl}" target="_blank" class="text-black-600 hover:text-black-800 hover:underline font-bold">${pos.name}</a>`;
 
             // 테이블 행
             let row = `
