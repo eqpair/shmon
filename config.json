@@ -26,14 +26,6 @@
             "group": "DL"
         },
         {
-            "symbol": "034220",
-            "name": "LGD",
-            "side": "LONG",
-            "qty": 18150,
-            "avg_price": 12264.5234,
-            "group": "LGD"
-        },
-        {
             "symbol": "009150",
             "name": "SEMCO",
             "side": "LONG",
