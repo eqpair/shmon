@@ -3,7 +3,7 @@
     "positions": [
         {
             "symbol": "440110",
-            "name": "FADU",
+            "name": "파두",
             "side": "LONG",
             "qty": 29000,
             "avg_price": 19120.0,
@@ -27,7 +27,7 @@
         },
         {
             "symbol": "009150",
-            "name": "SEMCO",
+            "name": "삼성전기",
             "side": "LONG",
             "qty": 2550,
             "avg_price": 137238.3333,
@@ -35,7 +35,7 @@
         },
         {
             "symbol": "307950",
-            "name": "HYUNDAI AUTOEVER",
+            "name": "현대오토에버",
             "side": "LONG",
             "qty": 3230,
             "avg_price": 134405.7985,
@@ -51,7 +51,7 @@
         },
         {
             "symbol": "117460",
-            "name": "KODEX에너지화학",
+            "name": "KODEX 에너지화학",
             "side": "LONG",
             "qty": 31125,
             "avg_price": 11600.8635,
