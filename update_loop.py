@@ -13,8 +13,8 @@ def is_trading_session_kst(now: datetime) -> bool:
     # 월=0 … 일=6
     if now.weekday() >= 5:  # 토,일 제외
         return False
-    start = now.replace(hour=8, minute=30, second=0, microsecond=0)
-    end   = now.replace(hour=16, minute=0,  second=0, microsecond=0)
+    start = now.replace(hour=8, minute=0, second=0, microsecond=0)
+    end   = now.replace(hour=18, minute=0,  second=0, microsecond=0)
     return start <= now <= end
 
 while True:
