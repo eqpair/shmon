@@ -61,7 +61,7 @@ async function loadReport() {
             `;
 
             // 📌 구분선 추가
-            if (pos.name === "KODEX 에너지화학") {
+            if (pos.name === "현대오토에버") {
                 row += `
                     <tr>
                         <td colspan="9" class="border-b-2 border-gray-400"></td>
