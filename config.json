@@ -45,17 +45,9 @@
             "symbol": "307950",
             "name": "현대오토에버",
             "side": "LONG",
-            "qty": 3230,
+            "qty": 1770,
             "avg_price": 134405.7985,
             "group": "HYUNDAI AUTOEVER"
-        },
-        {
-            "symbol": "274090",
-            "name": "켄코아에어로스페이스",
-            "side": "LONG",
-            "qty": 25000,
-            "avg_price": 13165.48,
-            "group": "켄코아에어로스페이스"
         },
         {
             "symbol": "117460",
