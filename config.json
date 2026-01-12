@@ -2,10 +2,18 @@
     "currency": "KRW",
     "positions": [
         {
+            "symbol": "456160",
+            "name": "지투지바이오",
+            "side": "LONG",
+            "qty": 2500,
+            "avg_price": 80546.0,
+            "group": "456160"
+        },
+        {
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
-            "qty": 2700,
+            "qty": 2000,
             "avg_price": 110628.0,
             "group": "한진칼"
         },
@@ -21,7 +29,7 @@
             "symbol": "034020",
             "name": "두산에너빌리티",
             "side": "LONG",
-            "qty": 4500,
+            "qty": 2000,
             "avg_price": 63314.3333,
             "group": "두산에너빌리티"
         },
