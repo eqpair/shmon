@@ -1,19 +1,19 @@
 {
-  "as_of": "2026-01-15 16:24:56",
+  "as_of": "2026-01-15 16:25:58",
   "currency": "KRW",
   "positions": [
     {
       "symbol": "456160",
       "name": "지투지바이오",
       "side": "LONG",
-      "qty": 2500.0,
-      "avg_price": 80546.0,
+      "qty": 3121.0,
+      "avg_price": 76000.0,
       "group": "456160",
       "last_price": 77800,
-      "exposure": 201365000.0,
-      "mv": 194500000.0,
-      "pnl": -6865000.0,
-      "pnl_ratio": -0.034092319916569414
+      "exposure": 237196000.0,
+      "mv": 242813800.0,
+      "pnl": 5617800.0,
+      "pnl_ratio": 0.02368421052631579
     },
     {
       "symbol": "180640",
@@ -68,19 +68,6 @@
       "pnl_ratio": -0.3503964882469555
     },
     {
-      "symbol": "307950",
-      "name": "현대오토에버",
-      "side": "LONG",
-      "qty": 1770.0,
-      "avg_price": 134405.7985,
-      "group": "HYUNDAI AUTOEVER",
-      "last_price": 492000,
-      "exposure": 237898263.345,
-      "mv": 870840000.0,
-      "pnl": 632941736.655,
-      "pnl_ratio": 2.6605563561307215
-    },
-    {
       "symbol": "018260",
       "name": "삼성SDS",
       "side": "LONG",
@@ -94,7 +81,7 @@
       "pnl_ratio": 0.0412573673870334
     }
   ],
-  "total_exposure": 2463719531.345,
-  "total_pnl": 662121568.655,
-  "total_pnl_ratio": 0.2687487598450514
+  "total_exposure": 2261652268.0,
+  "total_pnl": 41662632.0,
+  "total_pnl_ratio": 0.01842132523619232
 }
