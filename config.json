@@ -5,16 +5,16 @@
             "symbol": "456160",
             "name": "지투지바이오",
             "side": "LONG",
-            "qty": 2500,
-            "avg_price": 80546.0,
+            "qty": 3121,
+            "avg_price": 76000.0,
             "group": "456160"
         },
         {
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
-            "qty": 4000,
-            "avg_price": 110628.0,
+            "qty": 5000,
+            "avg_price": 115000.0,
             "group": "한진칼"
         },
         {
@@ -30,7 +30,7 @@
             "name": "두산에너빌리티",
             "side": "LONG",
             "qty": 4000,
-            "avg_price": 63314.3333,
+            "avg_price": 74000.0,
             "group": "두산에너빌리티"
         },
         {
@@ -40,22 +40,6 @@
             "qty": 7183,
             "avg_price": 56496.0,
             "group": "DL"
-        },
-        {
-            "symbol": "009150",
-            "name": "삼성전기",
-            "side": "LONG",
-            "qty": 1780,
-            "avg_price": 137384.6404,
-            "group": "SEMCO"
-        },
-        {
-            "symbol": "307950",
-            "name": "현대오토에버",
-            "side": "LONG",
-            "qty": 1770,
-            "avg_price": 134405.7985,
-            "group": "HYUNDAI AUTOEVER"
         },
         {
             "symbol": "018260",
