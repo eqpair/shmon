@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-01-21 13:07:48",
+  "as_of": "2026-01-21 13:08:50",
   "currency": "KRW",
   "positions": [
     {
@@ -74,14 +74,14 @@
       "qty": 1150.0,
       "avg_price": 167970.0,
       "group": "SAMSUNG SDS",
-      "last_price": 175500,
+      "last_price": 175400,
       "exposure": 193165500.0,
-      "mv": 201825000.0,
-      "pnl": 8659500.0,
-      "pnl_ratio": 0.04482943382746919
+      "mv": 201710000.0,
+      "pnl": 8544500.0,
+      "pnl_ratio": 0.04423408942072989
     }
   ],
   "total_exposure": 2261652268.0,
-  "total_pnl": 43599082.0,
-  "total_pnl_ratio": 0.0192775355508365
+  "total_pnl": 43484082.0,
+  "total_pnl_ratio": 0.019226687769492247
 }
