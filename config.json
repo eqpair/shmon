@@ -5,8 +5,8 @@
             "symbol": "456160",
             "name": "지투지바이오",
             "side": "LONG",
-            "qty": 3121,
-            "avg_price": 76000.0,
+            "qty": 3227,
+            "avg_price": 78000.0,
             "group": "456160"
         },
         {
@@ -46,7 +46,7 @@
             "name": "삼성SDS",
             "side": "LONG",
             "qty": 1150,
-            "avg_price": 167970.0,
+            "avg_price": 176700.0,
             "group": "SAMSUNG SDS"
         }
         ]
