@@ -2,6 +2,14 @@
     "currency": "KRW",
     "positions": [
         {
+            "symbol": "229200",
+            "name": "kodex코스닥150",
+            "side": "LONG",
+            "qty": 16000,
+            "avg_price": 17847.0,
+            "group": "229200"
+        },
+        {
             "symbol": "456160",
             "name": "지투지바이오",
             "side": "LONG",
@@ -24,14 +32,6 @@
             "qty": 29000,
             "avg_price": 19120.0,
             "group": "FADU"
-        },
-        {
-            "symbol": "034020",
-            "name": "두산에너빌리티",
-            "side": "LONG",
-            "qty": 4000,
-            "avg_price": 74000.0,
-            "group": "두산에너빌리티"
         },
         {
             "symbol": "000210",
