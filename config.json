@@ -2,6 +2,14 @@
     "currency": "KRW",
     "positions": [
         {
+            "symbol": "440110",
+            "name": "파두",
+            "side": "LONG",
+            "qty": 29000,
+            "avg_price": 19120.0,
+            "group": "FADU"
+        },
+        {
             "symbol": "229200",
             "name": "KODEX 코스닥150",
             "side": "LONG",
@@ -10,12 +18,20 @@
             "group": "229200"
         },
         {
-            "symbol": "456160",
-            "name": "지투지바이오",
+            "symbol": "112610",
+            "name": "씨에스윈드",
             "side": "LONG",
-            "qty": 3227,
-            "avg_price": 78000.0,
-            "group": "456160"
+            "qty": 3230,
+            "avg_price": 44308.0,
+            "group": "112610"
+        },
+        {
+            "symbol": "033240",
+            "name": "자화전자",
+            "side": "LONG",
+            "qty": 2800,
+            "avg_price": 36508.0,
+            "group": "033240"
         },
         {
             "symbol": "180640",
@@ -24,14 +40,6 @@
             "qty": 5000,
             "avg_price": 115000.0,
             "group": "한진칼"
-        },
-        {
-            "symbol": "440110",
-            "name": "파두",
-            "side": "LONG",
-            "qty": 29000,
-            "avg_price": 19120.0,
-            "group": "FADU"
         },
         {
             "symbol": "000210",
