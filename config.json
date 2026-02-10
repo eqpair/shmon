@@ -18,6 +18,14 @@
             "group": "229200"
         },
         {
+            "symbol": "034020",
+            "name": "두산에너빌리티",
+            "side": "LONG",
+            "qty": 2120,
+            "avg_price": 94386.0,
+            "group": "034020"
+        },
+        {
             "symbol": "112610",
             "name": "씨에스윈드",
             "side": "LONG",
