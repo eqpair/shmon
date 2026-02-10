@@ -26,14 +26,6 @@
             "group": "112610"
         },
         {
-            "symbol": "033240",
-            "name": "자화전자",
-            "side": "LONG",
-            "qty": 2800,
-            "avg_price": 36508.0,
-            "group": "033240"
-        },
-        {
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
