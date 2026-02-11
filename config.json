@@ -18,11 +18,19 @@
             "group": "229200"
         },
         {
+            "symbol": "033240",
+            "name": "자화전자",
+            "side": "LONG",
+            "qty": 3700,
+            "avg_price": 40171.0,
+            "group": "033240"
+        },
+        {
             "symbol": "034020",
             "name": "두산에너빌리티",
             "side": "LONG",
-            "qty": 2120,
-            "avg_price": 94386.0,
+            "qty": 2620,
+            "avg_price": 94501.0,
             "group": "034020"
         },
         {
