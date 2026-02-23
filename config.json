@@ -26,18 +26,18 @@
             "group": "033240"
         },
         {
-            "symbol": "034020",
-            "name": "두산에너빌리티",
+            "symbol": "307950",
+            "name": "현대오토에버",
             "side": "LONG",
-            "qty": 3120,
-            "avg_price": 94820.0,
-            "group": "034020"
+            "qty": 450,
+            "avg_price": 441130.0,
+            "group": "현대오토에버"
         },
         {
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
-            "qty": 5000,
+            "qty": 2500,
             "avg_price": 115000.0,
             "group": "한진칼"
         },
