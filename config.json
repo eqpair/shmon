@@ -13,7 +13,7 @@
             "symbol": "229200",
             "name": "KODEX 코스닥150",
             "side": "LONG",
-            "qty": 26000,
+            "qty": 13000,
             "avg_price": 19000.0,
             "group": "229200"
         },
@@ -21,16 +21,16 @@
             "symbol": "033240",
             "name": "자화전자",
             "side": "LONG",
-            "qty": 3700,
-            "avg_price": 40171.0,
+            "qty": 3860,
+            "avg_price": 40170.0,
             "group": "033240"
         },
         {
             "symbol": "307950",
             "name": "현대오토에버",
             "side": "LONG",
-            "qty": 450,
-            "avg_price": 441130.0,
+            "qty": 540,
+            "avg_price": 440000.0,
             "group": "현대오토에버"
         },
         {
