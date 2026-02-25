@@ -61,7 +61,7 @@ async function loadReport() {
             `;
 
             // 📌 구분선 추가
-            if (pos.name === "DL") {
+            if (pos.name === "LG에너지솔루션") {
                 row += `
                     <tr>
                         <td colspan="9" class="border-b-2 border-gray-400"></td>

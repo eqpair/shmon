@@ -2,28 +2,20 @@
     "currency": "KRW",
     "positions": [
         {
-            "symbol": "440110",
-            "name": "파두",
-            "side": "LONG",
-            "qty": 29000,
-            "avg_price": 19120.0,
-            "group": "FADU"
-        },
-        {
-            "symbol": "229200",
-            "name": "KODEX 코스닥150",
-            "side": "LONG",
-            "qty": 13000,
-            "avg_price": 19000.0,
-            "group": "229200"
-        },
-        {
             "symbol": "033240",
             "name": "자화전자",
             "side": "LONG",
             "qty": 4777,
             "avg_price": 40100.0,
             "group": "033240"
+        },
+        {
+            "symbol": "440110",
+            "name": "파두",
+            "side": "LONG",
+            "qty": 29000,
+            "avg_price": 19120.0,
+            "group": "FADU"
         },
         {
             "symbol": "180640",
@@ -34,20 +26,28 @@
             "group": "한진칼"
         },
         {
-            "symbol": "373220",
-            "name": "LG에너지솔루션",
-            "side": "LONG",
-            "qty": 710,
-            "avg_price": 423058.0,
-            "group": "LG에너지솔루션"
-        },
-        {
             "symbol": "000210",
             "name": "DL",
             "side": "LONG",
             "qty": 7183,
             "avg_price": 56496.0,
             "group": "DL"
+        },
+        {
+            "symbol": "229200",
+            "name": "KODEX 코스닥150",
+            "side": "LONG",
+            "qty": 13000,
+            "avg_price": 19000.0,
+            "group": "229200"
+        },
+        {
+            "symbol": "373220",
+            "name": "LG에너지솔루션",
+            "side": "LONG",
+            "qty": 710,
+            "avg_price": 423058.0,
+            "group": "LG에너지솔루션"
         },
         {
             "symbol": "018260",
