@@ -10,6 +10,14 @@
             "group": "033240"
         },
         {
+            "symbol": "035720",
+            "name": "카카오",
+            "side": "LONG",
+            "qty": 1580,
+            "avg_price": 62620.0,
+            "group": "카카오"
+        },
+        {
             "symbol": "440110",
             "name": "파두",
             "side": "LONG",
