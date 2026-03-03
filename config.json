@@ -26,28 +26,12 @@
             "group": "FADU"
         },
         {
-            "symbol": "180640",
-            "name": "한진칼",
-            "side": "LONG",
-            "qty": 1284,
-            "avg_price": 115000.0,
-            "group": "한진칼"
-        },
-        {
             "symbol": "000210",
             "name": "DL",
             "side": "LONG",
             "qty": 7183,
             "avg_price": 56496.0,
             "group": "DL"
-        },
-        {
-            "symbol": "229200",
-            "name": "KODEX 코스닥150",
-            "side": "LONG",
-            "qty": 13000,
-            "avg_price": 19000.0,
-            "group": "229200"
         },
         {
             "symbol": "373220",
