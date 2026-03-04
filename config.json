@@ -5,8 +5,8 @@
             "symbol": "033240",
             "name": "자화전자",
             "side": "LONG",
-            "qty": 1430,
-            "avg_price": 35000.0,
+            "qty": 2860,
+            "avg_price": 32695.0,
             "group": "자화전자"
         },
         {
@@ -30,7 +30,7 @@
             "name": "한진칼",
             "side": "LONG",
             "qty": 830,
-            "avg_price": 120000.0,
+            "avg_price": 116319.0,
             "group": "한진칼"
         },
         {
@@ -53,8 +53,8 @@
             "symbol": "005935",
             "name": "삼성전자우",
             "side": "LONG",
-            "qty": 800,
-            "avg_price": 124412.0,
+            "qty": 1600,
+            "avg_price": 120631.0,
             "group": "삼성전자우"
         },
         {
