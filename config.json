@@ -2,6 +2,14 @@
     "currency": "KRW",
     "positions": [
         {
+            "symbol": "033240",
+            "name": "자화전자",
+            "side": "LONG",
+            "qty": 1430,
+            "avg_price": 35000.0,
+            "group": "자화전자"
+        },
+        {
             "symbol": "035720",
             "name": "카카오",
             "side": "LONG",
@@ -34,12 +42,20 @@
             "group": "LG에너지솔루션"
         },
         {
+            "symbol": "005935",
+            "name": "삼성전자우",
+            "side": "LONG",
+            "qty": 800,
+            "avg_price": 124412.0,
+            "group": "삼성전자우"
+        },
+        {
             "symbol": "018260",
-            "name": "삼성SDS",
+            "name": "삼성에스디에스",
             "side": "LONG",
             "qty": 1150,
             "avg_price": 176700.0,
-            "group": "SAMSUNG SDS"
+            "group": "삼성에스디에스"
         }
         ]
         }
