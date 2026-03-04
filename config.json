@@ -23,7 +23,15 @@
             "side": "LONG",
             "qty": 29000,
             "avg_price": 19120.0,
-            "group": "FADU"
+            "group": "파두"
+        },
+        {
+            "symbol": "180640",
+            "name": "한진칼",
+            "side": "LONG",
+            "qty": 830,
+            "avg_price": 120000.0,
+            "group": "한진칼"
         },
         {
             "symbol": "000210",
