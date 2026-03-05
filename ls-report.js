@@ -1,7 +1,8 @@
 // live.json 경로: 루트 index.html + web/ 아래 live.json일 때
 async function loadReport() {
     try {
-        const res = await fetch("./web/live.json?_=" + Date.now());
+        //const res = await fetch("./web/live.json?_=" + Date.now());
+        const res = await fetch("https://raw.githubusercontent.com/eqpair/shmon/main/web/live.json?_=" + Date.now());
         if (!res.ok) throw new Error("fetch failed: " + res.status);
         const data = await res.json();
 
