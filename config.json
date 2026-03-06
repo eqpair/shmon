@@ -2,6 +2,14 @@
     "currency": "KRW",
     "positions": [
         {
+            "symbol": "034020",
+            "name": "두산에너빌리티",
+            "side": "LONG",
+            "qty": 2100,
+            "avg_price": 97440.0,
+            "group": "두산에너빌리티"
+        },
+        {
             "symbol": "035720",
             "name": "카카오",
             "side": "LONG",
