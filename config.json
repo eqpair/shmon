@@ -18,6 +18,14 @@
             "group": "파두"
         },
         {
+            "symbol": "003380",
+            "name": "하림지주",
+            "side": "LONG",
+            "qty": 20000,
+            "avg_price": 15120.0,
+            "group": "하림지주"
+        },
+        {
             "symbol": "000210",
             "name": "DL",
             "side": "LONG",
