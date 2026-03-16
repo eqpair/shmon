@@ -21,7 +21,7 @@
             "symbol": "003380",
             "name": "하림지주",
             "side": "LONG",
-            "qty": 20000,
+            "qty": 20000, 
             "avg_price": 15120.0,
             "group": "하림지주"
         },
