@@ -19,7 +19,7 @@
         },
         {
             "symbol": "440110",
-            "name": "파두",
+            "name": "파두", 
             "side": "LONG",
             "qty": 29000,
             "avg_price": 19120.0,
