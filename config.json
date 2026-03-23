@@ -45,17 +45,9 @@
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
-            "qty": 850,
-            "avg_price": 117771.0,
+            "qty": 1700,
+            "avg_price": 118759.0,
             "group": "한진칼"
-        },
-        {
-            "symbol": "000210",
-            "name": "DL",
-            "side": "LONG",
-            "qty": 7183,
-            "avg_price": 56496.0,
-            "group": "DL"
         },
         {
             "symbol": "373220",
