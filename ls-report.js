@@ -107,7 +107,7 @@ async function fetchUsdKrw() {
         const rate = data.rates.KRW;
         document.getElementById('fx-usd-krw').textContent =
             rate.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-        document.getElementById('fx-updated').textContent = '(ECB 기준)';
+        document.getElementById('fx-updated').textContent = '(전일 기준)';
     } catch (e) {
         document.getElementById('fx-usd-krw').textContent = '조회 실패';
     }
