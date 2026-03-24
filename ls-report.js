@@ -99,6 +99,21 @@ async function loadReport() {
     }
 }
 
+// USD/KRW 환율
+async function fetchUsdKrw() {
+    try {
+        const res = await fetch('https://api.frankfurter.app/latest?base=USD&symbols=KRW');
+        const data = await res.json();
+        const rate = data.rates.KRW;
+        document.getElementById('fx-usd-krw').textContent =
+            rate.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+        document.getElementById('fx-updated').textContent = '(ECB 기준)';
+    } catch (e) {
+        document.getElementById('fx-usd-krw').textContent = '조회 실패';
+    }
+}
+fetchUsdKrw();
+
 // 최초 실행 + 60초마다 갱신
 loadReport();
 setInterval(loadReport, 60000);
