@@ -37,8 +37,8 @@
             "symbol": "003380",
             "name": "하림지주",
             "side": "LONG",
-            "qty": 15000, 
-            "avg_price": 15380.0,
+            "qty": 20000, 
+            "avg_price": 15450.0,
             "group": "하림지주"
         },
         {
@@ -48,6 +48,14 @@
             "qty": 1700,
             "avg_price": 118759.0,
             "group": "한진칼"
+        },
+        {
+            "symbol": "229200",
+            "name": "KODEX코스닥150",
+            "side": "LONG",
+            "qty": 312,
+            "avg_price": 19250.0,
+            "group": "KODEX코스닥150"
         },
         {
             "symbol": "373220",
