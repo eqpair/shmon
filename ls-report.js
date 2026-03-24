@@ -102,7 +102,7 @@ async function loadReport() {
 // USD/KRW 환율
 async function fetchUsdKrw() {
     try {
-        const res = await fetch('https://api.frankfurter.app/latest?base=USD&symbols=KRW');
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
         const data = await res.json();
         const rate = data.rates.KRW;
         document.getElementById('fx-usd-krw').textContent =
