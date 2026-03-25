@@ -95,7 +95,7 @@ async function loadReport() {
         if (data.usd_krw) {
             document.getElementById('fx-usd-krw').textContent =
                 Number(data.usd_krw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-            document.getElementById('fx-updated').textContent = '(전일 기준)';
+            document.getElementById('fx-updated').textContent = '';
         }
 
         // WTI
