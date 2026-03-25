@@ -16,8 +16,8 @@ async function loadReport() {
 
             // 🔁 프론트에서 재계산 (서버 값 신뢰하지 않음)
             const cost = avg * qty;       // 매입금액
-            const mv = last * qty;      // 평가금액
-            const pnl = mv - cost;       // 손익
+            const mv = last * qty;        // 평가금액
+            const pnl = mv - cost;        // 손익
             const ratio = cost ? (pnl / cost) : 0;  // 손익률
 
             // 손익 표기 (정수 + 천단위)
@@ -91,6 +91,19 @@ async function loadReport() {
                 : totalPnL < 0 ? "text-blue-600 font-bold"
                     : "text-gray-600 font-bold";
 
+        // USD/KRW
+        if (data.usd_krw) {
+            document.getElementById('fx-usd-krw').textContent =
+                Number(data.usd_krw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+            document.getElementById('fx-updated').textContent = '(전일 기준)';
+        }
+
+        // WTI
+        if (data.wti) {
+            document.getElementById('fx-wti').textContent =
+                '$ ' + Number(data.wti).toFixed(2);
+        }
+
     } catch (err) {
         console.error(err);
         const body = document.getElementById("report-body");
@@ -98,21 +111,6 @@ async function loadReport() {
             `<tr><td colspan="9" class="text-center text-red-500 py-4">데이터 로드 실패: ${err}</td></tr>`;
     }
 }
-
-// USD/KRW 환율
-async function fetchUsdKrw() {
-    try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD');
-        const data = await res.json();
-        const rate = data.rates.KRW;
-        document.getElementById('fx-usd-krw').textContent =
-            rate.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-        document.getElementById('fx-updated').textContent = '(전일 기준)';
-    } catch (e) {
-        document.getElementById('fx-usd-krw').textContent = '조회 실패';
-    }
-}
-fetchUsdKrw();
 
 // 최초 실행 + 60초마다 갱신
 loadReport();

@@ -8,9 +8,9 @@
     <link rel="icon" href="./favicon.svg" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./ls-report.css" />
-</head> 
+</head>
 
-<body class="bg-gray-100 min-h-screen"> 
+<body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <header class="mb-6">
@@ -19,12 +19,14 @@
                     <h1 class="text-3xl font-bold text-gray-800">L Trading REPORT</h1>
                     <div class="text-sm text-gray-600 mt-1">
                         Last Update (KST): <span id="lastUpdated" class="font-medium">-</span>
-                        <!-- Last Update 줄 바로 아래에 추가 -->
-                        <div class="text-sm text-gray-600 mt-1">
-                            USD/KRW:
-                            <span id="fx-usd-krw" class="font-bold text-blue-600">-</span>
-                            <span class="text-xs text-gray-400 ml-1" id="fx-updated"></span>
-                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        USD/KRW:
+                        <span id="fx-usd-krw" class="font-bold text-blue-600">-</span>
+                        <span class="text-xs text-gray-400 ml-1" id="fx-updated"></span>
+                        &nbsp;|&nbsp;
+                        WTI:
+                        <span id="fx-wti" class="font-bold text-orange-600">-</span>
                     </div>
                 </div>
                 <div class="text-right">
@@ -36,7 +38,6 @@
                 </div>
             </div>
         </header>
-
         <!-- Table -->
         <div class="bg-white rounded-lg shadow-md p-4">
             <div class="overflow-x-auto">
@@ -63,13 +64,11 @@
             </div>
         </div>
     </div>
-
     <footer class="bg-white py-6 mt-8">
         <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
             <p>© 2025 Monitoring System.</p>
         </div>
     </footer>
-
     <script src="./ls-report.js"></script>
 </body>
 

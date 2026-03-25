@@ -37,7 +37,10 @@ def get_wti():
     try:
         import yfinance as yf
         ticker = yf.Ticker("CL=F")
-        return ticker.fast_info['last_price']
+        hist = ticker.history(period="1d", interval="1m")
+        if not hist.empty:
+            return float(hist["Close"].iloc[-1])
+        return None
     except Exception as e:
         print(f"[WARN] wti fetch failed: {e}")
         return None
