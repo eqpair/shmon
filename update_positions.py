@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, json, asyncio, aiohttp, subprocess
+import os, json, asyncio, aiohttp, subprocess, requests
 from datetime import datetime, timedelta, timezone
 
 KST = timezone(timedelta(hours=9))
@@ -25,35 +25,53 @@ async def fetch_price(session, symbol: str) -> float | None:
         print(f"[WARN] price fetch failed {symbol}: {e}")
         return None
 
+def get_usd_krw():
+    try:
+        res = requests.get('https://open.er-api.com/v6/latest/USD', timeout=5)
+        return res.json()['rates']['KRW']
+    except Exception as e:
+        print(f"[WARN] usd_krw fetch failed: {e}")
+        return None
+
+def get_wti():
+    try:
+        import yfinance as yf
+        ticker = yf.Ticker("CL=F")
+        return ticker.fast_info['last_price']
+    except Exception as e:
+        print(f"[WARN] wti fetch failed: {e}")
+        return None
+
 async def main():
     results = []
-    total_exposure = 0.0   # ← Ref P × Qty 합계(고정)
+    total_exposure = 0.0
     total_pnl = 0.0
+
+    # 환율 & WTI 먼저 가져오기
+    usd_krw = get_usd_krw()
+    wti = get_wti()
+    print(f"USD/KRW: {usd_krw}, WTI: {wti}")
 
     conn = aiohttp.TCPConnector(ssl=False)
     async with aiohttp.ClientSession(connector=conn) as session:
         for pos in POSITIONS:
             price = await fetch_price(session, pos["symbol"])
             if price is None:
-                # 가격 실패 시에도 노출(Exposure)은 난이 고정이므로 그대로 기록 가능
-                price = float(pos.get("avg_price", 0))  # 최소한의 fallback
+                price = float(pos.get("avg_price", 0))
 
             qty  = float(pos["qty"])
             avg  = float(pos["avg_price"])
             side = (pos.get("side") or "LONG").upper()
 
-            # ★ 고정 노출(Exposure) = Ref P × Qty
             exp = avg * qty
-
-            # 시가 기준 현재 평가가치(Value)
             mv = qty * price
 
-            if side.startswith("S"):  # SHORT
+            if side.startswith("S"):
                 pnl = (avg - price) * qty
-            else:                     # LONG
+            else:
                 pnl = (price - avg) * qty
 
-            cost = exp  # Ref P × Qty
+            cost = exp
             pnl_ratio = (pnl / cost) if cost else 0.0
 
             results.append({
@@ -61,11 +79,11 @@ async def main():
                 "name": pos["name"],
                 "side": side,
                 "qty": qty,
-                "avg_price": avg,       # (= Ref P)
+                "avg_price": avg,
                 "group": pos.get("group", pos["name"]),
-                "last_price": price,    # (= Val P)
-                "exposure": exp,        # ★ EXP(고정)
-                "mv": mv,               # VAL(변동)
+                "last_price": price,
+                "exposure": exp,
+                "mv": mv,
                 "pnl": pnl,
                 "pnl_ratio": pnl_ratio,
             })
@@ -77,9 +95,11 @@ async def main():
         "as_of": datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
         "currency": CONFIG.get("currency", "KRW"),
         "positions": results,
-        "total_exposure": total_exposure,                     # ★ 이제 고정값
+        "total_exposure": total_exposure,
         "total_pnl": total_pnl,
         "total_pnl_ratio": (total_pnl / total_exposure) if total_exposure else 0.0,
+        "usd_krw": usd_krw,
+        "wti": wti,
     }
 
     out_path = "web/live.json"
@@ -87,7 +107,6 @@ async def main():
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(snapshot, f, ensure_ascii=False, indent=2)
 
-    # git add/commit/push
     subprocess.run("git add web/live.json", shell=True, check=False)
     subprocess.run(f'git commit -m "chore: update live {snapshot["as_of"]}"', shell=True, check=False)
     subprocess.run("git push", shell=True, check=False)
