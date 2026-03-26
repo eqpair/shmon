@@ -107,7 +107,7 @@ async function loadReport() {
         if (data.wti) {
             wtiElem.textContent = '$ ' + Number(data.wti).toFixed(2);
         } else if (wtiElem.textContent === '-') {
-            wtiElem.textContent = '불러오는 중...';
+            wtiElem.textContent = 'Loading...';
         }
         // 이미 값이 있으면 그냥 유지 (아무것도 안 함)
 
