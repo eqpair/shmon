@@ -6,7 +6,9 @@ async function loadReport() {
         const data = await res.json();
 
         const body = document.getElementById("report-body");
-        body.innerHTML = "";
+        // ✅ 수정 1: body 초기화를 여기서 하지 않고, 마지막에 한 번에 교체
+
+        const rows = []; // ✅ 수정 1: 행을 배열에 먼저 모음
 
         data.positions.forEach(pos => {
             // 숫자 보정
@@ -69,8 +71,10 @@ async function loadReport() {
                 `;
             }
 
-            body.insertAdjacentHTML("beforeend", row);
+            rows.push(row); // ✅ 수정 1: insertAdjacentHTML 대신 배열에 push
         });
+
+        body.innerHTML = rows.join(""); // ✅ 수정 1: 데이터 준비 완료 후 한 번에 교체
 
         // 업데이트 시각 (한국시간)
         const updated = new Date(data.as_of);
@@ -98,11 +102,14 @@ async function loadReport() {
             document.getElementById('fx-updated').textContent = '';
         }
 
-        // WTI
+        // ✅ 수정 2: WTI - 값이 있을 때만 업데이트, 없으면 이전 값 유지
+        const wtiElem = document.getElementById('fx-wti');
         if (data.wti) {
-            document.getElementById('fx-wti').textContent =
-                '$ ' + Number(data.wti).toFixed(2);
+            wtiElem.textContent = '$ ' + Number(data.wti).toFixed(2);
+        } else if (wtiElem.textContent === '-') {
+            wtiElem.textContent = '불러오는 중...';
         }
+        // 이미 값이 있으면 그냥 유지 (아무것도 안 함)
 
     } catch (err) {
         console.error(err);
