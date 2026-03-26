@@ -34,7 +34,18 @@ def get_usd_krw():
         return None
 
 def get_wti():
-    # 1차 시도: yfinance (period=5d로 늘려서 당일 데이터 비어도 최근 값 확보)
+    # 1차 시도: yfinance fast_info (history()보다 가볍고 안정적)
+    try:
+        import yfinance as yf
+        ticker = yf.Ticker("CL=F")
+        price = ticker.fast_info["last_price"]
+        if price:
+            print(f"[INFO] WTI from fast_info: {price}")
+            return float(price)
+    except Exception as e:
+        print(f"[WARN] yfinance fast_info failed: {e}")
+
+    # 2차 시도: yfinance history fallback (period=5d로 최근 값 확보)
     try:
         import yfinance as yf
         ticker = yf.Ticker("CL=F")
@@ -42,22 +53,10 @@ def get_wti():
         if not hist.empty:
             closes = hist["Close"].dropna()
             if not closes.empty:
-                print(f"[INFO] WTI from yfinance: {closes.iloc[-1]}")
+                print(f"[INFO] WTI from history fallback: {closes.iloc[-1]}")
                 return float(closes.iloc[-1])
     except Exception as e:
-        print(f"[WARN] yfinance wti failed: {e}")
-
-    # 2차 시도: Yahoo Finance 직접 API (yfinance 실패 시 fallback)
-    try:
-        url = "https://query1.finance.yahoo.com/v8/finance/chart/CL=F?interval=1m&range=5d"
-        res = requests.get(url, headers=HEADERS, timeout=8)
-        closes = res.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
-        closes = [c for c in closes if c is not None]
-        if closes:
-            print(f"[INFO] WTI from yahoo chart API: {closes[-1]}")
-            return float(closes[-1])
-    except Exception as e:
-        print(f"[WARN] yahoo chart wti failed: {e}")
+        print(f"[WARN] yfinance history fallback failed: {e}")
 
     print("[ERROR] WTI fetch all sources failed, returning None")
     return None
