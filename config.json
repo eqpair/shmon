@@ -45,16 +45,16 @@
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
-            "qty": 2500,
-            "avg_price": 119193.0,
+            "qty": 2921,
+            "avg_price": 117850.0,
             "group": "한진칼"
         },
         {
             "symbol": "229200",
             "name": "KODEX코스닥150",
             "side": "LONG",
-            "qty": 312,
-            "avg_price": 19250.0,
+            "qty": 6436,
+            "avg_price": 19197.0,
             "group": "KODEX코스닥150"
         },
         {
