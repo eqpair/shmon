@@ -29,7 +29,7 @@
             "symbol": "263750",
             "name": "펄어비스",
             "side": "LONG",
-            "qty": 6600,
+            "qty": 4622,
             "avg_price": 47648.0,
             "group": "펄어비스"
         },
@@ -53,8 +53,8 @@
             "symbol": "229200",
             "name": "KODEX코스닥150",
             "side": "LONG",
-            "qty": 6436,
-            "avg_price": 19197.0,
+            "qty": 11436,
+            "avg_price": 18924.0,
             "group": "KODEX코스닥150"
         },
         {
@@ -69,8 +69,8 @@
             "symbol": "005935",
             "name": "삼성전자우",
             "side": "LONG",
-            "qty": 1600,
-            "avg_price": 120631.0,
+            "qty": 2480,
+            "avg_price": 118794.0,
             "group": "삼성전자우"
         },
         {
