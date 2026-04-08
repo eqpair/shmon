@@ -26,6 +26,14 @@
             "group": "파두"
         },
         {
+            "symbol": "263750",
+            "name": "펄어비스", 
+            "side": "LONG",
+            "qty": 1720,
+            "avg_price": 57882.0,
+            "group": "펄어비스"
+        },
+        {
             "symbol": "003380",
             "name": "하림지주",
             "side": "LONG",
