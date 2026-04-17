@@ -26,6 +26,14 @@
             "group": "파두"
         },
         {
+            "symbol": "440110",
+            "name": "파두[S]",
+            "side": "LONG",
+            "qty": 17061,
+            "avg_price": 11756.0,
+            "group": "파두[S]"
+        },
+        {
             "symbol": "263750",
             "name": "펄어비스", 
             "side": "LONG",
