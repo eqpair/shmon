@@ -37,8 +37,8 @@
             "symbol": "263750",
             "name": "펄어비스", 
             "side": "LONG",
-            "qty": 5220,
-            "avg_price": 56816.0,
+            "qty": 6247,
+            "avg_price": 56829.0,
             "group": "펄어비스"
         },
         {
@@ -53,8 +53,8 @@
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
-            "qty": 2921,
-            "avg_price": 117850.0,
+            "qty": 3351,
+            "avg_price": 117641.0,
             "group": "한진칼"
         },
         {
