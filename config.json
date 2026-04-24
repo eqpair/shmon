@@ -58,18 +58,10 @@
             "group": "한진칼"
         },
         {
-            "symbol": "229200",
-            "name": "KODEX코스닥150",
-            "side": "LONG",
-            "qty": 8500,
-            "avg_price": 18675.0,
-            "group": "KODEX코스닥150"
-        },
-        {
             "symbol": "373220",
             "name": "LG에너지솔루션",
             "side": "LONG",
-            "qty": 949,
+            "qty": 714,
             "avg_price": 412503.0,
             "group": "LG에너지솔루션"
         },
