@@ -12,6 +12,7 @@
             font-family: 'Noto Sans KR', sans-serif;
         }
 
+        /* ── Nav ── */
         .nav-link {
             display: inline-flex;
             align-items: center;
@@ -35,7 +36,7 @@
             color: #fff;
         }
 
-        /* 계산기 카드 */
+        /* ── 계산기 카드 ── */
         .calc-card {
             background: #fff;
             border-radius: 10px;
@@ -209,22 +210,6 @@
         }
 
         /* buttons */
-        .btn-add-row {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-            border-radius: 5px;
-            padding: 4px 12px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .btn-add-row:hover {
-            background: #e5e7eb;
-        }
-
         .btn-del-row {
             background: none;
             border: none;
@@ -275,7 +260,6 @@
             color: #374151;
         }
 
-        /* add calculator button */
         .btn-add-calc {
             display: flex;
             align-items: center;
@@ -298,6 +282,55 @@
             border-color: #6b7280;
             color: #374151;
             background: #f9fafb;
+        }
+
+        /* ── 모바일 대응 ── */
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.4rem !important;
+            }
+
+            .calc-card {
+                padding: 14px;
+            }
+
+            /* ticker 입력 폭 줄이기 */
+            .ticker-input {
+                width: 120px;
+                font-size: 0.9rem;
+            }
+
+            /* result bar: 4열 → 2×2 */
+            .result-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* trade row: memo 숨기고 3열로 */
+            .trade-row {
+                grid-template-columns: 2fr 2fr auto;
+            }
+
+            .trade-row .memo-input {
+                display: none;
+            }
+
+            .col-headers {
+                grid-template-columns: 2fr 2fr auto;
+            }
+
+            .col-headers div:first-child {
+                display: none;
+            }
+
+            /* breakdown 테이블: memo 컬럼 숨기기 */
+            .breakdown th:first-child,
+            .breakdown td:first-child {
+                display: none;
+            }
+
+            .rb-value {
+                font-size: 0.9rem;
+            }
         }
 
         @keyframes pop {
@@ -370,7 +403,6 @@
         const fmt = (n, d = 0) => isNaN(n) || !isFinite(n) ? '—' : n.toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
         const fmtP = (n, d = 2) => isNaN(n) || !isFinite(n) ? '—' : n.toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
 
-        /* ── Add Calculator ── */
         function addCalc() {
             const cid = ++calcId;
             const card = document.createElement('div');
@@ -386,16 +418,13 @@
             <button class="btn-reset-card" onclick="resetCalc(${cid})">↺ Reset</button>
             <button class="btn-del-card"   onclick="removeCalc(${cid})">✕ Remove</button>
         </div>
-
         <div class="col-headers">
             <div class="text-right">Memo</div>
             <div class="text-right">QTY</div>
             <div class="text-right">Price</div>
             <div></div>
         </div>
-
         <div id="rows-${cid}"></div>
-
         <div class="result-bar">
             <div>
                 <div class="rb-label">Direction</div>
@@ -414,7 +443,6 @@
                 <div class="rb-value" id="res-amt-${cid}">—</div>
             </div>
         </div>
-
         <div class="breakdown" id="breakdown-${cid}">
             <table>
                 <thead>
@@ -435,13 +463,11 @@
             addRow(cid, 'Add', '', '');
         }
 
-        /* ── Remove Calculator ── */
         function removeCalc(cid) {
             const el = document.getElementById(`calc-${cid}`);
             if (el) el.remove();
         }
 
-        /* ── Reset Calculator ── */
         function resetCalc(cid) {
             if (!confirm('Reset this calculator?')) return;
             document.getElementById(`rows-${cid}`).innerHTML = '';
@@ -451,7 +477,6 @@
             calcOne(cid);
         }
 
-        /* ── Direction ── */
         function setDir(cid, d) {
             document.getElementById(`long-${cid}`).className = d === 'LONG' ? 'sel-long' : '';
             document.getElementById(`short-${cid}`).className = d === 'SHORT' ? 'sel-short' : '';
@@ -460,7 +485,6 @@
             el.style.color = d === 'LONG' ? '#4ade80' : '#f87171';
         }
 
-        /* ── Add Row ── */
         function addRow(cid, memo = '', qty = '', price = '') {
             const rid = ++rowId;
             const div = document.createElement('div');
@@ -476,13 +500,11 @@
             calcOne(cid);
         }
 
-        /* ── Remove Row ── */
         function removeRow(cid, rid) {
             const el = document.getElementById(`row-${rid}`);
             if (el) { el.remove(); calcOne(cid); }
         }
 
-        /* ── Calculate ── */
         function calcOne(cid) {
             const rows = document.getElementById(`rows-${cid}`)?.querySelectorAll('.trade-row') || [];
             let totalQty = 0, totalAmt = 0;
@@ -494,14 +516,12 @@
                 const p = parseFloat(document.getElementById(`p-${rid}`)?.value) || 0;
                 const memo = document.getElementById(`m-${rid}`)?.value || '';
                 if (q > 0 && p > 0) {
-                    totalQty += q;
-                    totalAmt += q * p;
+                    totalQty += q; totalAmt += q * p;
                     breakdown.push({ memo: memo || `Trade ${rid}`, qty: q, price: p, amt: q * p });
                 }
             });
 
             const avg = totalQty > 0 ? totalAmt / totalQty : NaN;
-
             const setVal = (id, text) => {
                 const el = document.getElementById(id);
                 if (!el) return;
@@ -530,7 +550,6 @@
             }
         }
 
-        /* ── Init ── */
         addCalc();
     </script>
 </body>

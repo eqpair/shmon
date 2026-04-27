@@ -9,6 +9,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./ls-report.css" />
     <style>
+        /* ── Nav ── */
         .nav-link {
             display: inline-flex;
             align-items: center;
@@ -30,6 +31,51 @@
         .nav-link.active {
             background: #1f2937;
             color: #fff;
+        }
+
+        /* ── 테이블 모바일 대응 ── */
+        /* 가로 스크롤 컨테이너 — 웹에서는 그대로, 모바일에서는 손가락으로 스크롤 */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 모바일에서 셀 패딩/폰트 축소 */
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.4rem !important;
+            }
+
+            /* header 레이아웃: 타이틀 위, nav+exposure 아래 */
+            .header-right {
+                width: 100%;
+                flex-direction: row !important;
+                justify-content: space-between;
+                align-items: flex-end;
+            }
+
+            .report-table th,
+            .report-table td {
+                padding: .35rem .4rem;
+                font-size: .72rem;
+            }
+
+            /* 스크롤 힌트 그라데이션 */
+            .table-scroll-wrap {
+                position: relative;
+            }
+
+            .table-scroll-wrap::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 24px;
+                background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.85));
+                pointer-events: none;
+                border-radius: 0 8px 8px 0;
+            }
         }
     </style>
 </head>
@@ -53,7 +99,7 @@
                         <span id="fx-wti" class="font-bold text-blue-600">-</span>
                     </div>
                 </div>
-                <div class="flex flex-col items-end gap-2">
+                <div class="flex flex-col items-end gap-2 header-right">
                     <!-- Nav -->
                     <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
                         <a href="./index.html" class="nav-link active">📊 Report</a>
@@ -70,32 +116,36 @@
                 </div>
             </div>
         </header>
+
         <!-- Table -->
         <div class="bg-white rounded-lg shadow-md p-4">
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-gray-700">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-800">
-                            <th class="px-3 py-2 text-right"></th>
-                            <th class="px-3 py-2 text-right">DIR</th>
-                            <th class="px-3 py-2 text-right">REF P</th>
-                            <th class="px-3 py-2 text-right">VAL P</th>
-                            <th class="px-3 py-2 text-right">QTY</th>
-                            <th class="px-3 py-2 text-right">EXP</th>
-                            <th class="px-3 py-2 text-right">VAL</th>
-                            <th class="px-3 py-2 text-right">N PROFIT</th>
-                            <th class="px-3 py-2 text-right">N %</th>
-                        </tr>
-                    </thead>
-                    <tbody id="report-body">
-                        <tr>
-                            <td colspan="9" class="text-center py-4">Loading…</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="table-scroll-wrap">
+                <div class="table-scroll">
+                    <table class="report-table min-w-full text-sm text-gray-700">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-800">
+                                <th class="px-3 py-2 text-right"></th>
+                                <th class="px-3 py-2 text-right">DIR</th>
+                                <th class="px-3 py-2 text-right">REF P</th>
+                                <th class="px-3 py-2 text-right">VAL P</th>
+                                <th class="px-3 py-2 text-right">QTY</th>
+                                <th class="px-3 py-2 text-right">EXP</th>
+                                <th class="px-3 py-2 text-right">VAL</th>
+                                <th class="px-3 py-2 text-right">N PROFIT</th>
+                                <th class="px-3 py-2 text-right">N %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-body">
+                            <tr>
+                                <td colspan="9" class="text-center py-4">Loading…</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+
     <footer class="bg-white py-6 mt-8">
         <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
             <p>© 2025 Monitoring System.</p>
