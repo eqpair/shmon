@@ -8,6 +8,30 @@
     <link rel="icon" href="./favicon.svg" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./ls-report.css" />
+    <style>
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            transition: background 0.15s, color 0.15s;
+            color: #4b5563;
+        }
+
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .nav-link.active {
+            background: #1f2937;
+            color: #fff;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -31,7 +55,7 @@
                 </div>
                 <div class="flex flex-col items-end gap-2">
                     <!-- Nav -->
-                    <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm self-start">
+                    <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
                         <a href="./index.html" class="nav-link active">📊 Report</a>
                         <a href="./wavg.html" class="nav-link">⚖️ Weighted Avg</a>
                     </nav>
