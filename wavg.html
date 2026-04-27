@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>L Trading — 가중평균 계산기</title>
+    <title>L Trading — Weighted Average</title>
     <link rel="icon" href="./favicon.svg" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <style>
-        /* ── 기존 ls-report.css 연동을 위해 공통 변수/스타일만 인라인 ── */
         body {
             font-family: 'Noto Sans KR', sans-serif;
         }
@@ -36,138 +35,46 @@
             color: #fff;
         }
 
-        /* ── 입력 행 ── */
-        .trade-row {
-            display: grid;
-            grid-template-columns: 2fr 2fr 2fr auto;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .trade-row input {
-            width: 100%;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 6px 10px;
-            font-size: 0.85rem;
-            text-align: right;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            outline: none;
-        }
-
-        .trade-row input:focus {
-            border-color: #6b7280;
-            box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.15);
-        }
-
-        .trade-row input.error {
-            border-color: #ef4444;
-        }
-
-        /* ── 결과 카드 ── */
-        .result-card {
-            background: #1f2937;
-            color: #f9fafb;
-            border-radius: 12px;
-            padding: 24px 28px;
-        }
-
-        .result-card .label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #9ca3af;
-        }
-
-        .result-card .value {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-top: 2px;
-        }
-
-        .result-card .sub {
-            font-size: 0.8rem;
-            color: #9ca3af;
-            margin-top: 4px;
-        }
-
-        .badge-long {
-            background: #dcfce7;
-            color: #15803d;
-            border-radius: 4px;
-            padding: 1px 7px;
-            font-size: 0.72rem;
-            font-weight: 700;
-        }
-
-        .badge-short {
-            background: #fee2e2;
-            color: #b91c1c;
-            border-radius: 4px;
-            padding: 1px 7px;
-            font-size: 0.72rem;
-            font-weight: 700;
-        }
-
-        /* ── 버튼 ── */
-        .btn-add {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 5px 14px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .btn-add:hover {
-            background: #e5e7eb;
-        }
-
-        .btn-del {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #9ca3af;
-            font-size: 1.1rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            transition: color 0.15s, background 0.15s;
-        }
-
-        .btn-del:hover {
-            color: #ef4444;
-            background: #fee2e2;
-        }
-
-        .btn-reset {
+        /* 계산기 카드 */
+        .calc-card {
             background: #fff;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 5px 14px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #6b7280;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            animation: slideIn 0.2s ease;
         }
 
-        .btn-reset:hover {
-            background: #fee2e2;
-            color: #b91c1c;
-            border-color: #fca5a5;
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
         }
 
-        /* ── 구분선 ── */
-        .divider {
+        .ticker-input {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1f2937;
             border: none;
-            border-top: 1px dashed #e5e7eb;
-            margin: 16px 0;
+            border-bottom: 2px solid #e5e7eb;
+            outline: none;
+            width: 180px;
+            padding: 2px 4px;
+            transition: border-color 0.15s;
         }
 
-        /* ── 토글 ── */
+        .ticker-input:focus {
+            border-color: #6b7280;
+        }
+
+        .ticker-input::placeholder {
+            color: #d1d5db;
+            font-weight: 400;
+        }
+
+        /* dir toggle */
         .dir-toggle {
             display: flex;
             border: 1px solid #d1d5db;
@@ -176,15 +83,14 @@
         }
 
         .dir-toggle button {
-            flex: 1;
-            padding: 5px 0;
-            font-size: 0.75rem;
+            padding: 3px 10px;
+            font-size: 0.72rem;
             font-weight: 700;
             border: none;
             cursor: pointer;
-            transition: background 0.12s, color 0.12s;
             background: #fff;
             color: #9ca3af;
+            transition: background 0.12s, color 0.12s;
         }
 
         .dir-toggle button.sel-long {
@@ -197,14 +103,210 @@
             color: #fff;
         }
 
-        /* 숫자 포맷 애니메이션 */
+        /* trade rows */
+        .trade-row {
+            display: grid;
+            grid-template-columns: 2fr 2fr 2fr auto;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .trade-row input {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            padding: 5px 8px;
+            font-size: 0.82rem;
+            text-align: right;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .trade-row input.memo-input {
+            text-align: left;
+        }
+
+        .trade-row input:focus {
+            border-color: #6b7280;
+        }
+
+        /* column headers */
+        .col-headers {
+            display: grid;
+            grid-template-columns: 2fr 2fr 2fr auto;
+            gap: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+
+        /* result bar */
+        .result-bar {
+            background: #1f2937;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .rb-label {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+        }
+
+        .rb-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #f9fafb;
+            margin-top: 2px;
+        }
+
+        /* breakdown */
+        .breakdown {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .breakdown table {
+            width: 100%;
+            font-size: 0.78rem;
+        }
+
+        .breakdown th {
+            color: #9ca3af;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.06em;
+            padding-bottom: 4px;
+            text-align: right;
+        }
+
+        .breakdown th:first-child {
+            text-align: left;
+        }
+
+        .breakdown td {
+            padding: 3px 0;
+            color: #d1d5db;
+            border-top: 1px solid #374151;
+            text-align: right;
+        }
+
+        .breakdown td:first-child {
+            text-align: left;
+        }
+
+        .breakdown td.w-pct {
+            color: #fbbf24;
+        }
+
+        /* buttons */
+        .btn-add-row {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            padding: 4px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-add-row:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-del-row {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 1rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: color 0.15s, background 0.15s;
+        }
+
+        .btn-del-row:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .btn-del-card {
+            background: none;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            color: #9ca3af;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 5px;
+            margin-left: auto;
+            transition: color 0.15s, background 0.15s, border-color 0.15s;
+        }
+
+        .btn-del-card:hover {
+            color: #b91c1c;
+            background: #fee2e2;
+            border-color: #fca5a5;
+        }
+
+        .btn-reset-card {
+            background: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 3px 10px;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .btn-reset-card:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* add calculator button */
+        .btn-add-calc {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 2px dashed #d1d5db;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+            margin-top: 4px;
+        }
+
+        .btn-add-calc:hover {
+            border-color: #6b7280;
+            color: #374151;
+            background: #f9fafb;
+        }
+
         @keyframes pop {
             0% {
                 transform: scale(1)
             }
 
             30% {
-                transform: scale(1.04)
+                transform: scale(1.03)
             }
 
             100% {
@@ -213,7 +315,19 @@
         }
 
         .pop {
-            animation: pop 0.2s ease;
+            animation: pop 0.18s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
         }
     </style>
 </head>
@@ -226,9 +340,8 @@
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">L Trading REPORT</h1>
-                    <p class="text-sm text-gray-500 mt-1">Weighted Avg Calculator</p>
+                    <p class="text-sm text-gray-500 mt-1">Weighted Average Calculator</p>
                 </div>
-                <!-- Nav -->
                 <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm self-start">
                     <a href="./index.html" class="nav-link">📊 Report</a>
                     <a href="./wavg.html" class="nav-link active">⚖️ Weighted Avg</a>
@@ -236,82 +349,11 @@
             </div>
         </header>
 
-        <!-- Main card -->
-        <div class="bg-white rounded-lg shadow-md p-5 mb-4">
+        <!-- Calculators -->
+        <div id="calcContainer"></div>
 
-            <!-- Direction toggle -->
-            <div class="flex items-center gap-3 mb-4">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">방향</span>
-                <div class="dir-toggle" id="dirToggle" style="width:120px">
-                    <button id="btnLong" onclick="setDir('LONG')" class="sel-long">LONG</button>
-                    <button id="btnShort" onclick="setDir('SHORT')">SHORT</button>
-                </div>
-                <span class="text-xs text-gray-400">(가중평균 계산에는 방향이 영향을 주지 않습니다)</span>
-            </div>
-
-            <hr class="divider">
-
-            <!-- Column headers -->
-            <div class="trade-row mb-1"
-                style="font-size:0.7rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;">
-                <div class="text-right">종목 / 메모</div>
-                <div class="text-right">주식 수 (QTY)</div>
-                <div class="text-right">매매가 (PRICE)</div>
-                <div></div>
-            </div>
-
-            <!-- Trade rows container -->
-            <div id="tradeRows"></div>
-
-            <!-- Add row button -->
-            <div class="flex gap-2 mt-3">
-                <button class="btn-add" onclick="addRow()">＋ 행 추가</button>
-                <button class="btn-reset" onclick="resetAll()">↺ 초기화</button>
-            </div>
-        </div>
-
-        <!-- Result card -->
-        <div class="result-card" id="resultCard">
-            <div class="grid grid-cols-2 gap-6 sm:grid-cols-4">
-                <div>
-                    <div class="label">방향</div>
-                    <div class="value text-2xl" id="resDir">LONG</div>
-                </div>
-                <div>
-                    <div class="label">가중평균 단가</div>
-                    <div class="value" id="resAvg">—</div>
-                    <div class="sub" id="resAvgKrw"></div>
-                </div>
-                <div>
-                    <div class="label">총 수량</div>
-                    <div class="value" id="resQty">—</div>
-                </div>
-                <div>
-                    <div class="label">총 투자금액</div>
-                    <div class="value" id="resTotal">—</div>
-                    <div class="sub" id="resTotalKrw"></div>
-                </div>
-            </div>
-
-            <!-- Breakdown table -->
-            <div id="breakdownWrap" class="mt-5" style="display:none">
-                <hr style="border-color:#374151;margin-bottom:12px">
-                <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">구성 내역</div>
-                <table class="w-full text-sm" id="breakdownTable">
-                    <thead>
-                        <tr style="color:#9ca3af;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em">
-                            <th class="text-left pb-1">메모</th>
-                            <th class="text-right pb-1">QTY</th>
-                            <th class="text-right pb-1">PRICE</th>
-                            <th class="text-right pb-1">금액</th>
-                            <th class="text-right pb-1">비중</th>
-                        </tr>
-                    </thead>
-                    <tbody id="breakdownBody"></tbody>
-                </table>
-            </div>
-        </div>
-
+        <!-- Add calculator -->
+        <button class="btn-add-calc" onclick="addCalc()">＋ Add Calculator</button>
 
     </div>
 
@@ -322,114 +364,174 @@
     </footer>
 
     <script>
-        /* ── State ── */
-        let direction = 'LONG';
+        let calcId = 0;
         let rowId = 0;
 
-        /* ── Direction toggle ── */
-        function setDir(d) {
-            direction = d;
-            document.getElementById('btnLong').className = d === 'LONG' ? 'sel-long' : '';
-            document.getElementById('btnShort').className = d === 'SHORT' ? 'sel-short' : '';
-            document.getElementById('resDir').textContent = d;
-            document.getElementById('resDir').style.color = d === 'LONG' ? '#4ade80' : '#f87171';
-        }
+        const fmt = (n, d = 0) => isNaN(n) || !isFinite(n) ? '—' : n.toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+        const fmtP = (n, d = 2) => isNaN(n) || !isFinite(n) ? '—' : n.toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
 
-        /* ── Number formatting ── */
-        const fmt = (n, d = 0) => isNaN(n) ? '—' : n.toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
-        const fmtP = (n, d = 2) => isNaN(n) ? '—' : n.toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+        /* ── Add Calculator ── */
+        function addCalc() {
+            const cid = ++calcId;
+            const card = document.createElement('div');
+            card.className = 'calc-card';
+            card.id = `calc-${cid}`;
+            card.innerHTML = `
+        <div class="card-header">
+            <input class="ticker-input" placeholder="Ticker / Name" id="ticker-${cid}">
+            <div class="dir-toggle">
+                <button id="long-${cid}"  onclick="setDir(${cid},'LONG')"  class="sel-long">LONG</button>
+                <button id="short-${cid}" onclick="setDir(${cid},'SHORT')">SHORT</button>
+            </div>
+            <button class="btn-reset-card" onclick="resetCalc(${cid})">↺ Reset</button>
+            <button class="btn-del-card"   onclick="removeCalc(${cid})">✕ Remove</button>
+        </div>
 
-        /* ── Add / remove rows ── */
-        function addRow(memo = '', qty = '', price = '') {
-            const id = ++rowId;
-            const wrap = document.getElementById('tradeRows');
-            const div = document.createElement('div');
-            div.className = 'trade-row mb-2';
-            div.id = `row-${id}`;
-            div.innerHTML = `
-        <input type="text"   placeholder="메모 (선택)"  value="${memo}"  id="m-${id}" oninput="calc()" class="text-left">
-        <input type="number" placeholder="0"            value="${qty}"   id="q-${id}" oninput="calc()" min="0">
-        <input type="number" placeholder="0.00"        value="${price}" id="p-${id}" oninput="calc()" min="0" step="any">
-        <button class="btn-del" onclick="removeRow(${id})" title="삭제">✕</button>
+        <div class="col-headers">
+            <div class="text-right">Memo</div>
+            <div class="text-right">QTY</div>
+            <div class="text-right">Price</div>
+            <div></div>
+        </div>
+
+        <div id="rows-${cid}"></div>
+
+        <div class="result-bar">
+            <div>
+                <div class="rb-label">Direction</div>
+                <div class="rb-value" id="res-dir-${cid}" style="color:#4ade80">LONG</div>
+            </div>
+            <div>
+                <div class="rb-label">Weighted Avg</div>
+                <div class="rb-value" id="res-avg-${cid}">—</div>
+            </div>
+            <div>
+                <div class="rb-label">Total QTY</div>
+                <div class="rb-value" id="res-qty-${cid}">—</div>
+            </div>
+            <div>
+                <div class="rb-label">Total Amount</div>
+                <div class="rb-value" id="res-amt-${cid}">—</div>
+            </div>
+        </div>
+
+        <div class="breakdown" id="breakdown-${cid}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Memo</th>
+                        <th>QTY</th>
+                        <th>Price</th>
+                        <th>Amount</th>
+                        <th>Weight</th>
+                    </tr>
+                </thead>
+                <tbody id="bd-body-${cid}"></tbody>
+            </table>
+        </div>
     `;
-            wrap.appendChild(div);
-            calc();
+            document.getElementById('calcContainer').appendChild(card);
+            addRow(cid, 'Entry', '', '');
+            addRow(cid, 'Add', '', '');
         }
 
-        function removeRow(id) {
-            const el = document.getElementById(`row-${id}`);
-            if (el) { el.remove(); calc(); }
+        /* ── Remove Calculator ── */
+        function removeCalc(cid) {
+            const el = document.getElementById(`calc-${cid}`);
+            if (el) el.remove();
         }
 
-        function resetAll() {
-            if (!confirm('모든 입력을 초기화하시겠습니까?')) return;
-            document.getElementById('tradeRows').innerHTML = '';
-            rowId = 0;
-            initRows();
-            calc();
+        /* ── Reset Calculator ── */
+        function resetCalc(cid) {
+            if (!confirm('Reset this calculator?')) return;
+            document.getElementById(`rows-${cid}`).innerHTML = '';
+            document.getElementById(`ticker-${cid}`).value = '';
+            addRow(cid, 'Entry', '', '');
+            addRow(cid, 'Add', '', '');
+            calcOne(cid);
         }
 
-        /* ── Core calculation ── */
-        function calc() {
-            const rows = document.getElementById('tradeRows').querySelectorAll('.trade-row');
+        /* ── Direction ── */
+        function setDir(cid, d) {
+            document.getElementById(`long-${cid}`).className = d === 'LONG' ? 'sel-long' : '';
+            document.getElementById(`short-${cid}`).className = d === 'SHORT' ? 'sel-short' : '';
+            const el = document.getElementById(`res-dir-${cid}`);
+            el.textContent = d;
+            el.style.color = d === 'LONG' ? '#4ade80' : '#f87171';
+        }
+
+        /* ── Add Row ── */
+        function addRow(cid, memo = '', qty = '', price = '') {
+            const rid = ++rowId;
+            const div = document.createElement('div');
+            div.className = 'trade-row';
+            div.id = `row-${rid}`;
+            div.innerHTML = `
+        <input type="text"   class="memo-input" placeholder="Memo (opt)" value="${memo}"  id="m-${rid}" oninput="calcOne(${cid})">
+        <input type="number" placeholder="0"    value="${qty}"            id="q-${rid}"   oninput="calcOne(${cid})" min="0">
+        <input type="number" placeholder="0.00" value="${price}"          id="p-${rid}"   oninput="calcOne(${cid})" min="0" step="any">
+        <button class="btn-del-row" onclick="removeRow(${cid},${rid})">✕</button>
+    `;
+            document.getElementById(`rows-${cid}`).appendChild(div);
+            calcOne(cid);
+        }
+
+        /* ── Remove Row ── */
+        function removeRow(cid, rid) {
+            const el = document.getElementById(`row-${rid}`);
+            if (el) { el.remove(); calcOne(cid); }
+        }
+
+        /* ── Calculate ── */
+        function calcOne(cid) {
+            const rows = document.getElementById(`rows-${cid}`)?.querySelectorAll('.trade-row') || [];
             let totalQty = 0, totalAmt = 0;
             const breakdown = [];
 
             rows.forEach(row => {
-                const id = row.id.replace('row-', '');
-                const q = parseFloat(document.getElementById(`q-${id}`)?.value) || 0;
-                const p = parseFloat(document.getElementById(`p-${id}`)?.value) || 0;
-                const amt = q * p;
-                const memo = document.getElementById(`m-${id}`)?.value || '';
+                const rid = row.id.replace('row-', '');
+                const q = parseFloat(document.getElementById(`q-${rid}`)?.value) || 0;
+                const p = parseFloat(document.getElementById(`p-${rid}`)?.value) || 0;
+                const memo = document.getElementById(`m-${rid}`)?.value || '';
                 if (q > 0 && p > 0) {
                     totalQty += q;
-                    totalAmt += amt;
-                    breakdown.push({ memo: memo || `거래 ${id}`, qty: q, price: p, amt });
+                    totalAmt += q * p;
+                    breakdown.push({ memo: memo || `Trade ${rid}`, qty: q, price: p, amt: q * p });
                 }
             });
 
             const avg = totalQty > 0 ? totalAmt / totalQty : NaN;
 
-            /* update result card */
-            const pop = el => { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); };
-            const resAvg = document.getElementById('resAvg');
-            const resQty = document.getElementById('resQty');
-            const resTotal = document.getElementById('resTotal');
+            const setVal = (id, text) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.textContent = text;
+                el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+            };
+            setVal(`res-avg-${cid}`, fmtP(avg));
+            setVal(`res-qty-${cid}`, fmt(totalQty));
+            setVal(`res-amt-${cid}`, fmt(totalAmt));
 
-            resAvg.textContent = fmtP(avg);
-            resQty.textContent = fmt(totalQty);
-            resTotal.textContent = fmt(totalAmt);
-            pop(resAvg); pop(resQty); pop(resTotal);
-
-            /* breakdown table */
-            const bWrap = document.getElementById('breakdownWrap');
-            const bBody = document.getElementById('breakdownBody');
+            const bWrap = document.getElementById(`breakdown-${cid}`);
+            const bBody = document.getElementById(`bd-body-${cid}`);
             if (breakdown.length > 0) {
                 bWrap.style.display = '';
                 bBody.innerHTML = breakdown.map(r => `
-            <tr style="border-top:1px solid #374151">
-                <td class="py-1 text-gray-300">${r.memo}</td>
-                <td class="py-1 text-right text-gray-200">${fmt(r.qty)}</td>
-                <td class="py-1 text-right text-gray-200">${fmtP(r.price)}</td>
-                <td class="py-1 text-right text-gray-200">${fmt(r.amt)}</td>
-                <td class="py-1 text-right text-yellow-400">${fmtP(r.amt / totalAmt * 100, 1)}%</td>
+            <tr>
+                <td>${r.memo}</td>
+                <td>${fmt(r.qty)}</td>
+                <td>${fmtP(r.price)}</td>
+                <td>${fmt(r.amt)}</td>
+                <td class="w-pct">${fmtP(r.amt / totalAmt * 100, 1)}%</td>
             </tr>
         `).join('');
             } else {
                 bWrap.style.display = 'none';
             }
-
-            return { avg, totalQty, totalAmt };
         }
 
         /* ── Init ── */
-        function initRows() {
-            addRow('기존 포지션', '', '');
-            addRow('추가 매수', '', '');
-        }
-
-        setDir('LONG');
-        initRows();
+        addCalc();
     </script>
 </body>
 
