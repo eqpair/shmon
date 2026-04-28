@@ -58,6 +58,14 @@
             "group": "한진칼"
         },
         {
+            "symbol": "307950",
+            "name": "현대오토에버",
+            "side": "LONG",
+            "qty": 440,
+            "avg_price": 465558.0,
+            "group": "현대오토에버"
+        },
+        {
             "symbol": "373220",
             "name": "LG에너지솔루션",
             "side": "LONG",
