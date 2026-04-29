@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>L Trading / Weighted Average</title>
+    <title>L Trading * Weighted Average</title>
     <link rel="icon" href="./favicon.svg" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <style>
@@ -362,6 +362,85 @@
                 transform: translateY(0)
             }
         }
+
+        /* ── 포지션 말풍선 ── */
+        .pos-bar {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+            padding: 14px 18px;
+            margin-bottom: 16px;
+        }
+
+        .pos-bar-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 10px;
+        }
+
+        .pos-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .pos-chip {
+            display: inline-flex;
+            flex-direction: column;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.78rem;
+            line-height: 1.4;
+        }
+
+        .pos-chip:hover {
+            border-color: #6b7280;
+            background: #f3f4f6;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .pos-chip .chip-name {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .pos-chip .chip-detail {
+            font-size: 0.68rem;
+            color: #6b7280;
+        }
+
+        .pos-chip.side-long {
+            border-color: #bbf7d0;
+            background: #f0fdf4;
+        }
+
+        .pos-chip.side-long:hover {
+            border-color: #15803d;
+            background: #dcfce7;
+        }
+
+        .pos-chip.side-short {
+            border-color: #fecaca;
+            background: #fff5f5;
+        }
+
+        .pos-chip.side-short:hover {
+            border-color: #b91c1c;
+            background: #fee2e2;
+        }
+
+        .pos-loading {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
     </style>
 </head>
 
@@ -381,6 +460,14 @@
             </div>
         </header>
 
+        <!-- 포지션 말풍선 -->
+        <div class="pos-bar">
+            <div class="pos-bar-title">📋 Current Positions &nbsp;— 클릭하면 자동 입력</div>
+            <div class="pos-chips" id="posChips">
+                <span class="pos-loading">config.json 로딩 중...</span>
+            </div>
+        </div>
+
         <!-- Calculators -->
         <div id="calcContainer"></div>
 
@@ -391,7 +478,7 @@
 
     <footer class="bg-white py-6 mt-8">
         <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
-            <p>© 2025 Monitoring System.</p>
+            <p>© 2026 Monitoring System.</p>
         </div>
     </footer>
 
@@ -549,7 +636,80 @@
             }
         }
 
+
+        /* positions */
+        let _positions = [];
+
+        async function initPositions() {
+            const wrap = document.getElementById('posChips');
+            try {
+                const res = await fetch('./config.json?t=' + Date.now());
+                if (!res.ok) throw new Error();
+                const cfg = await res.json();
+                _positions = cfg.positions || [];
+                if (!_positions.length) { wrap.innerHTML = '<span class="pos-loading">포지션 없음</span>'; return; }
+                wrap.innerHTML = _positions.map((p, i) => {
+                    const sc = p.side === 'SHORT' ? 'side-short' : 'side-long';
+                    const sb = p.side === 'SHORT' ? '<span style="font-size:.6rem;color:#b91c1c;font-weight:700;">S</span>' : '<span style="font-size:.6rem;color:#15803d;font-weight:700;">L</span>';
+                    return '<button class="pos-chip ' + sc + '" onclick="applyPosition(' + i + ')">' +
+                        '<span class="chip-name">' + sb + ' ' + p.name + '</span>' +
+                        '<span class="chip-detail">' + p.qty.toLocaleString('ko-KR') + '주 · ' + p.avg_price.toLocaleString('ko-KR') + '원</span>' +
+                        '</button>';
+                }).join('');
+            } catch (e) {
+                wrap.innerHTML = '<span class="pos-loading" style="color:#ef4444;">config.json 로드 실패</span>';
+            }
+        }
+
+        function applyPosition(idx) {
+            const p = _positions[idx];
+            if (!p) return;
+            const cid = ++calcId;
+            const card = document.createElement('div');
+            card.className = 'calc-card';
+            card.id = 'calc-' + cid;
+            card.innerHTML = buildCardHTML(cid);
+            document.getElementById('calcContainer').appendChild(card);
+            document.getElementById('ticker-' + cid).value = p.name;
+            setDir(cid, p.side === 'SHORT' ? 'SHORT' : 'LONG');
+            const rid = ++rowId;
+            const div = document.createElement('div');
+            div.className = 'trade-row';
+            div.id = 'row-' + rid;
+            div.innerHTML =
+                '<input type="text" class="memo-input" value="Current" id="m-' + rid + '" oninput="calcOne(' + cid + ')">' +
+                '<input type="number" value="' + p.qty + '" id="q-' + rid + '" oninput="calcOne(' + cid + ')" min="0">' +
+                '<input type="number" value="' + p.avg_price + '" id="p-' + rid + '" oninput="calcOne(' + cid + ')" min="0" step="any">' +
+                '<button class="btn-del-row" onclick="removeRow(' + cid + ',' + rid + ')">x</button>';
+            document.getElementById('rows-' + cid).appendChild(div);
+            addRow(cid, 'Add', '', '');
+            calcOne(cid);
+            setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+        }
+
+        function buildCardHTML(cid) {
+            return '<div class="card-header">' +
+                '<input class="ticker-input" placeholder="Ticker / Name" id="ticker-' + cid + '">' +
+                '<div class="dir-toggle">' +
+                '<button id="long-' + cid + '" onclick="setDir(' + cid + ','LONG')" class="sel-long">LONG</button>' +
+                    '<button id="short-' + cid + '" onclick="setDir(' + cid + ','SHORT')">SHORT</button>' +
+                        '</div>' +
+                        '<button class="btn-reset-card" onclick="resetCalc(' + cid + ')">Reset</button>' +
+                        '<button class="btn-del-card" onclick="removeCalc(' + cid + ')">Remove</button>' +
+                        '</div>' +
+                        '<div class="col-headers"><div class="text-center">Memo</div><div class="text-center">QTY</div><div class="text-center">Price</div><div></div></div>' +
+                        '<div id="rows-' + cid + '"></div>' +
+                        '<div class="result-bar">' +
+                        '<div><div class="rb-label">Direction</div><div class="rb-value" id="res-dir-' + cid + '" style="color:#4ade80">LONG</div></div>' +
+                        '<div><div class="rb-label">Weighted Avg</div><div class="rb-value" id="res-avg-' + cid + '">-</div></div>' +
+                        '<div><div class="rb-label">Total QTY</div><div class="rb-value" id="res-qty-' + cid + '">-</div></div>' +
+                        '<div><div class="rb-label">Total Amount</div><div class="rb-value" id="res-amt-' + cid + '">-</div></div>' +
+                        '</div>' +
+                        '<div class="breakdown" id="breakdown-' + cid + '"><table><thead><tr><th>Memo</th><th>QTY</th><th>Price</th><th>Amount</th><th>Weight</th></tr></thead><tbody id="bd-body-' + cid + '"></tbody></table></div>';
+        }
+
         addCalc();
+        initPositions();
     </script>
 </body>
 
