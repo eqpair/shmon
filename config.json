@@ -50,6 +50,14 @@
             "group": "하림지주"
         },
         {
+            "symbol": "352820",
+            "name": "하이브",
+            "side": "LONG",
+            "qty": 740,
+            "avg_price": 268520.0,
+            "group": "하이브"
+        },
+        {
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
