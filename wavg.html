@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>L Trading * Weighted Average</title>
+    <title>L Trading — Weighted Average</title>
     <link rel="icon" href="./favicon.svg" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <style>
@@ -456,6 +456,7 @@
                 </div>
                 <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm self-start">
                     <a href="./index.html" class="nav-link">📊 Report</a>
+                    <a href="./wavg.html" class="nav-link active">⚖️ Weighted Avg</a>
                 </nav>
             </div>
         </header>
@@ -464,7 +465,7 @@
         <div class="pos-bar">
             <div class="pos-bar-title">📋 Current Positions &nbsp;— 클릭하면 자동 입력</div>
             <div class="pos-chips" id="posChips">
-                <span class="pos-loading">config.json 로딩 중...</span>
+                <span class="pos-loading">live.json 로딩 중...</span>
             </div>
         </div>
 
@@ -478,7 +479,7 @@
 
     <footer class="bg-white py-6 mt-8">
         <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
-            <p>© 2026 Monitoring System.</p>
+            <p>© 2025 Monitoring System.</p>
         </div>
     </footer>
 
@@ -643,7 +644,7 @@
         async function initPositions() {
             const wrap = document.getElementById('posChips');
             try {
-                const res = await fetch('./config.json?t=' + Date.now());
+                const res = await fetch('./web/live.json?t=' + Date.now());
                 if (!res.ok) throw new Error();
                 const cfg = await res.json();
                 _positions = cfg.positions || [];
@@ -657,7 +658,7 @@
                         '</button>';
                 }).join('');
             } catch (e) {
-                wrap.innerHTML = '<span class="pos-loading" style="color:#ef4444;">config.json 로드 실패</span>';
+                wrap.innerHTML = '<span class="pos-loading" style="color:#ef4444;">live.json 로드 실패</span>';
             }
         }
 
