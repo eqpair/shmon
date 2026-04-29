@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>L Trading — Weighted Average</title>
+    <title>Trading * Weighted Average</title>
     <link rel="icon" href="./favicon.svg" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <style>
@@ -451,19 +451,18 @@
         <header class="mb-6">
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800">L Trading REPORT</h1>
+                    <h1 class="text-3xl font-bold text-gray-800">Trading REPORT</h1>
                     <p class="text-sm text-gray-500 mt-1">Weighted Average Calculator</p>
                 </div>
                 <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm self-start">
                     <a href="./index.html" class="nav-link">📊 Report</a>
-                    <a href="./wavg.html" class="nav-link active">⚖️ Weighted Avg</a>
                 </nav>
             </div>
         </header>
 
         <!-- 포지션 말풍선 -->
         <div class="pos-bar">
-            <div class="pos-bar-title">📋 Current Positions &nbsp;— 클릭하면 자동 입력</div>
+            <div class="pos-bar-title">📋 Current Positions &nbsp;— Click to load</div>
             <div class="pos-chips" id="posChips">
                 <span class="pos-loading">live.json 로딩 중...</span>
             </div>
@@ -479,7 +478,7 @@
 
     <footer class="bg-white py-6 mt-8">
         <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
-            <p>© 2025 Monitoring System.</p>
+            <p>© 2026 Monitoring System.</p>
         </div>
     </footer>
 
@@ -653,7 +652,7 @@
                     const sc = p.side === 'SHORT' ? 'side-short' : 'side-long';
                     const sb = p.side === 'SHORT' ? '<span style="font-size:.6rem;color:#b91c1c;font-weight:700;">S</span>' : '<span style="font-size:.6rem;color:#15803d;font-weight:700;">L</span>';
                     return '<button class="pos-chip ' + sc + '" onclick="applyPosition(' + i + ')">' +
-                        '<span class="chip-name">' + sb + ' ' + p.name + '</span>' +
+                        '<span class="chip-name">' + p.name + '</span>' +
                         '<span class="chip-detail">' + p.qty.toLocaleString('ko-KR') + '주 · ' + p.avg_price.toLocaleString('ko-KR') + '원</span>' +
                         '</button>';
                 }).join('');
@@ -709,7 +708,6 @@
                 '<div class="breakdown" id="breakdown-' + cid + '"><table><thead><tr><th>Memo</th><th>QTY</th><th>Price</th><th>Amount</th><th>Weight</th></tr></thead><tbody id="bd-body-' + cid + '"></tbody></table></div>';
         }
 
-        addCalc();
         initPositions();
     </script>
 </body>
