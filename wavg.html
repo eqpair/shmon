@@ -692,21 +692,21 @@
             return '<div class="card-header">' +
                 '<input class="ticker-input" placeholder="Ticker / Name" id="ticker-' + cid + '">' +
                 '<div class="dir-toggle">' +
-                '<button id="long-' + cid + '" onclick="setDir(' + cid + ','LONG')" class="sel-long">LONG</button>' +
-                    '<button id="short-' + cid + '" onclick="setDir(' + cid + ','SHORT')">SHORT</button>' +
-                        '</div>' +
-                        '<button class="btn-reset-card" onclick="resetCalc(' + cid + ')">Reset</button>' +
-                        '<button class="btn-del-card" onclick="removeCalc(' + cid + ')">Remove</button>' +
-                        '</div>' +
-                        '<div class="col-headers"><div class="text-center">Memo</div><div class="text-center">QTY</div><div class="text-center">Price</div><div></div></div>' +
-                        '<div id="rows-' + cid + '"></div>' +
-                        '<div class="result-bar">' +
-                        '<div><div class="rb-label">Direction</div><div class="rb-value" id="res-dir-' + cid + '" style="color:#4ade80">LONG</div></div>' +
-                        '<div><div class="rb-label">Weighted Avg</div><div class="rb-value" id="res-avg-' + cid + '">-</div></div>' +
-                        '<div><div class="rb-label">Total QTY</div><div class="rb-value" id="res-qty-' + cid + '">-</div></div>' +
-                        '<div><div class="rb-label">Total Amount</div><div class="rb-value" id="res-amt-' + cid + '">-</div></div>' +
-                        '</div>' +
-                        '<div class="breakdown" id="breakdown-' + cid + '"><table><thead><tr><th>Memo</th><th>QTY</th><th>Price</th><th>Amount</th><th>Weight</th></tr></thead><tbody id="bd-body-' + cid + '"></tbody></table></div>';
+                '<button id="long-' + cid + '" onclick="setDir(' + cid + ',\'LONG\')" class="sel-long">LONG</button>' +
+                '<button id="short-' + cid + '" onclick="setDir(' + cid + ',\'SHORT\')">SHORT</button>' +
+                '</div>' +
+                '<button class="btn-reset-card" onclick="resetCalc(' + cid + ')">Reset</button>' +
+                '<button class="btn-del-card" onclick="removeCalc(' + cid + ')">Remove</button>' +
+                '</div>' +
+                '<div class="col-headers"><div class="text-center">Memo</div><div class="text-center">QTY</div><div class="text-center">Price</div><div></div></div>' +
+                '<div id="rows-' + cid + '"></div>' +
+                '<div class="result-bar">' +
+                '<div><div class="rb-label">Direction</div><div class="rb-value" id="res-dir-' + cid + '" style="color:#4ade80">LONG</div></div>' +
+                '<div><div class="rb-label">Weighted Avg</div><div class="rb-value" id="res-avg-' + cid + '">-</div></div>' +
+                '<div><div class="rb-label">Total QTY</div><div class="rb-value" id="res-qty-' + cid + '">-</div></div>' +
+                '<div><div class="rb-label">Total Amount</div><div class="rb-value" id="res-amt-' + cid + '">-</div></div>' +
+                '</div>' +
+                '<div class="breakdown" id="breakdown-' + cid + '"><table><thead><tr><th>Memo</th><th>QTY</th><th>Price</th><th>Amount</th><th>Weight</th></tr></thead><tbody id="bd-body-' + cid + '"></tbody></table></div>';
         }
 
         addCalc();
