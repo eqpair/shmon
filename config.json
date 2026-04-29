@@ -53,16 +53,16 @@
             "symbol": "180640",
             "name": "한진칼",
             "side": "LONG",
-            "qty": 3351,
-            "avg_price": 117641.0,
+            "qty": 3431,
+            "avg_price": 117528.0,
             "group": "한진칼"
         },
         {
             "symbol": "373220",
             "name": "LG에너지솔루션",
             "side": "LONG",
-            "qty": 934,
-            "avg_price": 424741.0,
+            "qty": 945,
+            "avg_price": 425222.0,
             "group": "LG에너지솔루션"
         },
         {
