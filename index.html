@@ -433,7 +433,7 @@
         async function loadAll() {
             try {
                 const [liveRes, posRes] = await Promise.all([
-                    fetch('./web/live.json?_=' + Date.now()),
+                    fetch('https://eqmon.duckdns.org/live.json?_=' + Date.now()),
                     fetch(API_BASE + '/positions')
                 ]);
                 liveData = await liveRes.json();
