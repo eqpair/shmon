@@ -284,8 +284,8 @@
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">Trading REPORT</h1>
-                    <div class="text-sm text-gray-600 mt-1">Last Update (KST): <span id="lastUpdated"
-                            class="font-medium">-</span></div>
+                    <div class="text-sm text-gray-600 mt-1">Last Update (KST): <span id="lastUpdated" class="font-medium">-</span></div>
+                    <div class="text-sm text-gray-600 mt-1">Market: <span id="market-status" class="font-bold">-</span></div>
                     <div class="text-sm text-gray-600 mt-1">
                         USD/KRW: <span id="fx-usd-krw" class="font-bold text-blue-600">-</span>
                         &nbsp;|&nbsp;WTI: <span id="fx-wti" class="font-bold text-blue-600">-</span>
@@ -472,6 +472,23 @@
                     Number(liveData.usd_krw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
             if (liveData.wti)
                 document.getElementById('fx-wti').textContent = '$ ' + Number(liveData.wti).toFixed(2);
+
+            // 마켓 상태 업데이트
+            const msEl = document.getElementById('market-status');
+            const now = new Date();
+            const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
+            const h = kst.getHours(), m = kst.getMinutes();
+            const t = h * 60 + m;
+            if (t >= 9 * 60 && t <= 15 * 60 + 30) {
+                msEl.textContent = '🟢 KRX 정규장';
+                msEl.className = 'font-bold text-green-600';
+            } else if ((t >= 8 * 60 && t < 9 * 60) || (t > 15 * 60 + 30 && t <= 20 * 60)) {
+                msEl.textContent = '🔵 NXT';
+                msEl.className = 'font-bold text-blue-600';
+            } else {
+                msEl.textContent = '⚫ 장 마감';
+                msEl.className = 'font-bold text-gray-400';
+            }
 
             const active = positions
                 .map((p, i) => ({ ...p, _i: i }))
