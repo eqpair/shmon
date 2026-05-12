@@ -347,7 +347,7 @@
                                 <th class="px-3 py-2 text-center">DIR</th>
                                 <th class="px-3 py-2 text-right">REF P</th>
                                 <th class="px-3 py-2 text-right">QTY</th>
-                                <th class="px-3 py-2 text-center">복구</th>
+                                <th class="px-3 py-2 text-center">관리</th>
                             </tr>
                         </thead>
                         <tbody id="deleted-body"></tbody>
@@ -522,8 +522,9 @@
         </td>
         <td class="px-3 py-2 text-right">${fmt(Math.round(p.avg_price))}</td>
         <td class="px-3 py-2 text-right">${fmt(p.qty)}</td>
-        <td class="px-3 py-2 text-center">
-          <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">복구</button>
+        <td class="px-3 py-2 text-center" style="white-space:nowrap">
+            <button class="btn-icon btn-edit" onclick="openEdit(${p._i})" style="margin-right:3px">수정</button>
+            <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">복구</button>
         </td>
       </tr>`).join('');
             } else {
