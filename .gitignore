@@ -13,3 +13,5 @@ venv/
 .env
 .kis_token.json
 __pycache__/
+*.py
+*.log
