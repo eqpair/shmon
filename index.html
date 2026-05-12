@@ -322,8 +322,8 @@
                                 <th class="px-3 py-2 text-right">VAL</th>
                                 <th class="px-3 py-2 text-right">N PROFIT</th>
                                 <th class="px-3 py-2 text-right">N %</th>
-                                <th class="px-3 py-2 text-center">가중평균</th>
-                                <th class="px-3 py-2 text-center">관리</th>
+                                <th class="px-3 py-2 text-center">W.avg</th>
+                                <th class="px-3 py-2 text-center">Admin</th>
                             </tr>
                         </thead>
                         <tbody id="report-body">
@@ -348,9 +348,9 @@
                                 <th class="px-3 py-2 text-center">DIR</th>
                                 <th class="px-3 py-2 text-right">REF P</th>
                                 <th class="px-3 py-2 text-right">QTY</th>
-                                <th class="px-3 py-2 text-right">엑시트가</th>
-                                <th class="px-3 py-2 text-right">실현손익</th>
-                                <th class="px-3 py-2 text-center">관리</th>
+                                <th class="px-3 py-2 text-right">Exit Price</th>
+                                <th class="px-3 py-2 text-right">Realized P&L</th>
+                                <th class="px-3 py-2 text-center">Admin</th>
                             </tr>
                         </thead>
                         <tbody id="deleted-body"></tbody>
@@ -394,7 +394,7 @@
                     <input class="form-input" id="f-avg" type="number" placeholder="0">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">엑시트가 (선택)</label>
+                    <label class="form-label">Exit Price(선택)</label>
                     <input class="form-input" id="f-exit" type="number" placeholder="0">
                 </div>
             </div>
@@ -410,11 +410,11 @@
             <h2 class="text-base font-bold text-gray-900 mb-1">포지션 종료</h2>
             <p class="text-sm text-gray-500 mb-4"><span id="del-name" class="font-bold text-gray-800"></span></p>
             <div class="form-group mb-4">
-                <label class="form-label">엑시트 단가</label>
+                <label class="form-label">Exit Price</label>
                 <input class="form-input" id="del-exit-price" type="number" oninput="updateDelPnl()">
             </div>
             <div class="text-center mb-4">
-                <div class="text-sm text-gray-500 mb-1">실현손익 (예상)</div>
+                <div class="text-sm text-gray-500 mb-1">Realized P&L(예상)</div>
                 <div id="del-pnl-preview" class="font-bold text-lg">—</div>
             </div>
             <div class="flex justify-end gap-2">

@@ -81,8 +81,8 @@
             "symbol": "011210",
             "name": "현대위아",
             "side": "LONG",
-            "qty": 1120.0,
-            "avg_price": 89344.0,
+            "qty": 2240.0,
+            "avg_price": 91376.0,
             "group": "현대위아",
             "deleted": false,
             "exit_price": null,
@@ -93,8 +93,8 @@
             "symbol": "373220",
             "name": "LG에너지솔루션",
             "side": "LONG",
-            "qty": 439.0,
-            "avg_price": 468352.0,
+            "qty": 826.0,
+            "avg_price": 456509.0,
             "group": "LG에너지솔루션",
             "deleted": false,
             "exit_price": null,
@@ -114,6 +114,18 @@
             "realized_pnl": 191909840.0
         },
         {
+            "symbol": "229200",
+            "name": "KODEX 코스닥 150 ETF",
+            "side": "LONG",
+            "qty": 820.0,
+            "avg_price": 19313.0,
+            "group": "KODEX 코스닥 150 ETF",
+            "deleted": true,
+            "exit_price": 19776.0,
+            "exit_date": "2026-05-12",
+            "realized_pnl": 379660.0
+        },
+        {
             "symbol": "018260",
             "name": "삼성에스디에스",
             "side": "LONG",
@@ -125,13 +137,13 @@
             "symbol": "229200",
             "name": "KODEX 코스닥 150 ETF",
             "side": "LONG",
-            "qty": 820.0,
-            "avg_price": 19313.0,
+            "qty": 9137.0,
+            "avg_price": 19478.0,
             "group": "KODEX 코스닥 150 ETF",
-            "deleted": true,
-            "exit_price": 19776.0,
-            "exit_date": "2026-05-12",
-            "realized_pnl": 379660.0
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
         }
     ]
 }
