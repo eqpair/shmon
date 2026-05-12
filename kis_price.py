@@ -1,1 +1,0 @@
-/home/ubuntu/semon/kis_price.py
