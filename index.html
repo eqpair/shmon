@@ -9,60 +9,256 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="./ls-report.css" />
     <style>
-        /* ── Nav ── */
         .nav-link {
             display: inline-flex;
             align-items: center;
             gap: 4px;
             padding: 4px 12px;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: .8rem;
             font-weight: 600;
-            letter-spacing: 0.02em;
-            transition: background 0.15s, color 0.15s;
-            color: #4b5563;
+            letter-spacing: .02em;
+            transition: background .15s, color .15s;
+            color: #4b5563
         }
 
         .nav-link:hover {
             background: #f3f4f6;
-            color: #1f2937;
+            color: #1f2937
         }
 
         .nav-link.active {
             background: #1f2937;
-            color: #fff;
+            color: #fff
         }
 
-        /* ── 테이블 모바일 대응 ── */
-        /* 가로 스크롤 컨테이너 — 웹에서는 그대로, 모바일에서는 손가락으로 스크롤 */
         .table-scroll {
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            -webkit-overflow-scrolling: touch
         }
 
-        /* 모바일에서 셀 패딩/폰트 축소 */
-        @media (max-width: 640px) {
+        .btn-icon {
+            padding: 3px 9px;
+            border-radius: 5px;
+            font-size: .75rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all .15s
+        }
+
+        .btn-edit {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db
+        }
+
+        .btn-edit:hover {
+            background: #e5e7eb
+        }
+
+        .btn-del {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca
+        }
+
+        .btn-del:hover {
+            background: #fecaca
+        }
+
+        .btn-restore {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0
+        }
+
+        .btn-restore:hover {
+            background: #a7f3d0
+        }
+
+        .btn-save {
+            background: #1d4ed8;
+            color: #fff;
+            border: none
+        }
+
+        .btn-save:hover {
+            background: #1e40af
+        }
+
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            z-index: 50;
+            align-items: center;
+            justify-content: center
+        }
+
+        .modal-backdrop.open {
+            display: flex
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 14px;
+            padding: 24px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .15)
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px
+        }
+
+        .form-group.full {
+            grid-column: 1/-1
+        }
+
+        .form-label {
+            font-size: .72rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: .05em
+        }
+
+        .form-input {
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            padding: 8px 10px;
+            font-size: .88rem;
+            color: #111827;
+            outline: none;
+            width: 100%
+        }
+
+        .form-input:focus {
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 2px #dbeafe
+        }
+
+        .wavg-panel {
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            margin-top: 6px
+        }
+
+        .wavg-row {
+            display: grid;
+            grid-template-columns: 2fr 2fr auto;
+            gap: 6px;
+            margin-bottom: 6px;
+            align-items: center
+        }
+
+        .wavg-row input {
+            padding: 5px 8px;
+            font-size: .82rem;
+            text-align: center;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            outline: none;
+            width: 100%
+        }
+
+        .wavg-row input:focus {
+            border-color: #1d4ed8
+        }
+
+        .wavg-result {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px
+        }
+
+        .wavg-stat {
+            background: #1f2937;
+            border-radius: 7px;
+            padding: 8px 12px
+        }
+
+        .wavg-stat-label {
+            font-size: .6rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: .07em
+        }
+
+        .wavg-stat-value {
+            font-size: .92rem;
+            font-weight: 700;
+            color: #f9fafb;
+            margin-top: 2px
+        }
+
+        .deleted-section {
+            margin-top: 24px
+        }
+
+        .deleted-title {
+            font-size: .72rem;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 8px
+        }
+
+        .deleted-row td {
+            opacity: .45
+        }
+
+        .expand-btn {
+            background: none;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            font-size: .72rem;
+            color: #6b7280;
+            padding: 3px 8px;
+            border-radius: 5px;
+            white-space: nowrap
+        }
+
+        .expand-btn:hover {
+            background: #f3f4f6;
+            color: #374151
+        }
+
+        @media(max-width:640px) {
             h1 {
-                font-size: 1.4rem !important;
+                font-size: 1.4rem !important
             }
 
-            /* header 레이아웃: 타이틀 위, nav+exposure 아래 */
             .header-right {
                 width: 100%;
                 flex-direction: row !important;
                 justify-content: space-between;
-                align-items: flex-end;
+                align-items: flex-end
             }
 
             .report-table th,
             .report-table td {
                 padding: .35rem .4rem;
-                font-size: .72rem;
+                font-size: .72rem
             }
 
-            /* 스크롤 힌트 그라데이션 */
             .table-scroll-wrap {
-                position: relative;
+                position: relative
             }
 
             .table-scroll-wrap::after {
@@ -72,9 +268,9 @@
                 right: 0;
                 bottom: 0;
                 width: 24px;
-                background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.85));
+                background: linear-gradient(to right, transparent, rgba(255, 255, 255, .85));
                 pointer-events: none;
-                border-radius: 0 8px 8px 0;
+                border-radius: 0 8px 8px 0
             }
         }
     </style>
@@ -82,49 +278,42 @@
 
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
+
         <!-- Header -->
         <header class="mb-6">
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">Trading REPORT</h1>
+                    <div class="text-sm text-gray-600 mt-1">Last Update (KST): <span id="lastUpdated"
+                            class="font-medium">-</span></div>
                     <div class="text-sm text-gray-600 mt-1">
-                        Last Update (KST): <span id="lastUpdated" class="font-medium">-</span>
-                    </div>
-                    <div class="text-sm text-gray-600 mt-1">
-                        USD/KRW:
-                        <span id="fx-usd-krw" class="font-bold text-blue-600">-</span>
-                        <span class="text-xs text-gray-400 ml-1" id="fx-updated"></span>
-                        &nbsp;|&nbsp;
-                        WTI:
-                        <span id="fx-wti" class="font-bold text-blue-600">-</span>
+                        USD/KRW: <span id="fx-usd-krw" class="font-bold text-blue-600">-</span>
+                        &nbsp;|&nbsp;WTI: <span id="fx-wti" class="font-bold text-blue-600">-</span>
                     </div>
                 </div>
                 <div class="flex flex-col items-end gap-2 header-right">
-                    <!-- Total Exposure -->
                     <div class="text-right">
                         <div class="text-sm text-gray-600 font-bold">Total Exposure</div>
                         <div id="totalExposure" class="text-xl font-bold text-green-600">-</div>
-                        <div class="text-sm text-gray-500 mt-1">
-                            <span id="totalPnL" class="font-medium">-</span>
-                        </div><br>
-                    <!-- Nav -->
-                    <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-                        <a href="./wavg.html" class="nav-link" target="_blank">⚖️ Weighted Avg</a>
-                    </nav>
+                        <div class="text-sm text-gray-500 mt-1"><span id="totalPnL" class="font-medium">-</span></div>
+                        <br>
+                        <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+                            <button onclick="openAdd()" class="nav-link">＋ 종목 추가</button>
+                        </nav>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Table -->
+        <!-- 메인 테이블 -->
         <div class="bg-white rounded-lg shadow-md p-4">
             <div class="table-scroll-wrap">
                 <div class="table-scroll">
                     <table class="report-table min-w-full text-sm text-gray-700">
                         <thead>
                             <tr class="bg-gray-100 text-gray-800">
-                                <th class="px-3 py-2 text-right"></th>
-                                <th class="px-3 py-2 text-right">DIR</th>
+                                <th class="px-3 py-2 text-left"></th>
+                                <th class="px-3 py-2 text-center">DIR</th>
                                 <th class="px-3 py-2 text-right">REF P</th>
                                 <th class="px-3 py-2 text-right">VAL P</th>
                                 <th class="px-3 py-2 text-right">QTY</th>
@@ -132,25 +321,340 @@
                                 <th class="px-3 py-2 text-right">VAL</th>
                                 <th class="px-3 py-2 text-right">N PROFIT</th>
                                 <th class="px-3 py-2 text-right">N %</th>
+                                <th class="px-3 py-2 text-center">가중평균</th>
+                                <th class="px-3 py-2 text-center">관리</th>
                             </tr>
                         </thead>
                         <tbody id="report-body">
                             <tr>
-                                <td colspan="9" class="text-center py-4">Loading…</td>
+                                <td colspan="11" class="text-center py-4">Loading…</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <!-- 삭제된 종목 -->
+        <div id="deleted-section" class="deleted-section" style="display:none">
+            <div class="deleted-title">삭제된 종목</div>
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <div class="table-scroll">
+                    <table class="report-table min-w-full text-sm text-gray-700">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="px-3 py-2 text-left"></th>
+                                <th class="px-3 py-2 text-center">DIR</th>
+                                <th class="px-3 py-2 text-right">REF P</th>
+                                <th class="px-3 py-2 text-right">QTY</th>
+                                <th class="px-3 py-2 text-center">복구</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deleted-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <footer class="bg-white py-6 mt-8">
-        <div class="container mx-auto px-4 text-center text-gray-600 text-sm">
-            <p>© 2026 Monitoring System.</p>
-        </div>
+        <div class="container mx-auto px-4 text-center text-gray-600 text-sm">© 2026 Monitoring System.</div>
     </footer>
-    <script src="./ls-report.js"></script>
+
+    <!-- 추가/수정 모달 -->
+    <div class="modal-backdrop" id="modal">
+        <div class="modal-box">
+            <h2 id="modal-title" class="text-base font-bold text-gray-900 mb-4">종목 추가</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">종목코드</label>
+                    <input class="form-input" id="f-symbol" placeholder="예: 005930">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">종목명</label>
+                    <input class="form-input" id="f-name" placeholder="예: 삼성전자">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">방향</label>
+                    <select class="form-input" id="f-side">
+                        <option value="LONG">LONG</option>
+                        <option value="SHORT">SHORT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">수량</label>
+                    <input class="form-input" id="f-qty" type="number" placeholder="0">
+                </div>
+                <div class="form-group full">
+                    <label class="form-label">평균단가</label>
+                    <input class="form-input" id="f-avg" type="number" placeholder="0">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-4">
+                <button class="btn-icon btn-edit" onclick="closeModal()">취소</button>
+                <button class="btn-icon btn-save" onclick="savePos()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://43.201.12.170:8000';
+        let liveData = null;
+        let positions = [];
+        let editIndex = -1;
+        let wavgState = {};
+        let wavgRowId = 0;
+
+        const fmt = n => Number(n).toLocaleString('ko-KR');
+        const fmtP = (n, d = 0) => isNaN(n) || !isFinite(n) ? '—' : Number(n).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+        async function loadAll() {
+            try {
+                const [liveRes, posRes] = await Promise.all([
+                    fetch('./web/live.json?_=' + Date.now()),
+                    fetch(API_BASE + '/positions')
+                ]);
+                liveData = await liveRes.json();
+                positions = await posRes.json();
+                render();
+            } catch (e) {
+                document.getElementById('report-body').innerHTML =
+                    '<tr><td colspan="11" class="text-center text-red-500 py-4">데이터 로드 실패</td></tr>';
+            }
+        }
+
+        function getLivePrice(symbol) {
+            if (!liveData) return null;
+            const pos = liveData.positions.find(p => p.symbol === symbol);
+            return pos ? pos.last_price : null;
+        }
+
+        function render() {
+            if (!liveData) return;
+
+            // 헤더 업데이트
+            document.getElementById('lastUpdated').textContent =
+                new Date(liveData.as_of).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+            document.getElementById('totalExposure').textContent =
+                Math.round(Number(liveData.total_exposure) || 0).toLocaleString('ko-KR');
+            const tpnl = Number(liveData.total_pnl) || 0;
+            const tpnlEl = document.getElementById('totalPnL');
+            tpnlEl.textContent = (tpnl > 0 ? '+' : '') + Math.round(tpnl).toLocaleString('ko-KR');
+            tpnlEl.className = tpnl > 0 ? 'text-red-600 font-bold' : tpnl < 0 ? 'text-blue-600 font-bold' : 'text-gray-600 font-bold';
+            if (liveData.usd_krw)
+                document.getElementById('fx-usd-krw').textContent =
+                    Number(liveData.usd_krw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+            if (liveData.wti)
+                document.getElementById('fx-wti').textContent = '$ ' + Number(liveData.wti).toFixed(2);
+
+            const active = positions
+                .map((p, i) => ({ ...p, _i: i }))
+                .filter(p => !p.deleted)
+                .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+
+            const deleted = positions
+                .map((p, i) => ({ ...p, _i: i }))
+                .filter(p => p.deleted)
+                .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+
+            // 전체 재계산
+            let totalExp = 0, totalVal = 0;
+
+            const rows = active.map(p => {
+                const i = p._i;
+                const avg = Number(p.avg_price) || 0;
+                const qty = Number(p.qty) || 0;
+                const last = getLivePrice(p.symbol) || avg;
+                const cost = avg * qty, mv = last * qty;
+                const pnl = p.side === 'SHORT' ? (avg - last) * qty : mv - cost;
+                const ratio = cost ? pnl / cost : 0;
+                totalExp += cost; totalVal += mv;
+
+                const pnlColor = pnl > 0 ? 'profit-plus' : pnl < 0 ? 'profit-minus' : '';
+                const wid = 'w' + i;
+                if (!wavgState[wid]) {
+                    wavgState[wid] = { open: false, rows: [{ rid: ++wavgRowId, qty: p.qty, price: p.avg_price }] };
+                }
+
+                return `<tr>
+      <td class="px-3 py-2 text-left font-bold">
+        <a href="https://finance.naver.com/item/main.naver?code=${p.symbol}" target="_blank"
+           class="hover:underline text-gray-800">${p.name}</a>
+      </td>
+      <td class="px-3 py-2 text-center">
+        <span class="badge badge-${p.side === 'LONG' ? 'L' : 'S'}">${p.side === 'LONG' ? 'L' : 'S'}</span>
+      </td>
+      <td class="px-3 py-2 text-right">${fmt(Math.round(avg))}</td>
+      <td class="px-3 py-2 text-right text-green-700 font-bold">${fmt(last)}</td>
+      <td class="px-3 py-2 text-right">${fmt(qty)}</td>
+      <td class="px-3 py-2 text-right">${fmt(Math.round(cost))}</td>
+      <td class="px-3 py-2 text-right">${fmt(Math.round(mv))}</td>
+      <td class="px-3 py-2 text-right ${pnlColor}">${fmt(Math.round(pnl))}</td>
+      <td class="px-3 py-2 text-right ${pnlColor}">${(ratio * 100).toFixed(1)}%</td>
+      <td class="px-3 py-2 text-center">
+        <button class="expand-btn" onclick="toggleWavg('${wid}',${i})">
+          ${wavgState[wid].open ? '▲ 접기' : '▼ 계산'}
+        </button>
+        <div id="wavg-${wid}" style="display:${wavgState[wid].open ? 'block' : 'none'}">
+          ${renderWavg(wid, i)}
+        </div>
+      </td>
+      <td class="px-3 py-2 text-center" style="white-space:nowrap">
+        <button class="btn-icon btn-edit" onclick="openEdit(${i})" style="margin-right:3px">수정</button>
+        <button class="btn-icon btn-del" onclick="delPos(${i})">삭제</button>
+      </td>
+    </tr>`;
+            }).join('');
+
+            document.getElementById('report-body').innerHTML = rows ||
+                '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
+
+            // 삭제된 종목
+            const delSec = document.getElementById('deleted-section');
+            if (deleted.length > 0) {
+                delSec.style.display = '';
+                document.getElementById('deleted-body').innerHTML = deleted.map(p => `
+      <tr class="deleted-row">
+        <td class="px-3 py-2 text-left font-bold text-gray-400">${p.name}</td>
+        <td class="px-3 py-2 text-center">
+          <span class="badge badge-${p.side === 'LONG' ? 'L' : 'S'}">${p.side === 'LONG' ? 'L' : 'S'}</span>
+        </td>
+        <td class="px-3 py-2 text-right">${fmt(Math.round(p.avg_price))}</td>
+        <td class="px-3 py-2 text-right">${fmt(p.qty)}</td>
+        <td class="px-3 py-2 text-center">
+          <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">복구</button>
+        </td>
+      </tr>`).join('');
+            } else {
+                delSec.style.display = 'none';
+            }
+        }
+
+        function renderWavg(wid, posIdx) {
+            const state = wavgState[wid];
+            let totalQty = 0, totalAmt = 0;
+            state.rows.forEach(r => {
+                const q = parseFloat(r.qty) || 0, p = parseFloat(r.price) || 0;
+                if (q > 0 && p > 0) { totalQty += q; totalAmt += q * p; }
+            });
+            const avg = totalQty > 0 ? totalAmt / totalQty : NaN;
+
+            const rowsHtml = state.rows.map(r => `
+    <div class="wavg-row">
+      <input type="number" value="${r.qty}" placeholder="수량"
+        onchange="wavgUpdate('${wid}',${r.rid},'qty',this.value)">
+      <input type="number" value="${r.price}" placeholder="단가"
+        onchange="wavgUpdate('${wid}',${r.rid},'price',this.value)">
+      <button class="btn-icon btn-del" style="padding:3px 7px"
+        onclick="wavgDelRow('${wid}',${r.rid},${posIdx})">✕</button>
+    </div>`).join('');
+
+            return `<div class="wavg-panel">
+    <div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">가중평균 계산기</div>
+    ${rowsHtml}
+    <button class="btn-icon btn-edit" style="width:100%;margin-top:4px;font-size:.75rem"
+      onclick="wavgAddRow('${wid}',${posIdx})">+ 행 추가</button>
+    <div class="wavg-result">
+      <div class="wavg-stat"><div class="wavg-stat-label">가중평균</div><div class="wavg-stat-value">${fmtP(avg)}</div></div>
+      <div class="wavg-stat"><div class="wavg-stat-label">총 수량</div><div class="wavg-stat-value">${fmt(totalQty)}</div></div>
+      <div class="wavg-stat"><div class="wavg-stat-label">총 금액</div><div class="wavg-stat-value">${fmt(Math.round(totalAmt))}</div></div>
+    </div>
+  </div>`;
+        }
+
+        function toggleWavg(wid, posIdx) {
+            wavgState[wid].open = !wavgState[wid].open;
+            document.getElementById('wavg-' + wid).style.display = wavgState[wid].open ? 'block' : 'none';
+            document.querySelector(`[onclick="toggleWavg('${wid}',${posIdx})"]`).textContent =
+                wavgState[wid].open ? '▲ 접기' : '▼ 계산';
+            if (wavgState[wid].open)
+                document.getElementById('wavg-' + wid).innerHTML = renderWavg(wid, posIdx);
+        }
+
+        function wavgUpdate(wid, rid, field, val) {
+            const row = wavgState[wid].rows.find(r => r.rid === rid);
+            if (row) { row[field] = val; refreshWavg(wid); }
+        }
+
+        function wavgAddRow(wid, posIdx) {
+            wavgState[wid].rows.push({ rid: ++wavgRowId, qty: '', price: '' });
+            refreshWavg(wid);
+        }
+
+        function wavgDelRow(wid, rid) {
+            wavgState[wid].rows = wavgState[wid].rows.filter(r => r.rid !== rid);
+            refreshWavg(wid);
+        }
+
+        function refreshWavg(wid) {
+            const el = document.getElementById('wavg-' + wid);
+            if (el) {
+                const posIdx = parseInt(wid.replace('w', ''));
+                el.innerHTML = renderWavg(wid, posIdx);
+            }
+        }
+
+        function openAdd() {
+            editIndex = -1;
+            document.getElementById('modal-title').textContent = '종목 추가';
+            ['symbol', 'name', 'qty', 'avg'].forEach(k => document.getElementById('f-' + k).value = '');
+            document.getElementById('f-side').value = 'LONG';
+            document.getElementById('modal').classList.add('open');
+        }
+
+        function openEdit(i) {
+            editIndex = i;
+            const p = positions[i];
+            document.getElementById('modal-title').textContent = '종목 수정';
+            document.getElementById('f-symbol').value = p.symbol;
+            document.getElementById('f-name').value = p.name;
+            document.getElementById('f-side').value = p.side;
+            document.getElementById('f-qty').value = p.qty;
+            document.getElementById('f-avg').value = p.avg_price;
+            document.getElementById('modal').classList.add('open');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('open');
+        }
+
+        async function savePos() {
+            const body = {
+                symbol: document.getElementById('f-symbol').value.trim(),
+                name: document.getElementById('f-name').value.trim(),
+                side: document.getElementById('f-side').value,
+                qty: parseFloat(document.getElementById('f-qty').value),
+                avg_price: parseFloat(document.getElementById('f-avg').value),
+            };
+            if (!body.symbol || !body.name || isNaN(body.qty) || isNaN(body.avg_price)) {
+                alert('모든 필드를 입력해주세요.'); return;
+            }
+            const url = editIndex >= 0 ? API_BASE + '/positions/' + editIndex : API_BASE + '/positions';
+            const method = editIndex >= 0 ? 'PUT' : 'POST';
+            await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            closeModal();
+            await loadAll();
+        }
+
+        async function delPos(i) {
+            if (!confirm(positions[i].name + ' 포지션을 삭제할까요?')) return;
+            await fetch(API_BASE + '/positions/' + i, { method: 'DELETE' });
+            await loadAll();
+        }
+
+        async function restorePos(i) {
+            await fetch(API_BASE + '/positions/' + i + '/restore', { method: 'POST' });
+            await loadAll();
+        }
+
+        document.getElementById('modal').addEventListener('click', e => {
+            if (e.target === document.getElementById('modal')) closeModal();
+        });
+
+        loadAll();
+        setInterval(loadAll, 60000);
+    </script>
 </body>
 
 </html>
