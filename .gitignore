@@ -8,3 +8,8 @@ venv/
 .env
 .kis_token.json
 __pycache__/
+.venv/
+venv/
+.env
+.kis_token.json
+__pycache__/
