@@ -3,10 +3,10 @@ import subprocess, time, pathlib
 from datetime import datetime, timezone, timedelta
 
 ROOT = pathlib.Path(__file__).resolve().parent
-PY   = ROOT / ".venv" / "bin" / "python"
+PY   = ROOT / "venv" / "bin" / "python"
 UPD  = ROOT / "update_positions.py"
 
-INTERVAL = 60  # 초
+INTERVAL = 10  # 초
 KST = timezone(timedelta(hours=9))
 
 def is_trading_session_kst(now: datetime) -> bool:

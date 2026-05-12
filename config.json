@@ -5,7 +5,7 @@
             "symbol": "456160",
             "name": "지투지바이오",
             "side": "LONG",
-            "qty": 2680,
+            "qty": 2680.0,
             "avg_price": 99881.0,
             "group": "지투지바이오"
         },
@@ -19,7 +19,7 @@
         },
         {
             "symbol": "440110",
-            "name": "파두", 
+            "name": "파두",
             "side": "LONG",
             "qty": 29000,
             "avg_price": 62500.0,
@@ -29,13 +29,13 @@
             "symbol": "440110",
             "name": "파두[S]",
             "side": "LONG",
-            "qty": 17061,
+            "qty": 6761.0,
             "avg_price": 11756.0,
             "group": "파두[S]"
         },
         {
             "symbol": "263750",
-            "name": "펄어비스", 
+            "name": "펄어비스",
             "side": "LONG",
             "qty": 7147,
             "avg_price": 56599.0,
@@ -45,7 +45,7 @@
             "symbol": "003380",
             "name": "하림지주",
             "side": "LONG",
-            "qty": 20000, 
+            "qty": 20000,
             "avg_price": 15450.0,
             "group": "하림지주"
         },
@@ -66,12 +66,52 @@
             "group": "한진칼"
         },
         {
+            "symbol": "004020",
+            "name": "현대제철",
+            "side": "LONG",
+            "qty": 4520.0,
+            "avg_price": 44581.0,
+            "group": "현대제철",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
+        },
+        {
+            "symbol": "011210",
+            "name": "현대위아",
+            "side": "LONG",
+            "qty": 1120.0,
+            "avg_price": 89344.0,
+            "group": "현대위아",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
+        },
+        {
+            "symbol": "373220",
+            "name": "LG에너지솔루션",
+            "side": "LONG",
+            "qty": 439.0,
+            "avg_price": 468352.0,
+            "group": "LG에너지솔루션",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
+        },
+        {
             "symbol": "005935",
             "name": "삼성전자우",
             "side": "LONG",
             "qty": 2480,
             "avg_price": 118794.0,
-            "group": "삼성전자우"
+            "group": "삼성전자우",
+            "deleted": true,
+            "exit_price": 196177.0,
+            "exit_date": "2026-05-12",
+            "realized_pnl": 191909840.0
         },
         {
             "symbol": "018260",
@@ -80,6 +120,18 @@
             "qty": 1150,
             "avg_price": 176700.0,
             "group": "삼성에스디에스"
+        },
+        {
+            "symbol": "229200",
+            "name": "KODEX 코스닥 150 ETF",
+            "side": "LONG",
+            "qty": 820.0,
+            "avg_price": 19313.0,
+            "group": "KODEX 코스닥 150 ETF",
+            "deleted": true,
+            "exit_price": 19776.0,
+            "exit_date": "2026-05-12",
+            "realized_pnl": 379660.0
         }
-        ]
-        }
+    ]
+}

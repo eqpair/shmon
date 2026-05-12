@@ -1,12 +1,8 @@
 #!/usr/bin/env python3
-import os, json, asyncio, aiohttp, subprocess, requests
+import os, json, asyncio, aiohttp, subprocess, requests, time
 from datetime import datetime, timedelta, timezone
 
 KST = timezone(timedelta(hours=9))
-
-with open("config.json", "r", encoding="utf-8") as f:
-    CONFIG = json.load(f)
-POSITIONS = CONFIG.get("positions", [])
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
@@ -14,16 +10,61 @@ HEADERS = {
     "Accept": "*/*",
 }
 
-async def fetch_price(session, symbol: str) -> float | None:
-    url = f"https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:{symbol}"
+
+async def get_kis_token():
+    token_path = '/home/ubuntu/shmon/.kis_token.json'
+    with open('/home/ubuntu/shmon/.env') as f:
+        env = dict(line.strip().split('=', 1) for line in f if '=' in line and not line.startswith('#'))
     try:
-        async with session.get(url, headers=HEADERS, timeout=aiohttp.ClientTimeout(total=8)) as resp:
-            text = await resp.text()
-            data = json.loads(text)
-            return data["result"]["areas"][0]["datas"][0]["nv"]
+        with open(token_path) as f:
+            d = json.load(f)
+        if time.time() - d['issued_at'] < 86100:
+            return d['token'], env
+    except:
+        pass
+    async with aiohttp.ClientSession() as session:
+        resp = await session.post(
+            'https://openapi.koreainvestment.com:9443/oauth2/tokenP',
+            json={
+                'grant_type': 'client_credentials',
+                'appkey':     env['KIS_APP_KEY'],
+                'appsecret':  env['KIS_APP_SECRET'],
+            }
+        )
+        data = await resp.json()
+    token = data['access_token']
+    with open(token_path, 'w') as f:
+        json.dump({'token': token, 'issued_at': time.time()}, f)
+    return token, env
+
+
+async def fetch_price(session, symbol: str, token: str, env: dict) -> float | None:
+    try:
+        url = 'https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price'
+        async with session.get(
+            url,
+            headers={
+                'authorization': f'Bearer {token}',
+                'appkey':        env['KIS_APP_KEY'],
+                'appsecret':     env['KIS_APP_SECRET'],
+                'tr_id':         'FHKST01010100',
+            },
+            params={
+                'fid_cond_mrkt_div_code': 'J',
+                'fid_input_iscd':         symbol,
+            },
+            timeout=aiohttp.ClientTimeout(total=5),
+        ) as resp:
+            data  = await resp.json(content_type=None)
+            price = data.get('output', {}).get('stck_prpr')
+            if not price:
+                msg = data.get('msg1', '')
+                print(f'[WARN] {symbol}: {msg}')
+            return float(price) if price else None
     except Exception as e:
-        print(f"[WARN] price fetch failed {symbol}: {e}")
+        print(f'[WARN] price fetch failed {symbol}: {e}')
         return None
+
 
 def get_usd_krw():
     try:
@@ -33,23 +74,22 @@ def get_usd_krw():
         print(f"[WARN] usd_krw fetch failed: {e}")
         return None
 
+
 def get_wti():
-    # 1차 시도: yfinance fast_info (history()보다 가볍고 안정적)
     try:
         import yfinance as yf
         ticker = yf.Ticker("CL=F")
-        price = ticker.fast_info["last_price"]
+        price  = ticker.fast_info["last_price"]
         if price:
             print(f"[INFO] WTI from fast_info: {price}")
             return float(price)
     except Exception as e:
         print(f"[WARN] yfinance fast_info failed: {e}")
 
-    # 2차 시도: yfinance history fallback (period=5d로 최근 값 확보)
     try:
         import yfinance as yf
         ticker = yf.Ticker("CL=F")
-        hist = ticker.history(period="5d", interval="1m")
+        hist   = ticker.history(period="5d", interval="1m")
         if not hist.empty:
             closes = hist["Close"].dropna()
             if not closes.empty:
@@ -61,20 +101,29 @@ def get_wti():
     print("[ERROR] WTI fetch all sources failed, returning None")
     return None
 
-async def main():
-    results = []
-    total_exposure = 0.0
-    total_pnl = 0.0
 
-    # 환율 & WTI 먼저 가져오기
+async def main():
+    # config.json 매번 재로드 (웹 UI 수정 반영)
+    with open("config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+    positions = [p for p in config.get("positions", []) if not p.get("deleted", False)]
+
+    results        = []
+    total_exposure = 0.0
+    total_pnl      = 0.0
+
     usd_krw = get_usd_krw()
-    wti = get_wti()
+    wti     = get_wti()
     print(f"USD/KRW: {usd_krw}, WTI: {wti}")
+
+    # 토큰 한 번만 발급
+    token, env = await get_kis_token()
 
     conn = aiohttp.TCPConnector(ssl=False)
     async with aiohttp.ClientSession(connector=conn) as session:
-        for pos in POSITIONS:
-            price = await fetch_price(session, pos["symbol"])
+        for pos in positions:
+            price = await fetch_price(session, pos["symbol"], token, env)
+            await asyncio.sleep(1.0)
             if price is None:
                 price = float(pos.get("avg_price", 0))
 
@@ -83,42 +132,42 @@ async def main():
             side = (pos.get("side") or "LONG").upper()
 
             exp = avg * qty
-            mv = qty * price
+            mv  = qty * price
 
             if side.startswith("S"):
                 pnl = (avg - price) * qty
             else:
                 pnl = (price - avg) * qty
 
-            cost = exp
+            cost      = exp
             pnl_ratio = (pnl / cost) if cost else 0.0
 
             results.append({
-                "symbol": pos["symbol"],
-                "name": pos["name"],
-                "side": side,
-                "qty": qty,
-                "avg_price": avg,
-                "group": pos.get("group", pos["name"]),
+                "symbol":     pos["symbol"],
+                "name":       pos["name"],
+                "side":       side,
+                "qty":        qty,
+                "avg_price":  avg,
+                "group":      pos.get("group", pos["name"]),
                 "last_price": price,
-                "exposure": exp,
-                "mv": mv,
-                "pnl": pnl,
-                "pnl_ratio": pnl_ratio,
+                "exposure":   exp,
+                "mv":         mv,
+                "pnl":        pnl,
+                "pnl_ratio":  pnl_ratio,
             })
 
             total_exposure += exp
-            total_pnl += pnl
+            total_pnl      += pnl
 
     snapshot = {
-        "as_of": datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
-        "currency": CONFIG.get("currency", "KRW"),
-        "positions": results,
-        "total_exposure": total_exposure,
-        "total_pnl": total_pnl,
+        "as_of":           datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
+        "currency":        config.get("currency", "KRW"),
+        "positions":       results,
+        "total_exposure":  total_exposure,
+        "total_pnl":       total_pnl,
         "total_pnl_ratio": (total_pnl / total_exposure) if total_exposure else 0.0,
-        "usd_krw": usd_krw,
-        "wti": wti,
+        "usd_krw":         usd_krw,
+        "wti":             wti,
     }
 
     out_path = "web/live.json"
@@ -126,9 +175,6 @@ async def main():
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(snapshot, f, ensure_ascii=False, indent=2)
 
-    subprocess.run("git add web/live.json", shell=True, check=False)
-    subprocess.run(f'git commit -m "chore: update live {snapshot["as_of"]}"', shell=True, check=False)
-    subprocess.run("git push", shell=True, check=False)
 
 if __name__ == "__main__":
     asyncio.run(main())
