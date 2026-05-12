@@ -392,6 +392,10 @@
                     <label class="form-label">평균단가</label>
                     <input class="form-input" id="f-avg" type="number" placeholder="0">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">엑시트가 (선택)</label>
+                    <input class="form-input" id="f-exit" type="number" placeholder="0">
+                </div>
             </div>
             <div class="flex justify-end gap-2 mt-4">
                 <button class="btn-icon btn-edit" onclick="closeModal()">취소</button>
@@ -472,7 +476,7 @@
             const active = positions
                 .map((p, i) => ({ ...p, _i: i }))
                 .filter(p => !p.deleted)
-                .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+                .sort((a, b) => a._i - b._i);
 
             const deleted = positions
                 .map((p, i) => ({ ...p, _i: i }))
@@ -522,6 +526,8 @@
         </div>
       </td>
       <td class="px-3 py-2 text-center" style="white-space:nowrap">
+        <button class="btn-icon btn-edit" onclick="movePos(${i},'up')" style="margin-right:2px">▲</button>
+        <button class="btn-icon btn-edit" onclick="movePos(${i},'down')" style="margin-right:4px">▼</button>
         <button class="btn-icon btn-edit" onclick="openEdit(${i})" style="margin-right:3px">수정</button>
         <button class="btn-icon btn-del" onclick="openDeleteModal(${i})">삭제</button>
       </td>
@@ -638,6 +644,7 @@
             document.getElementById('f-side').value = p.side;
             document.getElementById('f-qty').value = p.qty;
             document.getElementById('f-avg').value = p.avg_price;
+            document.getElementById('f-exit').value = p.exit_price || '';
             document.getElementById('modal').classList.add('open');
         }
 
@@ -646,12 +653,14 @@
         }
 
         async function savePos() {
+            const exitPrice = parseFloat(document.getElementById('f-exit').value) || null;
             const body = {
-                symbol: document.getElementById('f-symbol').value.trim(),
-                name: document.getElementById('f-name').value.trim(),
-                side: document.getElementById('f-side').value,
-                qty: parseFloat(document.getElementById('f-qty').value),
+                symbol:    document.getElementById('f-symbol').value.trim(),
+                name:      document.getElementById('f-name').value.trim(),
+                side:      document.getElementById('f-side').value,
+                qty:       parseFloat(document.getElementById('f-qty').value),
                 avg_price: parseFloat(document.getElementById('f-avg').value),
+                exit_price: exitPrice,
             };
             if (!body.symbol || !body.name || isNaN(body.qty) || isNaN(body.avg_price)) {
                 alert('모든 필드를 입력해주세요.'); return;
@@ -704,6 +713,11 @@
 
         async function restorePos(i) {
             await fetch(API_BASE + '/positions/' + i + '/restore', { method: 'POST' });
+            await loadAll();
+        }
+        
+        async function movePos(i, direction) {
+            await fetch(API_BASE + '/positions/' + i + '/move?direction=' + direction, { method: 'POST' });
             await loadAll();
         }
 
