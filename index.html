@@ -388,7 +388,7 @@
                     <label class="form-label">수량</label>
                     <input class="form-input" id="f-qty" type="number" placeholder="0">
                 </div>
-                <div class="form-group full">
+                <div class="form-group">
                     <label class="form-label">평균단가</label>
                     <input class="form-input" id="f-avg" type="number" placeholder="0">
                 </div>
@@ -435,19 +435,18 @@
         const fmtP = (n, d = 0) => isNaN(n) || !isFinite(n) ? '—' : Number(n).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
 
         async function loadAll() {
-            try {
-                const [liveRes, posRes] = await Promise.all([
-                    fetch('https://eqmon.duckdns.org/live.json?_=' + Date.now()),
-                    fetch(API_BASE + '/positions')
-                ]);
-                liveData = await liveRes.json();
-                positions = await posRes.json();
-                render();
-            } catch (e) {
-                document.getElementById('report-body').innerHTML =
-                    '<tr><td colspan="11" class="text-center text-red-500 py-4">데이터 로드 실패</td></tr>';
+                try {
+                    const [liveRes, posRes] = await Promise.all([
+                        fetch('https://eqmon.duckdns.org/live.json?_=' + Date.now()),
+                        fetch(API_BASE + '/positions')
+                    ]);
+                    if (liveRes.ok) liveData = await liveRes.json();
+                    if (posRes.ok) positions = await posRes.json();
+                    render();
+                } catch (e) {
+                    if (liveData) render();
+                }
             }
-        }
 
         function getLivePrice(symbol) {
             if (!liveData) return null;
