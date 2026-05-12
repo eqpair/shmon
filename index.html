@@ -528,7 +528,15 @@
         <span class="badge badge-${p.side === 'LONG' ? 'L' : 'S'}">${p.side === 'LONG' ? 'L' : 'S'}</span>
       </td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(avg))}</td>
-      <td class="px-3 py-2 text-right text-green-700 font-bold">${fmt(last)}</td>
+      <td class="px-3 py-2 text-right">
+        <span class="font-bold text-green-700">${fmt(last)}</span>
+        ${(() => {
+                                const mkt = liveData.positions.find(lp => lp.symbol === p.symbol)?.actual_market;
+                                if (mkt === 'NX') return '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>';
+                                if (mkt === 'J') return '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>';
+                                return '';
+                            })()}
+        </td>
       <td class="px-3 py-2 text-right">${fmt(qty)}</td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(cost))}</td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(mv))}</td>
