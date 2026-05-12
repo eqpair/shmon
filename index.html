@@ -347,6 +347,8 @@
                                 <th class="px-3 py-2 text-center">DIR</th>
                                 <th class="px-3 py-2 text-right">REF P</th>
                                 <th class="px-3 py-2 text-right">QTY</th>
+                                <th class="px-3 py-2 text-right">엑시트가</th>
+                                <th class="px-3 py-2 text-right">실현손익</th>
                                 <th class="px-3 py-2 text-center">관리</th>
                             </tr>
                         </thead>
@@ -397,7 +399,26 @@
             </div>
         </div>
     </div>
-
+    <!-- 삭제 모달 -->
+    <div class="modal-backdrop" id="del-modal">
+        <div class="modal-box">
+            <h2 class="text-base font-bold text-gray-900 mb-1">포지션 종료</h2>
+            <p class="text-sm text-gray-500 mb-4"><span id="del-name" class="font-bold text-gray-800"></span></p>
+            <div class="form-group mb-4">
+                <label class="form-label">엑시트 단가</label>
+                <input class="form-input" id="del-exit-price" type="number" oninput="updateDelPnl()">
+            </div>
+            <div class="text-center mb-4">
+                <div class="text-sm text-gray-500 mb-1">실현손익 (예상)</div>
+                <div id="del-pnl-preview" class="font-bold text-lg">—</div>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button class="btn-icon btn-edit"
+                    onclick="document.getElementById('del-modal').classList.remove('open')">취소</button>
+                <button class="btn-icon btn-del" onclick="confirmDelete()">종료 확정</button>
+            </div>
+        </div>
+    </div>
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
         let liveData = null;
@@ -502,7 +523,7 @@
       </td>
       <td class="px-3 py-2 text-center" style="white-space:nowrap">
         <button class="btn-icon btn-edit" onclick="openEdit(${i})" style="margin-right:3px">수정</button>
-        <button class="btn-icon btn-del" onclick="delPos(${i})">삭제</button>
+        <button class="btn-icon btn-del" onclick="openDeleteModal(${i})">삭제</button>
       </td>
     </tr>`;
             }).join('');
@@ -522,6 +543,10 @@
         </td>
         <td class="px-3 py-2 text-right">${fmt(Math.round(p.avg_price))}</td>
         <td class="px-3 py-2 text-right">${fmt(p.qty)}</td>
+        <td class="px-3 py-2 text-right">${p.exit_price ? fmt(Math.round(p.exit_price)) : '—'}</td>
+        <td class="px-3 py-2 text-right ${p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : ''}">
+        ${p.realized_pnl !== undefined ? (p.realized_pnl >= 0 ? '+' : '') + fmt(Math.round(p.realized_pnl)) : '—'}
+        </td>
         <td class="px-3 py-2 text-center" style="white-space:nowrap">
             <button class="btn-icon btn-edit" onclick="openEdit(${p._i})" style="margin-right:3px">수정</button>
             <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">복구</button>
@@ -638,11 +663,44 @@
             await loadAll();
         }
 
-        async function delPos(i) {
-            if (!confirm(positions[i].name + ' 포지션을 삭제할까요?')) return;
-            await fetch(API_BASE + '/positions/' + i, { method: 'DELETE' });
-            await loadAll();
-        }
+        let deleteIndex = -1;
+
+            function openDeleteModal(i) {
+                deleteIndex = i;
+                const p = positions[i];
+                document.getElementById('del-name').textContent = p.name;
+                const livePrice = getLivePrice(p.symbol);
+                document.getElementById('del-exit-price').value = livePrice || p.avg_price;
+                const avg = Number(p.avg_price) || 0;
+                const qty = Number(p.qty) || 0;
+                updateDelPnl();
+                document.getElementById('del-modal').classList.add('open');
+            }
+
+            function updateDelPnl() {
+                const i = deleteIndex;
+                if (i < 0) return;
+                const p = positions[i];
+                const exit = parseFloat(document.getElementById('del-exit-price').value) || 0;
+                const avg = Number(p.avg_price) || 0;
+                const qty = Number(p.qty) || 0;
+                const side = p.side || 'LONG';
+                const pnl = side === 'SHORT' ? (avg - exit) * qty : (exit - avg) * qty;
+                const el = document.getElementById('del-pnl-preview');
+                el.textContent = (pnl >= 0 ? '+' : '') + Math.round(pnl).toLocaleString('ko-KR') + '원';
+                el.className = 'font-bold text-lg ' + (pnl > 0 ? 'text-red-600' : pnl < 0 ? 'text-blue-600' : 'text-gray-600');
+            }
+
+            async function confirmDelete() {
+                const exit = parseFloat(document.getElementById('del-exit-price').value) || null;
+                await fetch(API_BASE + '/positions/' + deleteIndex, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exit_price: exit })
+                });
+                document.getElementById('del-modal').classList.remove('open');
+                await loadAll();
+            }
 
         async function restorePos(i) {
             await fetch(API_BASE + '/positions/' + i + '/restore', { method: 'POST' });
