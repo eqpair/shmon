@@ -544,7 +544,7 @@
       <td class="px-3 py-2 text-right ${pnlColor}">${(ratio * 100).toFixed(1)}%</td>
       <td class="px-3 py-2 text-center">
         <button class="expand-btn" onclick="toggleWavg('${wid}',${i})">
-          ${wavgState[wid].open ? '▲ 접기' : '▼ 계산'}
+          ${wavgState[wid].open ? '▲ Fold' : '▼ Cal'}
         </button>
         <div id="wavg-${wid}" style="display:${wavgState[wid].open ? 'block' : 'none'}">
           ${renderWavg(wid, i)}
@@ -553,8 +553,8 @@
       <td class="px-3 py-2 text-center" style="white-space:nowrap">
         <button class="btn-icon btn-edit" onclick="movePos(${i},'up')" style="margin-right:2px">▲</button>
         <button class="btn-icon btn-edit" onclick="movePos(${i},'down')" style="margin-right:4px">▼</button>
-        <button class="btn-icon btn-edit" onclick="openEdit(${i})" style="margin-right:3px">수정</button>
-        <button class="btn-icon btn-del" onclick="openDeleteModal(${i})">삭제</button>
+        <button class="btn-icon btn-edit" onclick="openEdit(${i})" style="margin-right:3px">Modify</button>
+        <button class="btn-icon btn-del" onclick="openDeleteModal(${i})">Delete</button>
       </td>
     </tr>`;
             }).join('');
@@ -579,8 +579,8 @@
         ${p.realized_pnl !== undefined ? (p.realized_pnl >= 0 ? '+' : '') + fmt(Math.round(p.realized_pnl)) : '—'}
         </td>
         <td class="px-3 py-2 text-center" style="white-space:nowrap">
-            <button class="btn-icon btn-edit" onclick="openEdit(${p._i})" style="margin-right:3px">수정</button>
-            <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">복구</button>
+            <button class="btn-icon btn-edit" onclick="openEdit(${p._i})" style="margin-right:3px">Modify</button>
+            <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">Restore</button>
         </td>
       </tr>`).join('');
             } else {
@@ -624,7 +624,7 @@
             wavgState[wid].open = !wavgState[wid].open;
             document.getElementById('wavg-' + wid).style.display = wavgState[wid].open ? 'block' : 'none';
             document.querySelector(`[onclick="toggleWavg('${wid}',${posIdx})"]`).textContent =
-                wavgState[wid].open ? '▲ 접기' : '▼ 계산';
+                wavgState[wid].open ? '▲ Fold' : '▼ Cal';
             if (wavgState[wid].open)
                 document.getElementById('wavg-' + wid).innerHTML = renderWavg(wid, posIdx);
         }
@@ -746,9 +746,28 @@
             await loadAll();
         }
 
-        document.getElementById('modal').addEventListener('click', e => {
-            if (e.target === document.getElementById('modal')) closeModal();
-        });
+        let mouseDownTarget = null;
+
+            document.getElementById('modal').addEventListener('mousedown', e => {
+                mouseDownTarget = e.target;
+            });
+            document.getElementById('modal').addEventListener('click', e => {
+                if (mouseDownTarget === document.getElementById('modal') &&
+                    e.target === document.getElementById('modal')) closeModal();
+                mouseDownTarget = null;
+            });
+
+            let delMouseDownTarget = null;
+
+            document.getElementById('del-modal').addEventListener('mousedown', e => {
+                delMouseDownTarget = e.target;
+            });
+            document.getElementById('del-modal').addEventListener('click', e => {
+                if (delMouseDownTarget === document.getElementById('del-modal') &&
+                    e.target === document.getElementById('del-modal'))
+                    document.getElementById('del-modal').classList.remove('open');
+                delMouseDownTarget = null;
+            });
 
         loadAll();
         setInterval(loadAll, 10000);
