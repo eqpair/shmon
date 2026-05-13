@@ -599,9 +599,9 @@
 
             const rowsHtml = state.rows.map(r => `
     <div class="wavg-row">
-      <input type="number" value="${r.qty}" placeholder="수량"
+      <input type="number" value="${r.qty}" placeholder="Q'ty"
         onchange="wavgUpdate('${wid}',${r.rid},'qty',this.value)">
-      <input type="number" value="${r.price}" placeholder="단가"
+      <input type="number" value="${r.price}" placeholder="Avg Price"
         onchange="wavgUpdate('${wid}',${r.rid},'price',this.value)">
       <button class="btn-icon btn-del" style="padding:3px 7px"
         onclick="wavgDelRow('${wid}',${r.rid},${posIdx})">✕</button>
