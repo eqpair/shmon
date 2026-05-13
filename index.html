@@ -176,7 +176,8 @@
         }
 
         .wavg-row input:focus {
-            border-color: #1d4ed8
+            border-color: #1d4ed8;
+            box-shadow: 0 0 0 2px #dbeafe
         }
 
         .wavg-result {
@@ -407,6 +408,7 @@
             </div>
         </div>
     </div>
+
     <!-- 삭제 모달 -->
     <div class="modal-backdrop" id="del-modal">
         <div class="modal-box">
@@ -427,6 +429,7 @@
             </div>
         </div>
     </div>
+
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
         let liveData = null;
@@ -503,7 +506,6 @@
                 .filter(p => p.deleted)
                 .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
-            // 전체 재계산
             let totalExp = 0, totalVal = 0;
 
             const rows = active.map(p => {
@@ -539,7 +541,7 @@
                         if (mkt === 'J') return '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>';
                         return '';
                     })()}
-        </td>
+      </td>
       <td class="px-3 py-2 text-right">${fmt(qty)}</td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(cost))}</td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(mv))}</td>
@@ -598,34 +600,49 @@
             }
         }
 
+        /* ─── Weighted Avg Cal ────────────────────────────────────────────
+           핵심 수정:
+           - input에 oninput/onchange 이벤트 없음 → DOM 재생성 금지
+           - Add Row: appendChild로 DOM에 직접 삽입, 포커스 자동 이동
+           - Del Row: 해당 row만 remove()
+           - Apply 버튼: 클릭 시 DOM에서 값 수집 → 계산 → 결과 패널만 업데이트
+        ─────────────────────────────────────────────────────────────────── */
+
         function renderWavg(wid, posIdx) {
             const state = wavgState[wid];
-            let totalQty = 0, totalAmt = 0;
-            state.rows.forEach(r => {
-                const q = parseFloat(r.qty) || 0, p = parseFloat(r.price) || 0;
-                if (q > 0 && p > 0) { totalQty += q; totalAmt += q * p; }
-            });
-            const avg = totalQty > 0 ? totalAmt / totalQty : NaN;
 
             const rowsHtml = state.rows.map(r => `
     <div class="wavg-row">
-      <input type="number" value="${r.qty}" placeholder="Q'ty"
-        onchange="wavgUpdate('${wid}',${r.rid},'qty',this.value)">
-      <input type="number" value="${r.price}" placeholder="Avg Price"
-        onchange="wavgUpdate('${wid}',${r.rid},'price',this.value)">
+      <input type="number" data-wid="${wid}" data-rid="${r.rid}" data-field="qty"
+        value="${r.qty}" placeholder="Q'ty">
+      <input type="number" data-wid="${wid}" data-rid="${r.rid}" data-field="price"
+        value="${r.price}" placeholder="Avg Price">
       <button class="btn-icon btn-del" style="padding:3px 7px"
-        onclick="wavgDelRow('${wid}',${r.rid},${posIdx})">✕</button>
+        onclick="wavgDelRow('${wid}',${r.rid})">✕</button>
     </div>`).join('');
 
             return `<div class="wavg-panel">
-    <div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">Weighted Avg Cal<div>
-    ${rowsHtml}
-    <button class="btn-icon btn-edit" style="width:100%;margin-top:4px;font-size:.75rem"
-      onclick="wavgAddRow('${wid}',${posIdx})">+ Add Row</button>
+    <div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">Weighted Avg Cal</div>
+    <div id="wavg-rows-${wid}">${rowsHtml}</div>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="btn-icon btn-edit" style="flex:1;font-size:.75rem"
+        onclick="wavgAddRow('${wid}',${posIdx})">+ Add Row</button>
+      <button class="btn-icon btn-save" style="font-size:.75rem;padding:3px 14px"
+        onclick="wavgApply('${wid}')">Apply</button>
+    </div>
     <div class="wavg-result">
-      <div class="wavg-stat"><div class="wavg-stat-label">Weighted Average</div><div class="wavg-stat-value">${fmtP(avg)}</div></div>
-      <div class="wavg-stat"><div class="wavg-stat-label">Total Q'ty</div><div class="wavg-stat-value">${fmt(totalQty)}</div></div>
-      <div class="wavg-stat"><div class="wavg-stat-label">Total Amount</div><div class="wavg-stat-value">${fmt(Math.round(totalAmt))}</div></div>
+      <div class="wavg-stat">
+        <div class="wavg-stat-label">Weighted Avg</div>
+        <div class="wavg-stat-value" id="wavg-val-${wid}">—</div>
+      </div>
+      <div class="wavg-stat">
+        <div class="wavg-stat-label">Total Q'ty</div>
+        <div class="wavg-stat-value" id="wavg-qty-${wid}">—</div>
+      </div>
+      <div class="wavg-stat">
+        <div class="wavg-stat-label">Total Amount</div>
+        <div class="wavg-stat-value" id="wavg-amt-${wid}">—</div>
+      </div>
     </div>
   </div>`;
         }
@@ -639,28 +656,68 @@
                 document.getElementById('wavg-' + wid).innerHTML = renderWavg(wid, posIdx);
         }
 
-        function wavgUpdate(wid, rid, field, val) {
-            const row = wavgState[wid].rows.find(r => r.rid === rid);
-            if (row) { row[field] = val; refreshWavg(wid); }
-        }
-
         function wavgAddRow(wid, posIdx) {
-            wavgState[wid].rows.push({ rid: ++wavgRowId, qty: '', price: '' });
-            refreshWavg(wid);
+            const rid = ++wavgRowId;
+            wavgState[wid].rows.push({ rid, qty: '', price: '' });
+
+            const container = document.getElementById('wavg-rows-' + wid);
+            if (!container) return;
+
+            const div = document.createElement('div');
+            div.className = 'wavg-row';
+            div.innerHTML = `
+      <input type="number" data-wid="${wid}" data-rid="${rid}" data-field="qty" placeholder="Q'ty">
+      <input type="number" data-wid="${wid}" data-rid="${rid}" data-field="price" placeholder="Avg Price">
+      <button class="btn-icon btn-del" style="padding:3px 7px"
+        onclick="wavgDelRow('${wid}',${rid})">✕</button>`;
+            container.appendChild(div);
+            div.querySelector('input').focus();
         }
 
         function wavgDelRow(wid, rid) {
             wavgState[wid].rows = wavgState[wid].rows.filter(r => r.rid !== rid);
-            refreshWavg(wid);
+            const container = document.getElementById('wavg-rows-' + wid);
+            if (!container) return;
+            const target = container.querySelector(`[data-rid="${rid}"]`);
+            if (target) target.closest('.wavg-row').remove();
         }
 
-        function refreshWavg(wid) {
-            const el = document.getElementById('wavg-' + wid);
-            if (el) {
-                const posIdx = parseInt(wid.replace('w', ''));
-                el.innerHTML = renderWavg(wid, posIdx);
-            }
+        function wavgApply(wid) {
+            const container = document.getElementById('wavg-rows-' + wid);
+            if (!container) return;
+
+            // DOM에서 현재 입력값 수집 → wavgState 동기화
+            wavgState[wid].rows = [];
+            container.querySelectorAll('.wavg-row').forEach(row => {
+                const allInputs = row.querySelectorAll('input[data-rid]');
+                if (!allInputs.length) return;
+                const rid = parseInt(allInputs[0].dataset.rid);
+                let qty = '', price = '';
+                allInputs.forEach(inp => {
+                    if (inp.dataset.field === 'qty') qty = inp.value;
+                    if (inp.dataset.field === 'price') price = inp.value;
+                });
+                wavgState[wid].rows.push({ rid, qty, price });
+            });
+
+            // 가중평균 계산
+            let totalQty = 0, totalAmt = 0;
+            wavgState[wid].rows.forEach(r => {
+                const q = parseFloat(r.qty) || 0, p = parseFloat(r.price) || 0;
+                if (q > 0 && p > 0) { totalQty += q; totalAmt += q * p; }
+            });
+            const avg = totalQty > 0 ? totalAmt / totalQty : NaN;
+
+            // 결과 패널만 업데이트 (input DOM 절대 건드리지 않음)
+            const vEl = document.getElementById('wavg-val-' + wid);
+            const qEl = document.getElementById('wavg-qty-' + wid);
+            const aEl = document.getElementById('wavg-amt-' + wid);
+            if (vEl) vEl.textContent = isNaN(avg) ? '—' : fmtP(avg);
+            if (qEl) qEl.textContent = fmt(totalQty);
+            if (aEl) aEl.textContent = fmt(Math.round(totalAmt));
         }
+
+        /* ─── Position CRUD ─────────────────────────────────────────────── */
 
         function openAdd() {
             editIndex = -1;
@@ -715,8 +772,6 @@
             document.getElementById('del-name').textContent = p.name;
             const livePrice = getLivePrice(p.symbol);
             document.getElementById('del-exit-price').value = livePrice || p.avg_price;
-            const avg = Number(p.avg_price) || 0;
-            const qty = Number(p.qty) || 0;
             updateDelPnl();
             document.getElementById('del-modal').classList.add('open');
         }
@@ -756,11 +811,10 @@
             await loadAll();
         }
 
-        let mouseDownTarget = null;
+        /* ─── Modal backdrop click to close ─────────────────────────────── */
 
-        document.getElementById('modal').addEventListener('mousedown', e => {
-            mouseDownTarget = e.target;
-        });
+        let mouseDownTarget = null;
+        document.getElementById('modal').addEventListener('mousedown', e => { mouseDownTarget = e.target; });
         document.getElementById('modal').addEventListener('click', e => {
             if (mouseDownTarget === document.getElementById('modal') &&
                 e.target === document.getElementById('modal')) closeModal();
@@ -768,10 +822,7 @@
         });
 
         let delMouseDownTarget = null;
-
-        document.getElementById('del-modal').addEventListener('mousedown', e => {
-            delMouseDownTarget = e.target;
-        });
+        document.getElementById('del-modal').addEventListener('mousedown', e => { delMouseDownTarget = e.target; });
         document.getElementById('del-modal').addEventListener('click', e => {
             if (delMouseDownTarget === document.getElementById('del-modal') &&
                 e.target === document.getElementById('del-modal'))

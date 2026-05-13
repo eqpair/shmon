@@ -2,6 +2,14 @@
     "currency": "KRW",
     "positions": [
         {
+            "symbol": "440110",
+            "name": "파두",
+            "side": "LONG",
+            "qty": 29000,
+            "avg_price": 62500.0,
+            "group": "파두"
+        },
+        {
             "symbol": "456160",
             "name": "지투지바이오",
             "side": "LONG",
@@ -16,14 +24,6 @@
             "qty": 1580,
             "avg_price": 62620.0,
             "group": "카카오"
-        },
-        {
-            "symbol": "440110",
-            "name": "파두",
-            "side": "LONG",
-            "qty": 29000,
-            "avg_price": 62500.0,
-            "group": "파두"
         },
         {
             "symbol": "440110",
@@ -157,6 +157,18 @@
             "avg_price": 185992.0,
             "group": "삼성전자우",
             "deleted": false
+        },
+        {
+            "symbol": "440110",
+            "name": "파두",
+            "side": "LONG",
+            "qty": 10300.0,
+            "avg_price": 11756.0,
+            "group": "파두",
+            "deleted": true,
+            "exit_price": 103290.0,
+            "exit_date": "2026-05-13",
+            "realized_pnl": 942800200.0
         }
     ]
 }
