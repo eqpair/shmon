@@ -239,6 +239,45 @@
             color: #374151
         }
 
+        /* 자동완성 드롭다운 */
+        .autocomplete-wrap {
+            position: relative
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 2px
+        }
+
+        .autocomplete-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: .85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .autocomplete-item:hover {
+            background: #f3f4f6
+        }
+
+        .autocomplete-item .ac-code {
+            font-size: .72rem;
+            color: #6b7280;
+            font-family: monospace
+        }
+
         @media(max-width:640px) {
             h1 {
                 font-size: 1.4rem !important
@@ -279,13 +318,14 @@
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
 
-        <!-- Header -->
         <header class="mb-6">
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">Trading REPORT</h1>
-                    <div class="text-sm text-gray-600 mt-1">Last Update(KST): <span id="lastUpdated" class="font-medium">-</span></div>
-                    <div class="text-sm text-gray-600 mt-1">Market: <span id="market-status" class="font-bold">-</span></div>
+                    <div class="text-sm text-gray-600 mt-1">Last Update(KST): <span id="lastUpdated"
+                            class="font-medium">-</span></div>
+                    <div class="text-sm text-gray-600 mt-1">Market: <span id="market-status" class="font-bold">-</span>
+                    </div>
                     <div class="text-sm text-gray-600 mt-1">
                         USD/KRW: <span id="fx-usd-krw" class="font-bold text-blue-600">-</span>
                         &nbsp;|&nbsp;WTI: <span id="fx-wti" class="font-bold text-blue-600">-</span>
@@ -306,7 +346,6 @@
             </div>
         </header>
 
-        <!-- 메인 테이블 -->
         <div class="bg-white rounded-lg shadow-md p-4">
             <div class="table-scroll-wrap">
                 <div class="table-scroll">
@@ -336,7 +375,6 @@
             </div>
         </div>
 
-        <!-- 삭제된 종목 -->
         <div id="deleted-section" class="deleted-section" style="display:none">
             <div class="deleted-title">Closed Position</div>
             <div class="bg-white rounded-lg shadow-md p-4">
@@ -371,13 +409,15 @@
         <div class="modal-box">
             <h2 id="modal-title" class="text-base font-bold text-gray-900 mb-4">Add Position</h2>
             <div class="form-grid">
+                <div class="form-group full autocomplete-wrap">
+                    <label class="form-label">Name 검색</label>
+                    <input class="form-input" id="f-name" placeholder="종목명 입력 (예: 삼성전자)" autocomplete="off"
+                        oninput="onNameInput(this.value)">
+                    <div class="autocomplete-list" id="ac-list" style="display:none"></div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Code</label>
                     <input class="form-input" id="f-symbol" placeholder="e.g., 005930">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Name</label>
-                    <input class="form-input" id="f-name" placeholder="e.g., 삼성전자">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Dir</label>
@@ -395,7 +435,7 @@
                     <input class="form-input" id="f-avg" type="number" placeholder="0">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Exit Price(Optional)</label>
+                    <label class="form-label">Exit Price (Optional)</label>
                     <input class="form-input" id="f-exit" type="number" placeholder="0">
                 </div>
             </div>
@@ -405,6 +445,7 @@
             </div>
         </div>
     </div>
+
     <!-- 삭제 모달 -->
     <div class="modal-backdrop" id="del-modal">
         <div class="modal-box">
@@ -415,7 +456,7 @@
                 <input class="form-input" id="del-exit-price" type="number" oninput="updateDelPnl()">
             </div>
             <div class="text-center mb-4">
-                <div class="text-sm text-gray-500 mb-1">Realized P&L(Est)</div>
+                <div class="text-sm text-gray-500 mb-1">Realized P&L (Est)</div>
                 <div id="del-pnl-preview" class="font-bold text-lg">—</div>
             </div>
             <div class="flex justify-end gap-2">
@@ -425,6 +466,7 @@
             </div>
         </div>
     </div>
+
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
         let liveData = null;
@@ -432,23 +474,58 @@
         let editIndex = -1;
         let wavgState = {};
         let wavgRowId = 0;
+        let acTimer = null;
 
         const fmt = n => Number(n).toLocaleString('ko-KR');
         const fmtP = (n, d = 0) => isNaN(n) || !isFinite(n) ? '—' : Number(n).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
 
-        async function loadAll() {
+        // ── 네이버 자동완성 ──────────────────────────────
+        async function onNameInput(q) {
+            const list = document.getElementById('ac-list');
+            clearTimeout(acTimer);
+            if (!q || q.length < 1) { list.style.display = 'none'; return; }
+            acTimer = setTimeout(async () => {
                 try {
-                    const [liveRes, posRes] = await Promise.all([
-                        fetch('https://eqmon.duckdns.org/live.json?_=' + Date.now()),
-                        fetch(API_BASE + '/positions')
-                    ]);
-                    if (liveRes.ok) liveData = await liveRes.json();
-                    if (posRes.ok) positions = await posRes.json();
-                    render();
-                } catch (e) {
-                    if (liveData) render();
-                }
+                    const res = await fetch(`https://ac.stock.naver.com/ac?q=${encodeURIComponent(q)}&target=stock,index`);
+                    const data = await res.json();
+                    const items = (data.items || []).flat().slice(0, 8);
+                    if (!items.length) { list.style.display = 'none'; return; }
+                    list.innerHTML = items.map(it =>
+                        `<div class="autocomplete-item" onclick="selectStock('${it[0]}','${it[1]}')">
+                            <span>${it[1]}</span>
+                            <span class="ac-code">${it[0]}</span>
+                        </div>`
+                    ).join('');
+                    list.style.display = 'block';
+                } catch { list.style.display = 'none'; }
+            }, 200);
+        }
+
+        function selectStock(code, name) {
+            document.getElementById('f-symbol').value = code;
+            document.getElementById('f-name').value = name;
+            document.getElementById('ac-list').style.display = 'none';
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.autocomplete-wrap'))
+                document.getElementById('ac-list').style.display = 'none';
+        });
+
+        // ── 데이터 로드 ──────────────────────────────────
+        async function loadAll() {
+            try {
+                const [liveRes, posRes] = await Promise.all([
+                    fetch('https://eqmon.duckdns.org/live.json?_=' + Date.now()),
+                    fetch(API_BASE + '/positions')
+                ]);
+                if (liveRes.ok) liveData = await liveRes.json();
+                if (posRes.ok) positions = await posRes.json();
+                render();
+            } catch (e) {
+                if (liveData) render();
             }
+        }
 
         function getLivePrice(symbol) {
             if (!liveData) return null;
@@ -459,7 +536,6 @@
         function render() {
             if (!liveData) return;
 
-            // 헤더 업데이트
             document.getElementById('lastUpdated').textContent =
                 new Date(liveData.as_of).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
             document.getElementById('totalExposure').textContent =
@@ -474,35 +550,21 @@
             if (liveData.wti)
                 document.getElementById('fx-wti').textContent = '$ ' + Number(liveData.wti).toFixed(2);
 
-            // 마켓 상태 업데이트
             const msEl = document.getElementById('market-status');
             const now = new Date();
             const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
             const h = kst.getHours(), m = kst.getMinutes();
             const t = h * 60 + m;
             if (t >= 9 * 60 && t <= 15 * 60 + 30) {
-                msEl.textContent = '🟢 KRX';
-                msEl.className = 'font-bold text-green-600';
+                msEl.textContent = '🟢 KRX'; msEl.className = 'font-bold text-green-600';
             } else if ((t >= 8 * 60 && t < 9 * 60) || (t > 15 * 60 + 30 && t <= 20 * 60)) {
-                msEl.textContent = '🔵 NXT';
-                msEl.className = 'font-bold text-blue-600';
+                msEl.textContent = '🔵 NXT'; msEl.className = 'font-bold text-blue-600';
             } else {
-                msEl.textContent = '⚫ Market Closed';
-                msEl.className = 'font-bold text-gray-400';
+                msEl.textContent = '⚫ Market Closed'; msEl.className = 'font-bold text-gray-400';
             }
 
-            const active = positions
-                .map((p, i) => ({ ...p, _i: i }))
-                .filter(p => !p.deleted)
-                .sort((a, b) => a._i - b._i);
-
-            const deleted = positions
-                .map((p, i) => ({ ...p, _i: i }))
-                .filter(p => p.deleted)
-                .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-
-            // 전체 재계산
-            let totalExp = 0, totalVal = 0;
+            const active = positions.map((p, i) => ({ ...p, _i: i })).filter(p => !p.deleted).sort((a, b) => a._i - b._i);
+            const deleted = positions.map((p, i) => ({ ...p, _i: i })).filter(p => p.deleted).sort((a, b) => a.name.localeCompare(b.name, 'ko'));
 
             const rows = active.map(p => {
                 const i = p._i;
@@ -512,13 +574,19 @@
                 const cost = avg * qty, mv = last * qty;
                 const pnl = p.side === 'SHORT' ? (avg - last) * qty : mv - cost;
                 const ratio = cost ? pnl / cost : 0;
-                totalExp += cost; totalVal += mv;
 
                 const pnlColor = pnl > 0 ? 'profit-plus' : pnl < 0 ? 'profit-minus' : '';
                 const wid = 'w' + i;
                 if (!wavgState[wid]) {
                     wavgState[wid] = { open: false, rows: [{ rid: ++wavgRowId, qty: p.qty, price: p.avg_price }] };
                 }
+
+                const mkt = liveData.positions.find(lp => lp.symbol === p.symbol)?.actual_market;
+                const mktBadge = mkt === 'NX'
+                    ? '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>'
+                    : mkt === 'J'
+                        ? '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>'
+                        : '';
 
                 return `<tr>
       <td class="px-3 py-2 text-left font-bold">
@@ -530,14 +598,8 @@
       </td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(avg))}</td>
       <td class="px-3 py-2 text-right">
-        <span class="font-bold text-green-700">${fmt(last)}</span>
-        ${(() => {
-                                const mkt = liveData.positions.find(lp => lp.symbol === p.symbol)?.actual_market;
-                                if (mkt === 'NX') return '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>';
-                                if (mkt === 'J') return '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>';
-                                return '';
-                            })()}
-        </td>
+        <span class="font-bold text-green-700">${fmt(last)}</span>${mktBadge}
+      </td>
       <td class="px-3 py-2 text-right">${fmt(qty)}</td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(cost))}</td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(mv))}</td>
@@ -561,14 +623,17 @@
             }).join('');
 
             document.getElementById('report-body').innerHTML = rows ||
-                '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
+                '<tr><td colspan="11" class="text-center py-4 text-gray-400">No positions</td></tr>';
 
-            // 삭제된 종목
             const delSec = document.getElementById('deleted-section');
             if (deleted.length > 0) {
                 delSec.style.display = '';
-                document.getElementById('deleted-body').innerHTML = deleted.map(p => `
-      <tr class="deleted-row">
+                document.getElementById('deleted-body').innerHTML = deleted.map(p => {
+                    const cost = Number(p.avg_price) * Number(p.qty);
+                    const ratio = cost ? (Number(p.realized_pnl) / cost) * 100 : NaN;
+                    const ratioStr = isNaN(ratio) ? '—' : (ratio >= 0 ? '+' : '') + ratio.toFixed(1) + '%';
+                    const pnlColor = p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : '';
+                    return `<tr class="deleted-row">
         <td class="px-3 py-2 text-left font-bold text-gray-400">${p.name}</td>
         <td class="px-3 py-2 text-center">
           <span class="badge badge-${p.side === 'LONG' ? 'L' : 'S'}">${p.side === 'LONG' ? 'L' : 'S'}</span>
@@ -576,26 +641,22 @@
         <td class="px-3 py-2 text-right">${fmt(Math.round(p.avg_price))}</td>
         <td class="px-3 py-2 text-right">${fmt(p.qty)}</td>
         <td class="px-3 py-2 text-right">${p.exit_price ? fmt(Math.round(p.exit_price)) : '—'}</td>
-        <td class="px-3 py-2 text-right ${p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : ''}">
-        ${p.realized_pnl !== undefined ? (p.realized_pnl >= 0 ? '+' : '') + fmt(Math.round(p.realized_pnl)) : '—'}
+        <td class="px-3 py-2 text-right ${pnlColor}">
+          ${p.realized_pnl !== undefined ? (p.realized_pnl >= 0 ? '+' : '') + fmt(Math.round(p.realized_pnl)) : '—'}
         </td>
-        <td class="px-3 py-2 text-right ${p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : ''}">
-        ${(() => {
-                                const cost = Number(p.avg_price) * Number(p.qty);
-                                const ratio = cost ? (Number(p.realized_pnl) / cost) * 100 : NaN;
-                                return isNaN(ratio) ? '—' : (ratio >= 0 ? '+' : '') + ratio.toFixed(1) + '%';
-                            })()}
-        </td>
+        <td class="px-3 py-2 text-right ${pnlColor}">${ratioStr}</td>
         <td class="px-3 py-2 text-center" style="white-space:nowrap">
-            <button class="btn-icon btn-edit" onclick="openEdit(${p._i})" style="margin-right:3px">Modify</button>
-            <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">Restore</button>
+          <button class="btn-icon btn-edit" onclick="openEdit(${p._i})" style="margin-right:3px">Modify</button>
+          <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">Restore</button>
         </td>
-      </tr>`).join('');
+      </tr>`;
+                }).join('');
             } else {
                 delSec.style.display = 'none';
             }
         }
 
+        // ── 가중평균 계산기 ──────────────────────────────
         function renderWavg(wid, posIdx) {
             const state = wavgState[wid];
             let totalQty = 0, totalAmt = 0;
@@ -608,20 +669,20 @@
             const rowsHtml = state.rows.map(r => `
     <div class="wavg-row">
       <input type="number" value="${r.qty}" placeholder="Q'ty"
-        onchange="wavgUpdate('${wid}',${r.rid},'qty',this.value)">
+        oninput="wavgUpdate('${wid}',${r.rid},'qty',this.value)">
       <input type="number" value="${r.price}" placeholder="Avg Price"
-        onchange="wavgUpdate('${wid}',${r.rid},'price',this.value)">
+        oninput="wavgUpdate('${wid}',${r.rid},'price',this.value)">
       <button class="btn-icon btn-del" style="padding:3px 7px"
-        onclick="wavgDelRow('${wid}',${r.rid},${posIdx})">✕</button>
+        onclick="wavgDelRow('${wid}',${r.rid})">✕</button>
     </div>`).join('');
 
             return `<div class="wavg-panel">
-    <div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">Weighted Avg Cal<div>
+    <div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">Weighted Avg Cal</div>
     ${rowsHtml}
     <button class="btn-icon btn-edit" style="width:100%;margin-top:4px;font-size:.75rem"
-      onclick="wavgAddRow('${wid}',${posIdx})">+ Add Row</button>
+      onclick="wavgAddRow('${wid}')">+ Add Row</button>
     <div class="wavg-result">
-      <div class="wavg-stat"><div class="wavg-stat-label">Weighted Average</div><div class="wavg-stat-value">${fmtP(avg)}</div></div>
+      <div class="wavg-stat"><div class="wavg-stat-label">Weighted Avg</div><div class="wavg-stat-value">${fmtP(avg)}</div></div>
       <div class="wavg-stat"><div class="wavg-stat-label">Total Q'ty</div><div class="wavg-stat-value">${fmt(totalQty)}</div></div>
       <div class="wavg-stat"><div class="wavg-stat-label">Total Amount</div><div class="wavg-stat-value">${fmt(Math.round(totalAmt))}</div></div>
     </div>
@@ -642,7 +703,7 @@
             if (row) { row[field] = val; refreshWavg(wid); }
         }
 
-        function wavgAddRow(wid, posIdx) {
+        function wavgAddRow(wid) {
             wavgState[wid].rows.push({ rid: ++wavgRowId, qty: '', price: '' });
             refreshWavg(wid);
         }
@@ -654,17 +715,16 @@
 
         function refreshWavg(wid) {
             const el = document.getElementById('wavg-' + wid);
-            if (el) {
-                const posIdx = parseInt(wid.replace('w', ''));
-                el.innerHTML = renderWavg(wid, posIdx);
-            }
+            if (el) el.innerHTML = renderWavg(wid, parseInt(wid.replace('w', '')));
         }
 
+        // ── 모달 ────────────────────────────────────────
         function openAdd() {
             editIndex = -1;
             document.getElementById('modal-title').textContent = 'Add Position';
-            ['symbol', 'name', 'qty', 'avg'].forEach(k => document.getElementById('f-' + k).value = '');
+            ['symbol', 'name', 'qty', 'avg', 'exit'].forEach(k => document.getElementById('f-' + k).value = '');
             document.getElementById('f-side').value = 'LONG';
+            document.getElementById('ac-list').style.display = 'none';
             document.getElementById('modal').classList.add('open');
         }
 
@@ -678,20 +738,22 @@
             document.getElementById('f-qty').value = p.qty;
             document.getElementById('f-avg').value = p.avg_price;
             document.getElementById('f-exit').value = p.exit_price || '';
+            document.getElementById('ac-list').style.display = 'none';
             document.getElementById('modal').classList.add('open');
         }
 
         function closeModal() {
             document.getElementById('modal').classList.remove('open');
+            document.getElementById('ac-list').style.display = 'none';
         }
 
         async function savePos() {
             const exitPrice = parseFloat(document.getElementById('f-exit').value) || null;
             const body = {
-                symbol:    document.getElementById('f-symbol').value.trim(),
-                name:      document.getElementById('f-name').value.trim(),
-                side:      document.getElementById('f-side').value,
-                qty:       parseFloat(document.getElementById('f-qty').value),
+                symbol: document.getElementById('f-symbol').value.trim(),
+                name: document.getElementById('f-name').value.trim(),
+                side: document.getElementById('f-side').value,
+                qty: parseFloat(document.getElementById('f-qty').value),
                 avg_price: parseFloat(document.getElementById('f-avg').value),
                 exit_price: exitPrice,
             };
@@ -707,75 +769,68 @@
 
         let deleteIndex = -1;
 
-            function openDeleteModal(i) {
-                deleteIndex = i;
-                const p = positions[i];
-                document.getElementById('del-name').textContent = p.name;
-                const livePrice = getLivePrice(p.symbol);
-                document.getElementById('del-exit-price').value = livePrice || p.avg_price;
-                const avg = Number(p.avg_price) || 0;
-                const qty = Number(p.qty) || 0;
-                updateDelPnl();
-                document.getElementById('del-modal').classList.add('open');
-            }
+        function openDeleteModal(i) {
+            deleteIndex = i;
+            const p = positions[i];
+            document.getElementById('del-name').textContent = p.name;
+            const livePrice = getLivePrice(p.symbol);
+            document.getElementById('del-exit-price').value = livePrice || p.avg_price;
+            updateDelPnl();
+            document.getElementById('del-modal').classList.add('open');
+        }
 
-            function updateDelPnl() {
-                const i = deleteIndex;
-                if (i < 0) return;
-                const p = positions[i];
-                const exit = parseFloat(document.getElementById('del-exit-price').value) || 0;
-                const avg = Number(p.avg_price) || 0;
-                const qty = Number(p.qty) || 0;
-                const side = p.side || 'LONG';
-                const pnl = side === 'SHORT' ? (avg - exit) * qty : (exit - avg) * qty;
-                const el = document.getElementById('del-pnl-preview');
-                el.textContent = (pnl >= 0 ? '+' : '') + Math.round(pnl).toLocaleString('ko-KR') + '원';
-                el.className = 'font-bold text-lg ' + (pnl > 0 ? 'text-red-600' : pnl < 0 ? 'text-blue-600' : 'text-gray-600');
-            }
+        function updateDelPnl() {
+            const i = deleteIndex;
+            if (i < 0) return;
+            const p = positions[i];
+            const exit = parseFloat(document.getElementById('del-exit-price').value) || 0;
+            const avg = Number(p.avg_price) || 0;
+            const qty = Number(p.qty) || 0;
+            const side = p.side || 'LONG';
+            const pnl = side === 'SHORT' ? (avg - exit) * qty : (exit - avg) * qty;
+            const el = document.getElementById('del-pnl-preview');
+            el.textContent = (pnl >= 0 ? '+' : '') + Math.round(pnl).toLocaleString('ko-KR') + '원';
+            el.className = 'font-bold text-lg ' + (pnl > 0 ? 'text-red-600' : pnl < 0 ? 'text-blue-600' : 'text-gray-600');
+        }
 
-            async function confirmDelete() {
-                const exit = parseFloat(document.getElementById('del-exit-price').value) || null;
-                await fetch(API_BASE + '/positions/' + deleteIndex, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ exit_price: exit })
-                });
-                document.getElementById('del-modal').classList.remove('open');
-                await loadAll();
-            }
+        async function confirmDelete() {
+            const exit = parseFloat(document.getElementById('del-exit-price').value) || null;
+            await fetch(API_BASE + '/positions/' + deleteIndex, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exit_price: exit })
+            });
+            document.getElementById('del-modal').classList.remove('open');
+            await loadAll();
+        }
 
         async function restorePos(i) {
             await fetch(API_BASE + '/positions/' + i + '/restore', { method: 'POST' });
             await loadAll();
         }
-        
+
         async function movePos(i, direction) {
             await fetch(API_BASE + '/positions/' + i + '/move?direction=' + direction, { method: 'POST' });
             await loadAll();
         }
 
+        // ── 모달 드래그 닫힘 방지 ───────────────────────
         let mouseDownTarget = null;
+        document.getElementById('modal').addEventListener('mousedown', e => { mouseDownTarget = e.target; });
+        document.getElementById('modal').addEventListener('click', e => {
+            if (mouseDownTarget === document.getElementById('modal') &&
+                e.target === document.getElementById('modal')) closeModal();
+            mouseDownTarget = null;
+        });
 
-            document.getElementById('modal').addEventListener('mousedown', e => {
-                mouseDownTarget = e.target;
-            });
-            document.getElementById('modal').addEventListener('click', e => {
-                if (mouseDownTarget === document.getElementById('modal') &&
-                    e.target === document.getElementById('modal')) closeModal();
-                mouseDownTarget = null;
-            });
-
-            let delMouseDownTarget = null;
-
-            document.getElementById('del-modal').addEventListener('mousedown', e => {
-                delMouseDownTarget = e.target;
-            });
-            document.getElementById('del-modal').addEventListener('click', e => {
-                if (delMouseDownTarget === document.getElementById('del-modal') &&
-                    e.target === document.getElementById('del-modal'))
-                    document.getElementById('del-modal').classList.remove('open');
-                delMouseDownTarget = null;
-            });
+        let delMouseDownTarget = null;
+        document.getElementById('del-modal').addEventListener('mousedown', e => { delMouseDownTarget = e.target; });
+        document.getElementById('del-modal').addEventListener('click', e => {
+            if (delMouseDownTarget === document.getElementById('del-modal') &&
+                e.target === document.getElementById('del-modal'))
+                document.getElementById('del-modal').classList.remove('open');
+            delMouseDownTarget = null;
+        });
 
         loadAll();
         setInterval(loadAll, 10000);

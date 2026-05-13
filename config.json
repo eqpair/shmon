@@ -73,8 +73,8 @@
             "symbol": "004020",
             "name": "현대제철",
             "side": "LONG",
-            "qty": 4520.0,
-            "avg_price": 44581.0,
+            "qty": 6780.0,
+            "avg_price": 44263.0,
             "group": "현대제철",
             "deleted": false,
             "exit_price": null,
@@ -85,8 +85,8 @@
             "symbol": "011210",
             "name": "현대위아",
             "side": "LONG",
-            "qty": 2240.0,
-            "avg_price": 91376.0,
+            "qty": 4300.0,
+            "avg_price": 94338.0,
             "group": "현대위아",
             "deleted": false,
             "exit_price": null,
@@ -148,6 +148,15 @@
             "exit_price": null,
             "exit_date": null,
             "realized_pnl": null
+        },
+        {
+            "symbol": "005935",
+            "name": "삼성전자우",
+            "side": "LONG",
+            "qty": 600.0,
+            "avg_price": 185992.0,
+            "group": "삼성전자우",
+            "deleted": false
         }
     ]
 }
