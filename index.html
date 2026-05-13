@@ -284,7 +284,7 @@
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">Trading REPORT</h1>
-                    <div class="text-sm text-gray-600 mt-1">Last Update (KST): <span id="lastUpdated" class="font-medium">-</span></div>
+                    <div class="text-sm text-gray-600 mt-1">Last Update(KST): <span id="lastUpdated" class="font-medium">-</span></div>
                     <div class="text-sm text-gray-600 mt-1">Market: <span id="market-status" class="font-bold">-</span></div>
                     <div class="text-sm text-gray-600 mt-1">
                         USD/KRW: <span id="fx-usd-krw" class="font-bold text-blue-600">-</span>
@@ -299,7 +299,7 @@
                         <br>
                         <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
                             <a href="https://eqmon.duckdns.org" class="nav-link">🏠HOME</a>
-                            <button onclick="openAdd()" class="nav-link">＋ 종목 추가</button>
+                            <button onclick="openAdd()" class="nav-link">＋ Add Position</button>
                         </nav>
                     </div>
                 </div>
@@ -317,7 +317,7 @@
                                 <th class="px-3 py-2 text-center">DIR</th>
                                 <th class="px-3 py-2 text-right">REF P</th>
                                 <th class="px-3 py-2 text-right">VAL P</th>
-                                <th class="px-3 py-2 text-right">QTY</th>
+                                <th class="px-3 py-2 text-right">Q'ty</th>
                                 <th class="px-3 py-2 text-right">EXP</th>
                                 <th class="px-3 py-2 text-right">VAL</th>
                                 <th class="px-3 py-2 text-right">N PROFIT</th>
@@ -338,7 +338,7 @@
 
         <!-- 삭제된 종목 -->
         <div id="deleted-section" class="deleted-section" style="display:none">
-            <div class="deleted-title">삭제된 종목</div>
+            <div class="deleted-title">Closed Position</div>
             <div class="bg-white rounded-lg shadow-md p-4">
                 <div class="table-scroll">
                     <table class="report-table min-w-full text-sm text-gray-700">
@@ -347,7 +347,7 @@
                                 <th class="px-3 py-2 text-left"></th>
                                 <th class="px-3 py-2 text-center">DIR</th>
                                 <th class="px-3 py-2 text-right">REF P</th>
-                                <th class="px-3 py-2 text-right">QTY</th>
+                                <th class="px-3 py-2 text-right">Q'ty</th>
                                 <th class="px-3 py-2 text-right">Exit Price</th>
                                 <th class="px-3 py-2 text-right">Realized P&L</th>
                                 <th class="px-3 py-2 text-center">Admin</th>
@@ -368,59 +368,59 @@
     <!-- 추가/수정 모달 -->
     <div class="modal-backdrop" id="modal">
         <div class="modal-box">
-            <h2 id="modal-title" class="text-base font-bold text-gray-900 mb-4">종목 추가</h2>
+            <h2 id="modal-title" class="text-base font-bold text-gray-900 mb-4">Add Position</h2>
             <div class="form-grid">
                 <div class="form-group">
-                    <label class="form-label">종목코드</label>
-                    <input class="form-input" id="f-symbol" placeholder="예: 005930">
+                    <label class="form-label">Code</label>
+                    <input class="form-input" id="f-symbol" placeholder="e.g., 005930">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">종목명</label>
-                    <input class="form-input" id="f-name" placeholder="예: 삼성전자">
+                    <label class="form-label">Name</label>
+                    <input class="form-input" id="f-name" placeholder="e.g., 삼성전자">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">방향</label>
+                    <label class="form-label">Dir</label>
                     <select class="form-input" id="f-side">
                         <option value="LONG">LONG</option>
                         <option value="SHORT">SHORT</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">수량</label>
+                    <label class="form-label">Q'ty</label>
                     <input class="form-input" id="f-qty" type="number" placeholder="0">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">평균단가</label>
+                    <label class="form-label">Avg Price</label>
                     <input class="form-input" id="f-avg" type="number" placeholder="0">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Exit Price(선택)</label>
+                    <label class="form-label">Exit Price(Optional)</label>
                     <input class="form-input" id="f-exit" type="number" placeholder="0">
                 </div>
             </div>
             <div class="flex justify-end gap-2 mt-4">
-                <button class="btn-icon btn-edit" onclick="closeModal()">취소</button>
-                <button class="btn-icon btn-save" onclick="savePos()">저장</button>
+                <button class="btn-icon btn-edit" onclick="closeModal()">Cancel</button>
+                <button class="btn-icon btn-save" onclick="savePos()">Save</button>
             </div>
         </div>
     </div>
     <!-- 삭제 모달 -->
     <div class="modal-backdrop" id="del-modal">
         <div class="modal-box">
-            <h2 class="text-base font-bold text-gray-900 mb-1">포지션 종료</h2>
+            <h2 class="text-base font-bold text-gray-900 mb-1">Position Close</h2>
             <p class="text-sm text-gray-500 mb-4"><span id="del-name" class="font-bold text-gray-800"></span></p>
             <div class="form-group mb-4">
                 <label class="form-label">Exit Price</label>
                 <input class="form-input" id="del-exit-price" type="number" oninput="updateDelPnl()">
             </div>
             <div class="text-center mb-4">
-                <div class="text-sm text-gray-500 mb-1">Realized P&L(예상)</div>
+                <div class="text-sm text-gray-500 mb-1">Realized P&L(Est)</div>
                 <div id="del-pnl-preview" class="font-bold text-lg">—</div>
             </div>
             <div class="flex justify-end gap-2">
                 <button class="btn-icon btn-edit"
-                    onclick="document.getElementById('del-modal').classList.remove('open')">취소</button>
-                <button class="btn-icon btn-del" onclick="confirmDelete()">종료 확정</button>
+                    onclick="document.getElementById('del-modal').classList.remove('open')">Cancel</button>
+                <button class="btn-icon btn-del" onclick="confirmDelete()">Confirm Close</button>
             </div>
         </div>
     </div>
@@ -480,13 +480,13 @@
             const h = kst.getHours(), m = kst.getMinutes();
             const t = h * 60 + m;
             if (t >= 9 * 60 && t <= 15 * 60 + 30) {
-                msEl.textContent = '🟢 KRX 정규장';
+                msEl.textContent = '🟢 KRX';
                 msEl.className = 'font-bold text-green-600';
             } else if ((t >= 8 * 60 && t < 9 * 60) || (t > 15 * 60 + 30 && t <= 20 * 60)) {
                 msEl.textContent = '🔵 NXT';
                 msEl.className = 'font-bold text-blue-600';
             } else {
-                msEl.textContent = '⚫ 장 마감';
+                msEl.textContent = '⚫ Market Closed';
                 msEl.className = 'font-bold text-gray-400';
             }
 
@@ -611,11 +611,11 @@
     <div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">가중평균 계산기</div>
     ${rowsHtml}
     <button class="btn-icon btn-edit" style="width:100%;margin-top:4px;font-size:.75rem"
-      onclick="wavgAddRow('${wid}',${posIdx})">+ 행 추가</button>
+      onclick="wavgAddRow('${wid}',${posIdx})">+ Add Row</button>
     <div class="wavg-result">
-      <div class="wavg-stat"><div class="wavg-stat-label">가중평균</div><div class="wavg-stat-value">${fmtP(avg)}</div></div>
-      <div class="wavg-stat"><div class="wavg-stat-label">총 수량</div><div class="wavg-stat-value">${fmt(totalQty)}</div></div>
-      <div class="wavg-stat"><div class="wavg-stat-label">총 금액</div><div class="wavg-stat-value">${fmt(Math.round(totalAmt))}</div></div>
+      <div class="wavg-stat"><div class="wavg-stat-label">Weighted Average</div><div class="wavg-stat-value">${fmtP(avg)}</div></div>
+      <div class="wavg-stat"><div class="wavg-stat-label">Total Q'ty</div><div class="wavg-stat-value">${fmt(totalQty)}</div></div>
+      <div class="wavg-stat"><div class="wavg-stat-label">Total Amount</div><div class="wavg-stat-value">${fmt(Math.round(totalAmt))}</div></div>
     </div>
   </div>`;
         }
@@ -654,7 +654,7 @@
 
         function openAdd() {
             editIndex = -1;
-            document.getElementById('modal-title').textContent = '종목 추가';
+            document.getElementById('modal-title').textContent = 'Add Position';
             ['symbol', 'name', 'qty', 'avg'].forEach(k => document.getElementById('f-' + k).value = '');
             document.getElementById('f-side').value = 'LONG';
             document.getElementById('modal').classList.add('open');
@@ -663,7 +663,7 @@
         function openEdit(i) {
             editIndex = i;
             const p = positions[i];
-            document.getElementById('modal-title').textContent = '종목 수정';
+            document.getElementById('modal-title').textContent = 'Modify Position';
             document.getElementById('f-symbol').value = p.symbol;
             document.getElementById('f-name').value = p.name;
             document.getElementById('f-side').value = p.side;
