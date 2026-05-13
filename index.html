@@ -481,25 +481,25 @@
 
         // ── 네이버 자동완성 ──────────────────────────────
         async function onNameInput(q) {
-            const list = document.getElementById('ac-list');
-            clearTimeout(acTimer);
-            if (!q || q.length < 1) { list.style.display = 'none'; return; }
-            acTimer = setTimeout(async () => {
-                try {
-                    const res = await fetch(`https://ac.stock.naver.com/ac?q=${encodeURIComponent(q)}&target=stock,index`);
-                    const data = await res.json();
-                    const items = (data.items || []).flat().slice(0, 8);
-                    if (!items.length) { list.style.display = 'none'; return; }
-                    list.innerHTML = items.map(it =>
-                        `<div class="autocomplete-item" onclick="selectStock('${it[0]}','${it[1]}')">
-                            <span>${it[1]}</span>
-                            <span class="ac-code">${it[0]}</span>
-                        </div>`
-                    ).join('');
-                    list.style.display = 'block';
-                } catch { list.style.display = 'none'; }
-            }, 200);
-        }
+                const list = document.getElementById('ac-list');
+                clearTimeout(acTimer);
+                if (!q || q.length < 1) { list.style.display = 'none'; return; }
+                acTimer = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(q)}`);
+                        const data = await res.json();
+                        const items = data.items || [];
+                        if (!items.length) { list.style.display = 'none'; return; }
+                        list.innerHTML = items.map(it =>
+                            `<div class="autocomplete-item" onclick="selectStock('${it.code}','${it.name}')">
+                    <span>${it.name}</span>
+                    <span class="ac-code">${it.code}</span>
+                </div>`
+                        ).join('');
+                        list.style.display = 'block';
+                    } catch { list.style.display = 'none'; }
+                }, 200);
+            }
 
         function selectStock(code, name) {
             document.getElementById('f-symbol').value = code;
