@@ -614,9 +614,9 @@
             const rowsHtml = state.rows.map(r => `
     <div class="wavg-row">
       <input type="number" data-wid="${wid}" data-rid="${r.rid}" data-field="qty"
-        value="${r.qty}" placeholder="Q'ty" oninput="wavgApply('${wid}')">
+        value="${r.qty}" placeholder="Q'ty">
       <input type="number" data-wid="${wid}" data-rid="${r.rid}" data-field="price"
-        value="${r.price}" placeholder="Avg Price" oninput="wavgApply('${wid}')">
+        value="${r.price}" placeholder="Avg Price">
       <button class="btn-icon btn-del" style="padding:3px 7px"
         onclick="wavgDelRow('${wid}',${r.rid})">✕</button>
     </div>`).join('');
@@ -666,8 +666,8 @@
             const div = document.createElement('div');
             div.className = 'wavg-row';
             div.innerHTML = `
-      <input type="number" data-wid="${wid}" data-rid="${rid}" data-field="qty" placeholder="Q'ty" oninput="wavgApply('${wid}')">
-      <input type="number" data-wid="${wid}" data-rid="${rid}" data-field="price" placeholder="Avg Price" oninput="wavgApply('${wid}')">
+      <input type="number" data-wid="${wid}" data-rid="${rid}" data-field="qty" placeholder="Q'ty">
+      <input type="number" data-wid="${wid}" data-rid="${rid}" data-field="price" placeholder="Avg Price">
       <button class="btn-icon btn-del" style="padding:3px 7px"
         onclick="wavgDelRow('${wid}',${rid})">✕</button>`;
             container.appendChild(div);
