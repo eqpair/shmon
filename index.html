@@ -633,15 +633,15 @@
     <div class="wavg-result">
       <div class="wavg-stat">
         <div class="wavg-stat-label">Weighted Avg</div>
-        <div class="wavg-stat-value" id="wavg-val-${wid}">—</div>
+        <div class="wavg-stat-value" id="wavg-val-${wid}">${state.lastResult && !isNaN(state.lastResult.avg) ? fmtP(state.lastResult.avg) : '—'}</div>
       </div>
       <div class="wavg-stat">
         <div class="wavg-stat-label">Total Q'ty</div>
-        <div class="wavg-stat-value" id="wavg-qty-${wid}">—</div>
+        <div class="wavg-stat-value" id="wavg-qty-${wid}">${state.lastResult ? fmt(state.lastResult.totalQty) : '—'}</div>
       </div>
       <div class="wavg-stat">
         <div class="wavg-stat-label">Total Amount</div>
-        <div class="wavg-stat-value" id="wavg-amt-${wid}">—</div>
+        <div class="wavg-stat-value" id="wavg-amt-${wid}">${state.lastResult ? fmt(Math.round(state.lastResult.totalAmt)) : '—'}</div>
       </div>
     </div>
   </div>`;
@@ -686,27 +686,20 @@
             const container = document.getElementById('wavg-rows-' + wid);
             if (!container) return;
 
-            // DOM에서 현재 입력값 수집 → wavgState 동기화
-            wavgState[wid].rows = [];
-            container.querySelectorAll('.wavg-row').forEach(row => {
-                const allInputs = row.querySelectorAll('input[data-rid]');
-                if (!allInputs.length) return;
-                const rid = parseInt(allInputs[0].dataset.rid);
-                let qty = '', price = '';
-                allInputs.forEach(inp => {
-                    if (inp.dataset.field === 'qty') qty = inp.value;
-                    if (inp.dataset.field === 'price') price = inp.value;
-                });
-                wavgState[wid].rows.push({ rid, qty, price });
-            });
-
-            // 가중평균 계산
+            // DOM에서 값 읽기만 — wavgState.rows 절대 건드리지 않음
             let totalQty = 0, totalAmt = 0;
-            wavgState[wid].rows.forEach(r => {
-                const q = parseFloat(r.qty) || 0, p = parseFloat(r.price) || 0;
+            container.querySelectorAll('.wavg-row').forEach(row => {
+                let q = 0, p = 0;
+                row.querySelectorAll('input[data-rid]').forEach(inp => {
+                    if (inp.dataset.field === 'qty') q = parseFloat(inp.value) || 0;
+                    if (inp.dataset.field === 'price') p = parseFloat(inp.value) || 0;
+                });
                 if (q > 0 && p > 0) { totalQty += q; totalAmt += q * p; }
             });
             const avg = totalQty > 0 ? totalAmt / totalQty : NaN;
+
+            // render() 후 복원을 위해 결과 캐시
+            wavgState[wid].lastResult = { avg, totalQty, totalAmt };
 
             // 결과 패널만 업데이트 (input DOM 절대 건드리지 않음)
             const vEl = document.getElementById('wavg-val-' + wid);
