@@ -31,7 +31,11 @@
             "side": "LONG",
             "qty": 6761.0,
             "avg_price": 11756.0,
-            "group": "파두[S]"
+            "group": "파두[S]",
+            "deleted": true,
+            "exit_price": 98600.0,
+            "exit_date": "2026-05-13",
+            "realized_pnl": 587152284.0
         },
         {
             "symbol": "263750",
@@ -137,8 +141,8 @@
             "symbol": "229200",
             "name": "KODEX 코스닥 150 ETF",
             "side": "LONG",
-            "qty": 9137.0,
-            "avg_price": 19478.0,
+            "qty": 12000.0,
+            "avg_price": 19423.0,
             "group": "KODEX 코스닥 150 ETF",
             "deleted": false,
             "exit_price": null,
