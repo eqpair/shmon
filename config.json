@@ -73,8 +73,8 @@
             "symbol": "004020",
             "name": "현대제철",
             "side": "LONG",
-            "qty": 6780.0,
-            "avg_price": 44263.0,
+            "qty": 9040.0,
+            "avg_price": 44282.0,
             "group": "현대제철",
             "deleted": false,
             "exit_price": null,
@@ -169,6 +169,18 @@
             "exit_price": 103290.0,
             "exit_date": "2026-05-13",
             "realized_pnl": 942800200.0
+        },
+        {
+            "symbol": "005930",
+            "name": "삼성전자",
+            "side": "LONG",
+            "qty": 100.0,
+            "avg_price": 456456.0,
+            "group": "삼성전자",
+            "deleted": true,
+            "exit_price": 294250.0,
+            "exit_date": "2026-05-14",
+            "realized_pnl": -16220600.0
         }
     ]
 }

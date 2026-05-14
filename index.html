@@ -615,7 +615,8 @@
                         + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (isNaN(ratio) ? '—' : (ratio >= 0 ? '+' : '') + ratio.toFixed(1) + '%') + '</td>'
                         + '<td class="px-3 py-2 text-center" style="white-space:nowrap">'
                         + '<button class="btn-icon btn-edit" onclick="openEdit(' + p._i + ')" style="margin-right:3px">Modify</button>'
-                        + '<button class="btn-icon btn-restore" onclick="restorePos(' + p._i + ')">Restore</button>'
+                        + '<button class="btn-icon btn-restore" onclick="restorePos(' + p._i + ')" style="margin-right:3px">Restore</button>'
+                        + '<button class="btn-icon btn-del" onclick="hardDeletePos(' + p._i + ',\'' + p.name + '\')">Remove</button>'
                         + '</td></tr>';
                 }).join('');
             } else {
@@ -887,6 +888,16 @@
 
         async function restorePos(i) {
             await fetch(API_BASE + '/positions/' + i + '/restore', { method: 'POST' });
+            await loadAll();
+        }
+
+        async function hardDeletePos(i, name) {
+            if (!confirm(name + '\n\n완전히 삭제합니다. 복구할 수 없습니다.\n계속하시겠습니까?')) return;
+            await fetch(API_BASE + '/positions/' + i, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hard_delete: true })
+            });
             await loadAll();
         }
 
