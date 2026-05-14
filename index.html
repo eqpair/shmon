@@ -296,6 +296,21 @@
             font-family: monospace
         }
 
+        /* ── [CHANGE 1] P&L ratio inline style ── */
+        .pnl-ratio {
+            font-size: .8rem;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        /* ── [CHANGE 2] alloc ratio inline style ── */
+        .alloc-ratio {
+            font-size: .72rem;
+            color: #9ca3af;
+            font-weight: 500;
+            margin-left: 4px;
+        }
+
         @media(max-width:640px) {
             h1 {
                 font-size: 1.4rem !important
@@ -353,7 +368,11 @@
                     <div class="text-right">
                         <div class="text-sm text-gray-600 font-bold">Total Exposure</div>
                         <div id="totalExposure" class="text-xl font-bold text-green-600">-</div>
-                        <div class="text-sm text-gray-500 mt-1"><span id="totalPnL" class="font-medium">-</span></div>
+                        <!-- [CHANGE 1] totalPnL + 수익률 괄호 -->
+                        <div class="text-sm text-gray-500 mt-1">
+                            <span id="totalPnL" class="font-medium">-</span><span id="totalPnLRatio"
+                                class="pnl-ratio"></span>
+                        </div>
                         <br>
                         <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
                             <a href="https://eqmon.duckdns.org" class="nav-link">🏠HOME</a>
@@ -538,12 +557,28 @@
             // 헤더
             document.getElementById('lastUpdated').textContent =
                 new Date(liveData.as_of).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+
+            var totalExp = Number(liveData.total_exposure) || 0;
             document.getElementById('totalExposure').textContent =
-                Math.round(Number(liveData.total_exposure) || 0).toLocaleString('ko-KR');
+                Math.round(totalExp).toLocaleString('ko-KR');
+
             var tpnl = Number(liveData.total_pnl) || 0;
             var tpnlEl = document.getElementById('totalPnL');
             tpnlEl.textContent = (tpnl > 0 ? '+' : '') + Math.round(tpnl).toLocaleString('ko-KR');
             tpnlEl.className = tpnl > 0 ? 'text-red-600 font-bold' : tpnl < 0 ? 'text-blue-600 font-bold' : 'text-gray-600 font-bold';
+
+            // [CHANGE 1] Total Exposure 대비 수익률 괄호 표시
+            var ratioEl = document.getElementById('totalPnLRatio');
+            if (ratioEl) {
+                if (totalExp > 0) {
+                    var pnlRatio = tpnl / totalExp * 100;
+                    ratioEl.textContent = '(' + (pnlRatio >= 0 ? '+' : '') + pnlRatio.toFixed(2) + '%)';
+                    ratioEl.className = 'pnl-ratio ' + (tpnl > 0 ? 'text-red-500' : tpnl < 0 ? 'text-blue-500' : 'text-gray-400');
+                } else {
+                    ratioEl.textContent = '';
+                }
+            }
+
             if (liveData.usd_krw)
                 document.getElementById('fx-usd-krw').textContent =
                     Number(liveData.usd_krw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
@@ -564,10 +599,16 @@
                 .filter(function (p) { return !p.deleted; })
                 .sort(function (a, b) { return a._i - b._i; });
 
+            // [CHANGE 3] 최근 삭제 순(deleted_at 내림차순, fallback: 배열 역순)
             var deleted = positions
                 .map(function (p, i) { return Object.assign({}, p, { _i: i }); })
                 .filter(function (p) { return p.deleted; })
-                .sort(function (a, b) { return a.name.localeCompare(b.name, 'ko'); });
+                .sort(function (a, b) {
+                    if (a.deleted_at && b.deleted_at) {
+                        return new Date(b.deleted_at) - new Date(a.deleted_at);
+                    }
+                    return b._i - a._i;
+                });
 
             var tbody = document.getElementById('report-body');
 
@@ -592,6 +633,13 @@
                             ? '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>'
                             : '';
 
+                    // [CHANGE 2] Total Exposure 대비 투입률
+                    var allocStr = '';
+                    if (totalExp > 0) {
+                        var allocRatio = cost / totalExp * 100;
+                        allocStr = '<span class="alloc-ratio">(' + allocRatio.toFixed(1) + '%)</span>';
+                    }
+
                     // wavgState 초기화 (최초 1회만)
                     if (!wavgState[wid]) {
                         wavgState[wid] = {
@@ -609,14 +657,14 @@
                         tds[0].innerHTML = '<a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a>';
                         // td 1: DIR
                         tds[1].innerHTML = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span>';
-                        // td 2: REF P
+                        // td 2: REF PX
                         tds[2].textContent = fmt(Math.round(avg));
-                        // td 3: VAL P
+                        // td 3: VAL PX
                         tds[3].innerHTML = '<span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge;
                         // td 4: Q'ty
                         tds[4].textContent = fmt(qty);
-                        // td 5: EXP
-                        tds[5].textContent = fmt(Math.round(cost));
+                        // td 5: EXP + [CHANGE 2] 투입률
+                        tds[5].innerHTML = fmt(Math.round(cost)) + allocStr;
                         // td 6: VAL
                         tds[6].textContent = fmt(Math.round(mv));
                         // td 7: N PROFIT
@@ -637,7 +685,7 @@
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(avg)) + '</td>'
                             + '<td class="px-3 py-2 text-right"><span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge + '</td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(qty) + '</td>'
-                            + '<td class="px-3 py-2 text-right">' + fmt(Math.round(cost)) + '</td>'
+                            + '<td class="px-3 py-2 text-right">' + fmt(Math.round(cost)) + allocStr + '</td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(mv)) + '</td>'
                             + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + fmt(Math.round(pnl)) + '</td>'
                             + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (ratio * 100).toFixed(1) + '%</td>'

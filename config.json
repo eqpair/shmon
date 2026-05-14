@@ -67,7 +67,11 @@
             "side": "LONG",
             "qty": 3431,
             "avg_price": 117528.0,
-            "group": "한진칼"
+            "group": "한진칼",
+            "deleted": true,
+            "exit_price": 119704.0,
+            "exit_date": "2026-05-14",
+            "realized_pnl": 7465856.0
         },
         {
             "symbol": "004020",
@@ -85,8 +89,8 @@
             "symbol": "011210",
             "name": "현대위아",
             "side": "LONG",
-            "qty": 4300.0,
-            "avg_price": 94338.0,
+            "qty": 6350.0,
+            "avg_price": 94599.0,
             "group": "현대위아",
             "deleted": false,
             "exit_price": null,
