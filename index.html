@@ -172,7 +172,8 @@
             border: 1px solid #d1d5db;
             border-radius: 5px;
             outline: none;
-            width: 100%
+            width: 100%;
+            box-sizing: border-box
         }
 
         .wavg-row input:focus {
@@ -280,7 +281,6 @@
 <body class="bg-gray-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
 
-        <!-- Header -->
         <header class="mb-6">
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
@@ -309,7 +309,6 @@
             </div>
         </header>
 
-        <!-- 메인 테이블 -->
         <div class="bg-white rounded-lg shadow-md p-4">
             <div class="table-scroll-wrap">
                 <div class="table-scroll">
@@ -339,7 +338,6 @@
             </div>
         </div>
 
-        <!-- 삭제된 종목 -->
         <div id="deleted-section" class="deleted-section" style="display:none">
             <div class="deleted-title">Closed Position</div>
             <div class="bg-white rounded-lg shadow-md p-4">
@@ -362,7 +360,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <footer class="bg-white py-6 mt-8">
@@ -435,11 +432,20 @@
         let liveData = null;
         let positions = [];
         let editIndex = -1;
-        let wavgState = {};
+        let deleteIndex = -1;
+
+        // wavgState[wid] = { rows:[{rid,qty,price}], lastResult:{avg,totalQty,totalAmt}|null, prevPos:{qty,avg_price}|null }
+        const wavgState = {};
         let wavgRowId = 0;
 
-        const fmt = n => Number(n).toLocaleString('ko-KR');
-        const fmtP = (n, d = 0) => isNaN(n) || !isFinite(n) ? '—' : Number(n).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+        const fmt = function (n) { return Number(n).toLocaleString('ko-KR'); };
+        const fmtP = function (n, d) {
+            d = d === undefined ? 0 : d;
+            if (isNaN(n) || !isFinite(n)) return '—';
+            return Number(n).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+        };
+
+        // ─── 데이터 로드 ──────────────────────────────────────────────────────────────
 
         async function loadAll() {
             try {
@@ -449,45 +455,30 @@
                 ]);
                 if (liveRes.ok) liveData = await liveRes.json();
                 if (posRes.ok) positions = await posRes.json();
-                render();
-            } catch (e) {
-                if (liveData) render();
-            }
+            } catch (e) { }
+            render();
         }
 
         function getLivePrice(symbol) {
             if (!liveData) return null;
-            const pos = liveData.positions.find(p => p.symbol === symbol);
+            var pos = liveData.positions.find(function (p) { return p.symbol === symbol; });
             return pos ? pos.last_price : null;
         }
+
+        // ─── 렌더 ─────────────────────────────────────────────────────────────────────
+        // 핵심 원칙: wavg 패널이 들어있는 td(#wavg-cell-{wid})는 render()에서 절대 건드리지 않음
+        // 해당 td는 toggleWavg/wavgAddRow/wavgDelRow/wavgCalc 함수들이 직접 관리
 
         function render() {
             if (!liveData) return;
 
-            // render() 전에 열린 wavg 패널의 현재 입력값을 wavgState에 저장
-            Object.keys(wavgState).forEach(wid => {
-                const container = document.getElementById('wavg-rows-' + wid);
-                if (!container) return;
-                const savedRows = [];
-                container.querySelectorAll('.wavg-row').forEach(row => {
-                    let qty = '', price = '';
-                    row.querySelectorAll('input[data-rid]').forEach(inp => {
-                        if (inp.dataset.field === 'qty') qty = inp.value;
-                        if (inp.dataset.field === 'price') price = inp.value;
-                    });
-                    const rid = row.querySelector('input[data-rid]')?.dataset.rid;
-                    if (rid) savedRows.push({ rid: parseInt(rid), qty, price });
-                });
-                if (savedRows.length) wavgState[wid].rows = savedRows;
-            });
-
-            // 헤더 업데이트
+            // 헤더
             document.getElementById('lastUpdated').textContent =
                 new Date(liveData.as_of).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
             document.getElementById('totalExposure').textContent =
                 Math.round(Number(liveData.total_exposure) || 0).toLocaleString('ko-KR');
-            const tpnl = Number(liveData.total_pnl) || 0;
-            const tpnlEl = document.getElementById('totalPnL');
+            var tpnl = Number(liveData.total_pnl) || 0;
+            var tpnlEl = document.getElementById('totalPnL');
             tpnlEl.textContent = (tpnl > 0 ? '+' : '') + Math.round(tpnl).toLocaleString('ko-KR');
             tpnlEl.className = tpnl > 0 ? 'text-red-600 font-bold' : tpnl < 0 ? 'text-blue-600 font-bold' : 'text-gray-600 font-bold';
             if (liveData.usd_krw)
@@ -496,231 +487,222 @@
             if (liveData.wti)
                 document.getElementById('fx-wti').textContent = '$ ' + Number(liveData.wti).toFixed(2);
 
-            // 마켓 상태 업데이트
-            const msEl = document.getElementById('market-status');
-            const now = new Date();
-            const kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
-            const h = kst.getHours(), m = kst.getMinutes();
-            const t = h * 60 + m;
-            if (t >= 9 * 60 && t <= 15 * 60 + 30) {
-                msEl.textContent = '🟢 KRX';
-                msEl.className = 'font-bold text-green-600';
-            } else if ((t >= 8 * 60 && t < 9 * 60) || (t > 15 * 60 + 30 && t <= 20 * 60)) {
-                msEl.textContent = '🔵 NXT';
-                msEl.className = 'font-bold text-blue-600';
+            // 마켓 상태
+            var msEl = document.getElementById('market-status');
+            var now = new Date();
+            var kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
+            var t = kst.getHours() * 60 + kst.getMinutes();
+            if (t >= 540 && t <= 930) { msEl.textContent = '🟢 KRX'; msEl.className = 'font-bold text-green-600'; }
+            else if ((t >= 480 && t < 540) || (t > 930 && t <= 1200)) { msEl.textContent = '🔵 NXT'; msEl.className = 'font-bold text-blue-600'; }
+            else { msEl.textContent = '⚫ Market Closed'; msEl.className = 'font-bold text-gray-400'; }
+
+            var active = positions
+                .map(function (p, i) { return Object.assign({}, p, { _i: i }); })
+                .filter(function (p) { return !p.deleted; })
+                .sort(function (a, b) { return a._i - b._i; });
+
+            var deleted = positions
+                .map(function (p, i) { return Object.assign({}, p, { _i: i }); })
+                .filter(function (p) { return p.deleted; })
+                .sort(function (a, b) { return a.name.localeCompare(b.name, 'ko'); });
+
+            var tbody = document.getElementById('report-body');
+
+            if (active.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
             } else {
-                msEl.textContent = '⚫ Market Closed';
-                msEl.className = 'font-bold text-gray-400';
-            }
+                active.forEach(function (p) {
+                    var i = p._i;
+                    var wid = 'w' + i;
+                    var avg = Number(p.avg_price) || 0;
+                    var qty = Number(p.qty) || 0;
+                    var last = getLivePrice(p.symbol) || avg;
+                    var cost = avg * qty, mv = last * qty;
+                    var pnl = p.side === 'SHORT' ? (avg - last) * qty : mv - cost;
+                    var ratio = cost ? pnl / cost : 0;
+                    var pnlColor = pnl > 0 ? 'profit-plus' : pnl < 0 ? 'profit-minus' : '';
+                    var mkt = liveData.positions.find(function (lp) { return lp.symbol === p.symbol; });
+                    var mktMarket = mkt ? mkt.actual_market : null;
+                    var mktBadge = mktMarket === 'NX'
+                        ? '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>'
+                        : mktMarket === 'J'
+                            ? '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>'
+                            : '';
 
-            const active = positions
-                .map((p, i) => ({ ...p, _i: i }))
-                .filter(p => !p.deleted)
-                .sort((a, b) => a._i - b._i);
-
-            const deleted = positions
-                .map((p, i) => ({ ...p, _i: i }))
-                .filter(p => p.deleted)
-                .sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-
-            let totalExp = 0, totalVal = 0;
-
-            // 행별 HTML 생성 함수
-            function buildRowHtml(p, i) {
-                const avg = Number(p.avg_price) || 0;
-                const qty = Number(p.qty) || 0;
-                const last = getLivePrice(p.symbol) || avg;
-                const cost = avg * qty, mv = last * qty;
-                const pnl = p.side === 'SHORT' ? (avg - last) * qty : mv - cost;
-                const ratio = cost ? pnl / cost : 0;
-                const pnlColor = pnl > 0 ? 'profit-plus' : pnl < 0 ? 'profit-minus' : '';
-                const wid = 'w' + i;
-                const mkt = liveData.positions.find(lp => lp.symbol === p.symbol)?.actual_market;
-                const mktBadge = mkt === 'NX'
-                    ? '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>'
-                    : mkt === 'J'
-                        ? '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>'
-                        : '';
-                return {
-                    wid, pnl, cost, mv,
-                    html: `<tr data-wid="${wid}">
-      <td class="px-3 py-2 text-left font-bold">
-        <a href="https://finance.naver.com/item/main.naver?code=${p.symbol}" target="_blank"
-           class="hover:underline text-gray-800">${p.name}</a>
-      </td>
-      <td class="px-3 py-2 text-center">
-        <span class="badge badge-${p.side === 'LONG' ? 'L' : 'S'}">${p.side === 'LONG' ? 'L' : 'S'}</span>
-      </td>
-      <td class="px-3 py-2 text-right">${fmt(Math.round(avg))}</td>
-      <td class="px-3 py-2 text-right">
-        <span class="font-bold text-green-700">${fmt(last)}</span>${mktBadge}
-      </td>
-      <td class="px-3 py-2 text-right">${fmt(qty)}</td>
-      <td class="px-3 py-2 text-right">${fmt(Math.round(cost))}</td>
-      <td class="px-3 py-2 text-right">${fmt(Math.round(mv))}</td>
-      <td class="px-3 py-2 text-right ${pnlColor}">${fmt(Math.round(pnl))}</td>
-      <td class="px-3 py-2 text-right ${pnlColor}">${(ratio * 100).toFixed(1)}%</td>
-      <td class="px-3 py-2 text-center" id="wavg-td-${wid}">
-        <button class="expand-btn" onclick="toggleWavg('${wid}',${i})">
-          ${wavgState[wid] && wavgState[wid].open ? '▲ Fold' : '▼ Cal'}
-        </button>
-        <div id="wavg-${wid}" style="display:${wavgState[wid] && wavgState[wid].open ? 'block' : 'none'}">
-          ${wavgState[wid] && wavgState[wid].open ? renderWavg(wid, i) : ''}
-        </div>
-      </td>
-      <td class="px-3 py-2 text-center" style="white-space:nowrap">
-        <button class="btn-icon btn-edit" onclick="movePos(${i},'up')" style="margin-right:2px">▲</button>
-        <button class="btn-icon btn-edit" onclick="movePos(${i},'down')" style="margin-right:4px">▼</button>
-        <button class="btn-icon btn-edit" onclick="openEdit(${i})" style="margin-right:3px">Modify</button>
-        <button class="btn-icon btn-del" onclick="openDeleteModal(${i})">Delete</button>
-      </td>
-    </tr>`
-                };
-            }
-
-            const tbody = document.getElementById('report-body');
-
-            // wavg가 열린 행이 하나라도 있으면 행 단위로 선택 업데이트
-            const anyOpen = active.some(p => wavgState['w' + p._i] && wavgState['w' + p._i].open);
-
-            if (!anyOpen) {
-                // wavg 패널이 모두 닫혀있으면 기존처럼 전체 innerHTML 교체 (빠름)
-                const rows = active.map(p => {
-                    if (!wavgState['w' + p._i]) {
-                        wavgState['w' + p._i] = { open: false, rows: [{ rid: ++wavgRowId, qty: p.qty, price: p.avg_price }] };
-                    }
-                    const { pnl, cost, mv, html } = buildRowHtml(p, p._i);
-                    totalExp += cost; totalVal += mv;
-                    return html;
-                }).join('');
-                tbody.innerHTML = rows || '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
-            } else {
-                // wavg가 열린 행이 있으면 행 단위로 처리
-                const existingRows = {};
-                tbody.querySelectorAll('tr[data-wid]').forEach(tr => {
-                    existingRows[tr.dataset.wid] = tr;
-                });
-
-                const fragment = document.createDocumentFragment();
-                active.forEach(p => {
-                    const wid = 'w' + p._i;
+                    // wavgState 초기화 (최초 1회만)
                     if (!wavgState[wid]) {
-                        wavgState[wid] = { open: false, rows: [{ rid: ++wavgRowId, qty: p.qty, price: p.avg_price }] };
+                        wavgState[wid] = {
+                            rows: [{ rid: ++wavgRowId, qty: String(qty), price: String(avg) }],
+                            lastResult: null,
+                            prevPos: null
+                        };
                     }
-                    const { pnl, cost, mv, html } = buildRowHtml(p, p._i);
-                    totalExp += cost; totalVal += mv;
 
-                    if (wavgState[wid].open && existingRows[wid]) {
-                        // wavg 열린 행: wavg-td(idx 9) 제외한 나머지 셀 innerHTML만 업데이트
-                        const existingTr = existingRows[wid];
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = '<table><tbody>' + html + '</tbody></table>';
-                        const newTr = tempDiv.querySelector('tr');
-                        const newTds = newTr.querySelectorAll('td');
-                        const oldTds = existingTr.querySelectorAll('td');
-                        newTds.forEach((td, idx) => {
-                            if (idx !== 9 && oldTds[idx]) {
-                                oldTds[idx].innerHTML = td.innerHTML;
-                                oldTds[idx].className = td.className;
-                            }
-                        });
-                        fragment.appendChild(existingTr);
+                    var existingTr = tbody.querySelector('tr[data-wid="' + wid + '"]');
+                    if (existingTr) {
+                        // 행이 이미 있으면 wavg-cell 제외한 나머지 td만 업데이트
+                        var tds = existingTr.querySelectorAll('td');
+                        // td 0: 종목명
+                        tds[0].innerHTML = '<a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a>';
+                        // td 1: DIR
+                        tds[1].innerHTML = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span>';
+                        // td 2: REF P
+                        tds[2].textContent = fmt(Math.round(avg));
+                        // td 3: VAL P
+                        tds[3].innerHTML = '<span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge;
+                        // td 4: Q'ty
+                        tds[4].textContent = fmt(qty);
+                        // td 5: EXP
+                        tds[5].textContent = fmt(Math.round(cost));
+                        // td 6: VAL
+                        tds[6].textContent = fmt(Math.round(mv));
+                        // td 7: N PROFIT
+                        tds[7].textContent = fmt(Math.round(pnl));
+                        tds[7].className = 'px-3 py-2 text-right ' + pnlColor;
+                        // td 8: N %
+                        tds[8].textContent = (ratio * 100).toFixed(1) + '%';
+                        tds[8].className = 'px-3 py-2 text-right ' + pnlColor;
+                        // td 9: wavg-cell → 절대 건드리지 않음
+                        // td 10: Admin → 건드리지 않음
                     } else {
-                        // wavg 닫힌 행: 새로 생성
-                        const tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = '<table><tbody>' + html + '</tbody></table>';
-                        fragment.appendChild(tempDiv.querySelector('tr'));
+                        // 행이 없으면 새로 생성
+                        var tr = document.createElement('tr');
+                        tr.setAttribute('data-wid', wid);
+                        tr.innerHTML = ''
+                            + '<td class="px-3 py-2 text-left font-bold"><a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a></td>'
+                            + '<td class="px-3 py-2 text-center"><span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span></td>'
+                            + '<td class="px-3 py-2 text-right">' + fmt(Math.round(avg)) + '</td>'
+                            + '<td class="px-3 py-2 text-right"><span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge + '</td>'
+                            + '<td class="px-3 py-2 text-right">' + fmt(qty) + '</td>'
+                            + '<td class="px-3 py-2 text-right">' + fmt(Math.round(cost)) + '</td>'
+                            + '<td class="px-3 py-2 text-right">' + fmt(Math.round(mv)) + '</td>'
+                            + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + fmt(Math.round(pnl)) + '</td>'
+                            + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (ratio * 100).toFixed(1) + '%</td>'
+                            + '<td class="px-3 py-2 text-center" id="wavg-cell-' + wid + '"></td>'
+                            + '<td class="px-3 py-2 text-center" style="white-space:nowrap" id="admin-cell-' + wid + '"></td>';
+                        tbody.appendChild(tr);
+                        // wavg cell 초기화
+                        renderWavgCell(wid, i);
+                        // admin cell 초기화
+                        renderAdminCell(wid, i);
                     }
                 });
 
-                if (active.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
-                } else {
-                    tbody.innerHTML = '';
-                    tbody.appendChild(fragment);
-                }
+                // 삭제된 행 제거 (포지션에서 없어진 경우)
+                var activeWids = active.map(function (p) { return 'w' + p._i; });
+                tbody.querySelectorAll('tr[data-wid]').forEach(function (tr) {
+                    if (activeWids.indexOf(tr.dataset.wid) === -1) tr.remove();
+                });
             }
 
-            // 삭제된 종목
-            const delSec = document.getElementById('deleted-section');
+            // Closed Position
+            var delSec = document.getElementById('deleted-section');
             if (deleted.length > 0) {
                 delSec.style.display = '';
-                document.getElementById('deleted-body').innerHTML = deleted.map(p => `
-      <tr class="deleted-row">
-        <td class="px-3 py-2 text-left font-bold text-gray-400">${p.name}</td>
-        <td class="px-3 py-2 text-center">
-          <span class="badge badge-${p.side === 'LONG' ? 'L' : 'S'}">${p.side === 'LONG' ? 'L' : 'S'}</span>
-        </td>
-        <td class="px-3 py-2 text-right">${fmt(Math.round(p.avg_price))}</td>
-        <td class="px-3 py-2 text-right">${fmt(p.qty)}</td>
-        <td class="px-3 py-2 text-right">${p.exit_price ? fmt(Math.round(p.exit_price)) : '—'}</td>
-        <td class="px-3 py-2 text-right ${p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : ''}">
-        ${p.realized_pnl !== undefined ? (p.realized_pnl >= 0 ? '+' : '') + fmt(Math.round(p.realized_pnl)) : '—'}
-        </td>
-        <td class="px-3 py-2 text-right ${p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : ''}">
-        ${(() => {
-                        const cost = Number(p.avg_price) * Number(p.qty);
-                        const ratio = cost ? (Number(p.realized_pnl) / cost) * 100 : NaN;
-                        return isNaN(ratio) ? '—' : (ratio >= 0 ? '+' : '') + ratio.toFixed(1) + '%';
-                    })()}
-        </td>
-        <td class="px-3 py-2 text-center" style="white-space:nowrap">
-            <button class="btn-icon btn-edit" onclick="openEdit(${p._i})" style="margin-right:3px">Modify</button>
-            <button class="btn-icon btn-restore" onclick="restorePos(${p._i})">Restore</button>
-        </td>
-      </tr>`).join('');
+                document.getElementById('deleted-body').innerHTML = deleted.map(function (p) {
+                    var cost = Number(p.avg_price) * Number(p.qty);
+                    var ratio = cost ? (Number(p.realized_pnl) / cost) * 100 : NaN;
+                    var pnlColor = p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : '';
+                    return '<tr class="deleted-row">'
+                        + '<td class="px-3 py-2 text-left font-bold text-gray-400">' + p.name + '</td>'
+                        + '<td class="px-3 py-2 text-center"><span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span></td>'
+                        + '<td class="px-3 py-2 text-right">' + fmt(Math.round(p.avg_price)) + '</td>'
+                        + '<td class="px-3 py-2 text-right">' + fmt(p.qty) + '</td>'
+                        + '<td class="px-3 py-2 text-right">' + (p.exit_price ? fmt(Math.round(p.exit_price)) : '—') + '</td>'
+                        + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (p.realized_pnl !== undefined ? (p.realized_pnl >= 0 ? '+' : '') + fmt(Math.round(p.realized_pnl)) : '—') + '</td>'
+                        + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (isNaN(ratio) ? '—' : (ratio >= 0 ? '+' : '') + ratio.toFixed(1) + '%') + '</td>'
+                        + '<td class="px-3 py-2 text-center" style="white-space:nowrap">'
+                        + '<button class="btn-icon btn-edit" onclick="openEdit(' + p._i + ')" style="margin-right:3px">Modify</button>'
+                        + '<button class="btn-icon btn-restore" onclick="restorePos(' + p._i + ')">Restore</button>'
+                        + '</td></tr>';
+                }).join('');
             } else {
                 delSec.style.display = 'none';
             }
         }
 
-        /* ─── Weighted Avg Cal ────────────────────────────────────────────
-           핵심 수정:
-           - input에 oninput/onchange 이벤트 없음 → DOM 재생성 금지
-           - Add Row: appendChild로 DOM에 직접 삽입, 포커스 자동 이동
-           - Del Row: 해당 row만 remove()
-           - Apply 버튼: 클릭 시 DOM에서 값 수집 → 계산 → 결과 패널만 업데이트
-        ─────────────────────────────────────────────────────────────────── */
+        // ─── Wavg Cell 렌더 ──────────────────────────────────────────────────────────
+        // wavg-cell은 render()에서 생성만 하고, 이후 내용은 이 함수들이 전담
 
-        // wavg 패널 HTML 생성 (문자열 연결 - template literal 중첩 방지)
-        function renderWavg(wid, posIdx) {
-            const state = wavgState[wid];
-            let rowsHtml = '';
+        function renderWavgCell(wid, posIdx) {
+            var cell = document.getElementById('wavg-cell-' + wid);
+            if (!cell) return;
+            var state = wavgState[wid];
+            var isOpen = state && state.open;
+
+            var btn = document.createElement('button');
+            btn.className = 'expand-btn';
+            btn.textContent = isOpen ? '▲ Fold' : '▼ Cal';
+            btn.onclick = function () { toggleWavg(wid, posIdx); };
+
+            var panel = document.createElement('div');
+            panel.id = 'wavg-panel-' + wid;
+            panel.style.display = isOpen ? 'block' : 'none';
+            if (isOpen) panel.innerHTML = buildWavgPanelHTML(wid, posIdx);
+
+            cell.innerHTML = '';
+            cell.appendChild(btn);
+            cell.appendChild(panel);
+        }
+
+        function renderAdminCell(wid, posIdx) {
+            var i = posIdx;
+            var cell = document.getElementById('admin-cell-' + wid);
+            if (!cell) return;
+            cell.innerHTML = ''
+                + '<button class="btn-icon btn-edit" onclick="movePos(' + i + ',\'up\')" style="margin-right:2px">▲</button>'
+                + '<button class="btn-icon btn-edit" onclick="movePos(' + i + ',\'down\')" style="margin-right:4px">▼</button>'
+                + '<button class="btn-icon btn-edit" onclick="openEdit(' + i + ')" style="margin-right:3px">Modify</button>'
+                + '<button class="btn-icon btn-del" onclick="openDeleteModal(' + i + ')">Delete</button>';
+        }
+
+        // wavg 패널 내부 HTML (순수 문자열, 이벤트 핸들러는 inline onclick)
+        function buildWavgPanelHTML(wid, posIdx) {
+            var state = wavgState[wid];
+            var rowsHTML = '';
             state.rows.forEach(function (r) {
-                const qv = r.qty || '';
-                const pv = r.price || '';
-                rowsHtml += '<div class="wavg-row">'
-                    + '<input type="number" data-wid="' + wid + '" data-rid="' + r.rid + '" data-field="qty" value="' + qv + '" placeholder="Q&#39;ty" oninput="wavgCalc(\'' + wid + '\')">'
-                    + '<input type="number" data-wid="' + wid + '" data-rid="' + r.rid + '" data-field="price" value="' + pv + '" placeholder="Avg Price" oninput="wavgCalc(\'' + wid + '\')">'
-                    + '<button class="btn-icon btn-del" style="padding:3px 7px" onclick="wavgDelRow(\'' + wid + '\',' + r.rid + ')">✕</button>'
+                rowsHTML += '<div class="wavg-row">'
+                    + '<input type="number" id="wavg-qty-input-' + r.rid + '" value="' + (r.qty || '') + '" placeholder="Q\'ty" oninput="wavgCalc(\'' + wid + '\')">'
+                    + '<input type="number" id="wavg-price-input-' + r.rid + '" value="' + (r.price || '') + '" placeholder="Avg Price" oninput="wavgCalc(\'' + wid + '\')">'
+                    + '<button class="btn-icon btn-del" style="padding:3px 7px" onclick="wavgDelRow(\'' + wid + '\',' + r.rid + ',\'' + posIdx + '\')">✕</button>'
                     + '</div>';
             });
-            const lr = state.lastResult;
-            const vVal = lr && !isNaN(lr.avg) ? fmtP(lr.avg) : '—';
-            const qVal = lr ? fmt(lr.totalQty) : '—';
-            const aVal = lr ? fmt(Math.round(lr.totalAmt)) : '—';
+
+            var lr = state.lastResult;
+            var vVal = lr && !isNaN(lr.avg) ? fmtP(lr.avg) : '—';
+            var qVal = lr ? fmt(lr.totalQty) : '—';
+            var aVal = lr ? fmt(Math.round(lr.totalAmt)) : '—';
+
+            var undoBtn = state.prevPos
+                ? '<button class="btn-icon btn-restore" style="font-size:.75rem;padding:3px 10px" onclick="wavgUndo(\'' + wid + '\',' + posIdx + ')">↩ Undo</button>'
+                : '';
+
             return '<div class="wavg-panel">'
                 + '<div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">Weighted Avg Cal</div>'
-                + '<div id="wavg-rows-' + wid + '">' + rowsHtml + '</div>'
+                + '<div id="wavg-rows-' + wid + '">' + rowsHTML + '</div>'
                 + '<div style="display:flex;gap:6px;margin-top:4px">'
                 + '<button class="btn-icon btn-edit" style="flex:1;font-size:.75rem" onclick="wavgAddRow(\'' + wid + '\',' + posIdx + ')">+ Add Row</button>'
                 + '<button class="btn-icon btn-save" style="font-size:.75rem;padding:3px 14px" onclick="wavgApply(\'' + wid + '\',' + posIdx + ')">Apply</button>'
-                + (state.prevPos ? '<button class="btn-icon btn-restore" style="font-size:.75rem;padding:3px 10px" onclick="wavgUndo(\'' + wid + '\',' + posIdx + ')">↩ Undo</button>' : '')
+                + undoBtn
                 + '</div>'
                 + '<div class="wavg-result">'
-                + '<div class="wavg-stat"><div class="wavg-stat-label">Weighted Avg</div><div class="wavg-stat-value" id="wavg-val-' + wid + '">' + vVal + '</div></div>'
-                + '<div class="wavg-stat"><div class="wavg-stat-label">Total Q&#39;ty</div><div class="wavg-stat-value" id="wavg-qty-' + wid + '">' + qVal + '</div></div>'
-                + '<div class="wavg-stat"><div class="wavg-stat-label">Total Amount</div><div class="wavg-stat-value" id="wavg-amt-' + wid + '">' + aVal + '</div></div>'
+                + '<div class="wavg-stat"><div class="wavg-stat-label">Weighted Avg</div><div class="wavg-stat-value" id="wavg-result-avg-' + wid + '">' + vVal + '</div></div>'
+                + '<div class="wavg-stat"><div class="wavg-stat-label">Total Q\'ty</div><div class="wavg-stat-value" id="wavg-result-qty-' + wid + '">' + qVal + '</div></div>'
+                + '<div class="wavg-stat"><div class="wavg-stat-label">Total Amount</div><div class="wavg-stat-value" id="wavg-result-amt-' + wid + '">' + aVal + '</div></div>'
                 + '</div></div>';
         }
 
+        // ─── Wavg 동작 함수 ───────────────────────────────────────────────────────────
+
         function toggleWavg(wid, posIdx) {
+            if (!wavgState[wid]) return;
             wavgState[wid].open = !wavgState[wid].open;
-            const panel = document.getElementById('wavg-' + wid);
-            const btn = document.querySelector('[onclick="toggleWavg(\'' + wid + '\',' + posIdx + ')"]');
+            var panel = document.getElementById('wavg-panel-' + wid);
+            var cell = document.getElementById('wavg-cell-' + wid);
+            var btn = cell ? cell.querySelector('.expand-btn') : null;
             if (wavgState[wid].open) {
+                panel.innerHTML = buildWavgPanelHTML(wid, posIdx);
                 panel.style.display = 'block';
-                panel.innerHTML = renderWavg(wid, posIdx);
                 if (btn) btn.textContent = '▲ Fold';
             } else {
                 panel.style.display = 'none';
@@ -729,59 +711,62 @@
         }
 
         function wavgAddRow(wid, posIdx) {
-            const rid = ++wavgRowId;
+            var rid = ++wavgRowId;
             wavgState[wid].rows.push({ rid: rid, qty: '', price: '' });
-            const container = document.getElementById('wavg-rows-' + wid);
+            var container = document.getElementById('wavg-rows-' + wid);
             if (!container) return;
-            const div = document.createElement('div');
+            var div = document.createElement('div');
             div.className = 'wavg-row';
-            div.innerHTML = '<input type="number" data-wid="' + wid + '" data-rid="' + rid + '" data-field="qty" placeholder="Q&#39;ty" oninput="wavgCalc(\'' + wid + '\')">'
-                + '<input type="number" data-wid="' + wid + '" data-rid="' + rid + '" data-field="price" placeholder="Avg Price" oninput="wavgCalc(\'' + wid + '\')">'
-                + '<button class="btn-icon btn-del" style="padding:3px 7px" onclick="wavgDelRow(\'' + wid + '\',' + rid + ')">✕</button>';
+            div.innerHTML = ''
+                + '<input type="number" id="wavg-qty-input-' + rid + '" placeholder="Q\'ty" oninput="wavgCalc(\'' + wid + '\')">'
+                + '<input type="number" id="wavg-price-input-' + rid + '" placeholder="Avg Price" oninput="wavgCalc(\'' + wid + '\')">'
+                + '<button class="btn-icon btn-del" style="padding:3px 7px" onclick="wavgDelRow(\'' + wid + '\',' + rid + ',\'' + posIdx + '\')">✕</button>';
             container.appendChild(div);
             div.querySelector('input').focus();
         }
 
-        function wavgDelRow(wid, rid) {
+        function wavgDelRow(wid, rid, posIdx) {
+            rid = parseInt(rid);
             wavgState[wid].rows = wavgState[wid].rows.filter(function (r) { return r.rid !== rid; });
-            const container = document.getElementById('wavg-rows-' + wid);
-            if (!container) return;
-            const target = container.querySelector('[data-rid="' + rid + '"]');
-            if (target) target.closest('.wavg-row').remove();
+            var qEl = document.getElementById('wavg-qty-input-' + rid);
+            if (qEl) {
+                var row = qEl.closest('.wavg-row');
+                if (row) row.remove();
+            }
             wavgCalc(wid);
         }
 
-        // 실시간 계산 - DOM 읽기만, wavgState.rows 건드리지 않음
+        // 실시간 계산 - input DOM 절대 건드리지 않음, 결과 패널만 업데이트
         function wavgCalc(wid) {
-            const container = document.getElementById('wavg-rows-' + wid);
-            if (!container) return;
-            let totalQty = 0, totalAmt = 0;
-            container.querySelectorAll('.wavg-row').forEach(function (row) {
-                let q = 0, p = 0;
-                row.querySelectorAll('input[data-rid]').forEach(function (inp) {
-                    if (inp.dataset.field === 'qty') q = parseFloat(inp.value) || 0;
-                    if (inp.dataset.field === 'price') p = parseFloat(inp.value) || 0;
-                });
+            var state = wavgState[wid];
+            if (!state) return;
+            var totalQty = 0, totalAmt = 0;
+            state.rows.forEach(function (r) {
+                var qEl = document.getElementById('wavg-qty-input-' + r.rid);
+                var pEl = document.getElementById('wavg-price-input-' + r.rid);
+                var q = qEl ? (parseFloat(qEl.value) || 0) : 0;
+                var p = pEl ? (parseFloat(pEl.value) || 0) : 0;
                 if (q > 0 && p > 0) { totalQty += q; totalAmt += q * p; }
             });
-            const avg = totalQty > 0 ? totalAmt / totalQty : NaN;
-            wavgState[wid].lastResult = { avg: avg, totalQty: totalQty, totalAmt: totalAmt };
-            const vEl = document.getElementById('wavg-val-' + wid);
-            const qEl = document.getElementById('wavg-qty-' + wid);
-            const aEl = document.getElementById('wavg-amt-' + wid);
+            var avg = totalQty > 0 ? totalAmt / totalQty : NaN;
+            state.lastResult = { avg: avg, totalQty: totalQty, totalAmt: totalAmt };
+
+            var vEl = document.getElementById('wavg-result-avg-' + wid);
+            var qEl = document.getElementById('wavg-result-qty-' + wid);
+            var aEl = document.getElementById('wavg-result-amt-' + wid);
             if (vEl) vEl.textContent = isNaN(avg) ? '—' : fmtP(avg);
             if (qEl) qEl.textContent = fmt(totalQty);
             if (aEl) aEl.textContent = fmt(Math.round(totalAmt));
         }
 
-        // Apply - 계산 후 서버에 포지션 저장
+        // Apply - 포지션 서버 저장
         async function wavgApply(wid, posIdx) {
             wavgCalc(wid);
-            const lr = wavgState[wid].lastResult;
+            var lr = wavgState[wid].lastResult;
             if (!lr || isNaN(lr.avg) || lr.totalQty <= 0) {
                 alert('유효한 수량과 가격을 입력해주세요.'); return;
             }
-            const pos = positions[posIdx];
+            var pos = positions[posIdx];
             if (!pos) return;
             if (!confirm(pos.name + '\nQ\'ty: ' + fmt(lr.totalQty) + '  Avg: ' + fmtP(lr.avg) + '\n\n포지션에 반영하시겠습니까?')) return;
             // 이전값 백업
@@ -798,11 +783,11 @@
             await loadAll();
         }
 
-        // Undo - 이전 포지션값으로 복원
+        // Undo - 이전값 복원
         async function wavgUndo(wid, posIdx) {
-            const prev = wavgState[wid] && wavgState[wid].prevPos;
+            var prev = wavgState[wid] && wavgState[wid].prevPos;
             if (!prev) return;
-            const pos = positions[posIdx];
+            var pos = positions[posIdx];
             if (!pos) return;
             if (!confirm('직전 값으로 복원합니다.\nQ\'ty: ' + fmt(prev.qty) + '  Avg: ' + fmtP(prev.avg_price) + '\n\n계속하시겠습니까?')) return;
             await fetch(API_BASE + '/positions/' + posIdx, {
@@ -814,23 +799,24 @@
                     exit_price: pos.exit_price || null
                 })
             });
-            delete wavgState[wid].prevPos;
+            wavgState[wid].prevPos = null;
             await loadAll();
         }
 
-        /* ─── Position CRUD ─────────────────────────────────────────────── */
+        // ─── Position CRUD ────────────────────────────────────────────────────────────
 
         function openAdd() {
             editIndex = -1;
             document.getElementById('modal-title').textContent = 'Add Position';
-            ['symbol', 'name', 'qty', 'avg'].forEach(k => document.getElementById('f-' + k).value = '');
+            ['symbol', 'name', 'qty', 'avg'].forEach(function (k) { document.getElementById('f-' + k).value = ''; });
+            document.getElementById('f-exit').value = '';
             document.getElementById('f-side').value = 'LONG';
             document.getElementById('modal').classList.add('open');
         }
 
         function openEdit(i) {
             editIndex = i;
-            const p = positions[i];
+            var p = positions[i];
             document.getElementById('modal-title').textContent = 'Modify Position';
             document.getElementById('f-symbol').value = p.symbol;
             document.getElementById('f-name').value = p.name;
@@ -841,58 +827,53 @@
             document.getElementById('modal').classList.add('open');
         }
 
-        function closeModal() {
-            document.getElementById('modal').classList.remove('open');
-        }
+        function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
         async function savePos() {
-            const exitPrice = parseFloat(document.getElementById('f-exit').value) || null;
-            const body = {
+            var exitPrice = parseFloat(document.getElementById('f-exit').value) || null;
+            var body = {
                 symbol: document.getElementById('f-symbol').value.trim(),
                 name: document.getElementById('f-name').value.trim(),
                 side: document.getElementById('f-side').value,
                 qty: parseFloat(document.getElementById('f-qty').value),
                 avg_price: parseFloat(document.getElementById('f-avg').value),
-                exit_price: exitPrice,
+                exit_price: exitPrice
             };
             if (!body.symbol || !body.name || isNaN(body.qty) || isNaN(body.avg_price)) {
                 alert('모든 필드를 입력해주세요.'); return;
             }
-            const url = editIndex >= 0 ? API_BASE + '/positions/' + editIndex : API_BASE + '/positions';
-            const method = editIndex >= 0 ? 'PUT' : 'POST';
-            await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            var url = editIndex >= 0 ? API_BASE + '/positions/' + editIndex : API_BASE + '/positions';
+            var method = editIndex >= 0 ? 'PUT' : 'POST';
+            await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             closeModal();
             await loadAll();
         }
 
-        let deleteIndex = -1;
-
         function openDeleteModal(i) {
             deleteIndex = i;
-            const p = positions[i];
+            var p = positions[i];
             document.getElementById('del-name').textContent = p.name;
-            const livePrice = getLivePrice(p.symbol);
+            var livePrice = getLivePrice(p.symbol);
             document.getElementById('del-exit-price').value = livePrice || p.avg_price;
             updateDelPnl();
             document.getElementById('del-modal').classList.add('open');
         }
 
         function updateDelPnl() {
-            const i = deleteIndex;
+            var i = deleteIndex;
             if (i < 0) return;
-            const p = positions[i];
-            const exit = parseFloat(document.getElementById('del-exit-price').value) || 0;
-            const avg = Number(p.avg_price) || 0;
-            const qty = Number(p.qty) || 0;
-            const side = p.side || 'LONG';
-            const pnl = side === 'SHORT' ? (avg - exit) * qty : (exit - avg) * qty;
-            const el = document.getElementById('del-pnl-preview');
+            var p = positions[i];
+            var exit = parseFloat(document.getElementById('del-exit-price').value) || 0;
+            var avg = Number(p.avg_price) || 0;
+            var qty = Number(p.qty) || 0;
+            var pnl = p.side === 'SHORT' ? (avg - exit) * qty : (exit - avg) * qty;
+            var el = document.getElementById('del-pnl-preview');
             el.textContent = (pnl >= 0 ? '+' : '') + Math.round(pnl).toLocaleString('ko-KR') + '원';
             el.className = 'font-bold text-lg ' + (pnl > 0 ? 'text-red-600' : pnl < 0 ? 'text-blue-600' : 'text-gray-600');
         }
 
         async function confirmDelete() {
-            const exit = parseFloat(document.getElementById('del-exit-price').value) || null;
+            var exit = parseFloat(document.getElementById('del-exit-price').value) || null;
             await fetch(API_BASE + '/positions/' + deleteIndex, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
@@ -912,25 +893,22 @@
             await loadAll();
         }
 
-        /* ─── Modal backdrop click to close ─────────────────────────────── */
-
-        let mouseDownTarget = null;
-        document.getElementById('modal').addEventListener('mousedown', e => { mouseDownTarget = e.target; });
-        document.getElementById('modal').addEventListener('click', e => {
-            if (mouseDownTarget === document.getElementById('modal') &&
-                e.target === document.getElementById('modal')) closeModal();
-            mouseDownTarget = null;
+        // ─── Modal backdrop close ─────────────────────────────────────────────────────
+        var _mdown = null;
+        document.getElementById('modal').addEventListener('mousedown', function (e) { _mdown = e.target; });
+        document.getElementById('modal').addEventListener('click', function (e) {
+            if (_mdown === e.currentTarget && e.target === e.currentTarget) closeModal();
+            _mdown = null;
         });
-
-        let delMouseDownTarget = null;
-        document.getElementById('del-modal').addEventListener('mousedown', e => { delMouseDownTarget = e.target; });
-        document.getElementById('del-modal').addEventListener('click', e => {
-            if (delMouseDownTarget === document.getElementById('del-modal') &&
-                e.target === document.getElementById('del-modal'))
+        var _dmdown = null;
+        document.getElementById('del-modal').addEventListener('mousedown', function (e) { _dmdown = e.target; });
+        document.getElementById('del-modal').addEventListener('click', function (e) {
+            if (_dmdown === e.currentTarget && e.target === e.currentTarget)
                 document.getElementById('del-modal').classList.remove('open');
-            delMouseDownTarget = null;
+            _dmdown = null;
         });
 
+        // ─── 시작 ─────────────────────────────────────────────────────────────────────
         loadAll();
         setInterval(loadAll, 10000);
     </script>
