@@ -241,6 +241,61 @@
             color: #374151
         }
 
+        .search-wrap {
+            position: relative;
+            grid-column: 1/-1
+        }
+
+        .search-input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        .ac-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .1);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none
+        }
+
+        .ac-dropdown.open {
+            display: block
+        }
+
+        .ac-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: .85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px
+        }
+
+        .ac-item:hover {
+            background: #f3f4f6
+        }
+
+        .ac-item-name {
+            font-weight: 600;
+            color: #111827
+        }
+
+        .ac-item-code {
+            font-size: .75rem;
+            color: #6b7280;
+            font-family: monospace
+        }
+
         @media(max-width:640px) {
             h1 {
                 font-size: 1.4rem !important
@@ -371,13 +426,21 @@
         <div class="modal-box">
             <h2 id="modal-title" class="text-base font-bold text-gray-900 mb-4">Add Position</h2>
             <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">Code</label>
-                    <input class="form-input" id="f-symbol" placeholder="e.g., 005930">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Name</label>
-                    <input class="form-input" id="f-name" placeholder="e.g., 삼성전자">
+                <div class="search-wrap form-group" style="grid-column:1/-1">
+                    <label class="form-label">종목 검색</label>
+                    <input class="form-input" id="f-search" placeholder="종목명 또는 코드 입력..." autocomplete="off"
+                        oninput="stockSearch(this.value)">
+                    <div class="ac-dropdown" id="ac-dropdown"></div>
+                    <div class="search-input-row" style="margin-top:8px">
+                        <div class="form-group">
+                            <label class="form-label">Code</label>
+                            <input class="form-input" id="f-symbol" placeholder="005930">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Name</label>
+                            <input class="form-input" id="f-name" placeholder="삼성전자">
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Dir</label>
@@ -829,6 +892,8 @@
             document.getElementById('modal-title').textContent = 'Add Position';
             ['symbol', 'name', 'qty', 'avg'].forEach(function (k) { document.getElementById('f-' + k).value = ''; });
             document.getElementById('f-exit').value = '';
+            document.getElementById('f-search').value = '';
+            document.getElementById('ac-dropdown').classList.remove('open');
             document.getElementById('f-side').value = 'LONG';
             document.getElementById('modal').classList.add('open');
         }
@@ -847,6 +912,55 @@
         }
 
         function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+        var _acTimer = null;
+        function stockSearch(q) {
+            clearTimeout(_acTimer);
+            var dd = document.getElementById('ac-dropdown');
+            if (!q || q.length < 1) { dd.classList.remove('open'); dd.innerHTML = ''; return; }
+            _acTimer = setTimeout(async function () {
+                try {
+                    var res = await fetch(API_BASE.replace('/api', '') + '/search?q=' + encodeURIComponent(q));
+                    var data = await res.json();
+                    // 네이버 자동완성 응답: data.items 또는 data[1]
+                    var items = [];
+                    if (data && data.items && data.items[0]) {
+                        items = data.items[0].slice(0, 8);
+                    } else if (Array.isArray(data) && data[1]) {
+                        items = data[1].slice(0, 8);
+                    }
+                    if (!items.length) { dd.classList.remove('open'); dd.innerHTML = ''; return; }
+                    dd.innerHTML = items.map(function (it) {
+                        var code = it[0] || '';
+                        var name = it[1] || '';
+                        var safeName = name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+                        return '<div class="ac-item" onclick="selectStock(this)"'
+                            + ' data-code="' + code + '" data-name="' + safeName + '">'
+                            + '<span class="ac-item-name">' + name + '</span>'
+                            + '<span class="ac-item-code">' + code + '</span>'
+                            + '</div>';
+                    }).join('');
+                    dd.classList.add('open');
+                } catch (e) { dd.classList.remove('open'); }
+            }, 250);
+        }
+
+        function selectStock(el) {
+            var code = el.dataset.code;
+            var name = el.dataset.name;
+            document.getElementById('f-symbol').value = code;
+            document.getElementById('f-name').value = name;
+            document.getElementById('f-search').value = name + ' (' + code + ')';
+            document.getElementById('ac-dropdown').classList.remove('open');
+        }
+
+        // 드롭다운 외부 클릭시 닫기
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.search-wrap')) {
+                var dd = document.getElementById('ac-dropdown');
+                if (dd) dd.classList.remove('open');
+            }
+        });
 
         async function savePos() {
             var exitPrice = parseFloat(document.getElementById('f-exit').value) || null;
