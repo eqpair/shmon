@@ -920,7 +920,7 @@
             if (!q || q.length < 1) { dd.classList.remove('open'); dd.innerHTML = ''; return; }
             _acTimer = setTimeout(async function () {
                 try {
-                    var res = await fetch(API_BASE.replace('/api', '') + '/search?q=' + encodeURIComponent(q));
+                    var res = await fetch(API_BASE + '/search?q=' + encodeURIComponent(q));
                     var data = await res.json();
                     // {code, name} 배열 형식
                     if (!Array.isArray(data) || !data.length) { dd.classList.remove('open'); dd.innerHTML = ''; return; }

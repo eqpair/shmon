@@ -130,14 +130,6 @@
             "realized_pnl": 379660.0
         },
         {
-            "symbol": "018260",
-            "name": "삼성에스디에스",
-            "side": "LONG",
-            "qty": 1150,
-            "avg_price": 176700.0,
-            "group": "삼성에스디에스"
-        },
-        {
             "symbol": "229200",
             "name": "KODEX 코스닥 150 ETF",
             "side": "LONG",
@@ -150,6 +142,14 @@
             "realized_pnl": null
         },
         {
+            "symbol": "018260",
+            "name": "삼성에스디에스",
+            "side": "LONG",
+            "qty": 1150,
+            "avg_price": 176700.0,
+            "group": "삼성에스디에스"
+        },
+        {
             "symbol": "005935",
             "name": "삼성전자우",
             "side": "LONG",
@@ -160,15 +160,15 @@
         },
         {
             "symbol": "440110",
-            "name": "파두",
+            "name": "파두[S]",
             "side": "LONG",
             "qty": 10300.0,
             "avg_price": 11756.0,
-            "group": "파두",
+            "group": "파두[S]",
             "deleted": true,
-            "exit_price": 103290.0,
-            "exit_date": "2026-05-13",
-            "realized_pnl": 942800200.0
+            "exit_price": 100200.0,
+            "exit_date": "2026-05-14",
+            "realized_pnl": 910973200.0
         }
     ]
 }
