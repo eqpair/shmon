@@ -525,23 +525,25 @@
 
             let totalExp = 0, totalVal = 0;
 
-            const rows = active.map(p => {
-                const i = p._i;
+            // 행별 HTML 생성 함수
+            function buildRowHtml(p, i) {
                 const avg = Number(p.avg_price) || 0;
                 const qty = Number(p.qty) || 0;
                 const last = getLivePrice(p.symbol) || avg;
                 const cost = avg * qty, mv = last * qty;
                 const pnl = p.side === 'SHORT' ? (avg - last) * qty : mv - cost;
                 const ratio = cost ? pnl / cost : 0;
-                totalExp += cost; totalVal += mv;
-
                 const pnlColor = pnl > 0 ? 'profit-plus' : pnl < 0 ? 'profit-minus' : '';
                 const wid = 'w' + i;
-                if (!wavgState[wid]) {
-                    wavgState[wid] = { open: false, rows: [{ rid: ++wavgRowId, qty: p.qty, price: p.avg_price }] };
-                }
-
-                return `<tr>
+                const mkt = liveData.positions.find(lp => lp.symbol === p.symbol)?.actual_market;
+                const mktBadge = mkt === 'NX'
+                    ? '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>'
+                    : mkt === 'J'
+                        ? '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>'
+                        : '';
+                return {
+                    wid, pnl, cost, mv,
+                    html: `<tr data-wid="${wid}">
       <td class="px-3 py-2 text-left font-bold">
         <a href="https://finance.naver.com/item/main.naver?code=${p.symbol}" target="_blank"
            class="hover:underline text-gray-800">${p.name}</a>
@@ -551,25 +553,19 @@
       </td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(avg))}</td>
       <td class="px-3 py-2 text-right">
-        <span class="font-bold text-green-700">${fmt(last)}</span>
-        ${(() => {
-                        const mkt = liveData.positions.find(lp => lp.symbol === p.symbol)?.actual_market;
-                        if (mkt === 'NX') return '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>';
-                        if (mkt === 'J') return '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>';
-                        return '';
-                    })()}
+        <span class="font-bold text-green-700">${fmt(last)}</span>${mktBadge}
       </td>
       <td class="px-3 py-2 text-right">${fmt(qty)}</td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(cost))}</td>
       <td class="px-3 py-2 text-right">${fmt(Math.round(mv))}</td>
       <td class="px-3 py-2 text-right ${pnlColor}">${fmt(Math.round(pnl))}</td>
       <td class="px-3 py-2 text-right ${pnlColor}">${(ratio * 100).toFixed(1)}%</td>
-      <td class="px-3 py-2 text-center">
+      <td class="px-3 py-2 text-center" id="wavg-td-${wid}">
         <button class="expand-btn" onclick="toggleWavg('${wid}',${i})">
-          ${wavgState[wid].open ? '▲ Fold' : '▼ Cal'}
+          ${wavgState[wid] && wavgState[wid].open ? '▲ Fold' : '▼ Cal'}
         </button>
-        <div id="wavg-${wid}" style="display:${wavgState[wid].open ? 'block' : 'none'}">
-          ${renderWavg(wid, i)}
+        <div id="wavg-${wid}" style="display:${wavgState[wid] && wavgState[wid].open ? 'block' : 'none'}">
+          ${wavgState[wid] && wavgState[wid].open ? renderWavg(wid, i) : ''}
         </div>
       </td>
       <td class="px-3 py-2 text-center" style="white-space:nowrap">
@@ -578,11 +574,72 @@
         <button class="btn-icon btn-edit" onclick="openEdit(${i})" style="margin-right:3px">Modify</button>
         <button class="btn-icon btn-del" onclick="openDeleteModal(${i})">Delete</button>
       </td>
-    </tr>`;
-            }).join('');
+    </tr>`
+                };
+            }
 
-            document.getElementById('report-body').innerHTML = rows ||
-                '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
+            const tbody = document.getElementById('report-body');
+
+            // wavg가 열린 행이 하나라도 있으면 행 단위로 선택 업데이트
+            const anyOpen = active.some(p => wavgState['w' + p._i] && wavgState['w' + p._i].open);
+
+            if (!anyOpen) {
+                // wavg 패널이 모두 닫혀있으면 기존처럼 전체 innerHTML 교체 (빠름)
+                const rows = active.map(p => {
+                    if (!wavgState['w' + p._i]) {
+                        wavgState['w' + p._i] = { open: false, rows: [{ rid: ++wavgRowId, qty: p.qty, price: p.avg_price }] };
+                    }
+                    const { pnl, cost, mv, html } = buildRowHtml(p, p._i);
+                    totalExp += cost; totalVal += mv;
+                    return html;
+                }).join('');
+                tbody.innerHTML = rows || '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
+            } else {
+                // wavg가 열린 행이 있으면 행 단위로 처리
+                const existingRows = {};
+                tbody.querySelectorAll('tr[data-wid]').forEach(tr => {
+                    existingRows[tr.dataset.wid] = tr;
+                });
+
+                const fragment = document.createDocumentFragment();
+                active.forEach(p => {
+                    const wid = 'w' + p._i;
+                    if (!wavgState[wid]) {
+                        wavgState[wid] = { open: false, rows: [{ rid: ++wavgRowId, qty: p.qty, price: p.avg_price }] };
+                    }
+                    const { pnl, cost, mv, html } = buildRowHtml(p, p._i);
+                    totalExp += cost; totalVal += mv;
+
+                    if (wavgState[wid].open && existingRows[wid]) {
+                        // wavg 열린 행: wavg-td(idx 9) 제외한 나머지 셀 innerHTML만 업데이트
+                        const existingTr = existingRows[wid];
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = '<table><tbody>' + html + '</tbody></table>';
+                        const newTr = tempDiv.querySelector('tr');
+                        const newTds = newTr.querySelectorAll('td');
+                        const oldTds = existingTr.querySelectorAll('td');
+                        newTds.forEach((td, idx) => {
+                            if (idx !== 9 && oldTds[idx]) {
+                                oldTds[idx].innerHTML = td.innerHTML;
+                                oldTds[idx].className = td.className;
+                            }
+                        });
+                        fragment.appendChild(existingTr);
+                    } else {
+                        // wavg 닫힌 행: 새로 생성
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = '<table><tbody>' + html + '</tbody></table>';
+                        fragment.appendChild(tempDiv.querySelector('tr'));
+                    }
+                });
+
+                if (active.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
+                } else {
+                    tbody.innerHTML = '';
+                    tbody.appendChild(fragment);
+                }
+            }
 
             // 삭제된 종목
             const delSec = document.getElementById('deleted-section');
