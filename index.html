@@ -372,14 +372,14 @@
                             <tr class="bg-gray-100 text-gray-800">
                                 <th class="px-3 py-2 text-left"></th>
                                 <th class="px-3 py-2 text-center">DIR</th>
-                                <th class="px-3 py-2 text-right">REF P</th>
-                                <th class="px-3 py-2 text-right">VAL P</th>
+                                <th class="px-3 py-2 text-right">REF PX</th>
+                                <th class="px-3 py-2 text-right">VAL PX</th>
                                 <th class="px-3 py-2 text-right">QTY</th>
                                 <th class="px-3 py-2 text-right">EXP</th>
                                 <th class="px-3 py-2 text-right">VAL</th>
                                 <th class="px-3 py-2 text-right">N PROFIT</th>
                                 <th class="px-3 py-2 text-right">N %</th>
-                                <th class="px-3 py-2 text-center">WAVG</th>
+                                <th class="px-3 py-2 text-center">W AVG</th>
                                 <th class="px-3 py-2 text-center">ADMIN</th>
                             </tr>
                         </thead>
@@ -698,7 +698,7 @@
 
             var btn = document.createElement('button');
             btn.className = 'expand-btn';
-            btn.textContent = isOpen ? '▲ Fold' : '▼ Cal';
+            btn.textContent = isOpen ? '▲ Fold' : '▼';
             btn.onclick = function () { toggleWavg(wid, posIdx); };
 
             var panel = document.createElement('div');
@@ -772,7 +772,7 @@
                 if (btn) btn.textContent = '▲ Fold';
             } else {
                 panel.style.display = 'none';
-                if (btn) btn.textContent = '▼ Cal';
+                if (btn) btn.textContent = '▼';
             }
         }
 
@@ -881,7 +881,7 @@
             var cell = document.getElementById('wavg-cell-' + wid);
             if (cell) {
                 var btn = cell.querySelector('.expand-btn');
-                if (btn) btn.textContent = '▼ Cal';
+                if (btn) btn.textContent = '▼';
             }
         }
 
