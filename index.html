@@ -648,6 +648,7 @@
                 + '<div style="display:flex;gap:6px;margin-top:4px">'
                 + '<button class="btn-icon btn-edit" style="flex:1;font-size:.75rem" onclick="wavgAddRow(\'' + wid + '\',' + posIdx + ')">+ Add Row</button>'
                 + '<button class="btn-icon btn-save" style="font-size:.75rem;padding:3px 14px" onclick="wavgApply(\'' + wid + '\',' + posIdx + ')">Apply</button>'
+                + (state.prevPos ? '<button class="btn-icon btn-restore" style="font-size:.75rem;padding:3px 10px" onclick="wavgUndo(\'' + wid + '\',' + posIdx + ')">↩ Undo</button>' : '')
                 + '</div>'
                 + '<div class="wavg-result">'
                 + '<div class="wavg-stat"><div class="wavg-stat-label">Weighted Avg</div><div class="wavg-stat-value" id="wavg-val-' + wid + '">' + vVal + '</div></div>'
@@ -726,6 +727,8 @@
             const pos = positions[posIdx];
             if (!pos) return;
             if (!confirm(pos.name + '\nQ\'ty: ' + fmt(lr.totalQty) + '  Avg: ' + fmtP(lr.avg) + '\n\n포지션에 반영하시겠습니까?')) return;
+            // 이전값 백업
+            wavgState[wid].prevPos = { qty: pos.qty, avg_price: pos.avg_price };
             await fetch(API_BASE + '/positions/' + posIdx, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -735,7 +738,26 @@
                     exit_price: pos.exit_price || null
                 })
             });
-            delete wavgState[wid];
+            await loadAll();
+        }
+
+        // Undo - 이전 포지션값으로 복원
+        async function wavgUndo(wid, posIdx) {
+            const prev = wavgState[wid] && wavgState[wid].prevPos;
+            if (!prev) return;
+            const pos = positions[posIdx];
+            if (!pos) return;
+            if (!confirm('직전 값으로 복원합니다.\nQ\'ty: ' + fmt(prev.qty) + '  Avg: ' + fmtP(prev.avg_price) + '\n\n계속하시겠습니까?')) return;
+            await fetch(API_BASE + '/positions/' + posIdx, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    symbol: pos.symbol, name: pos.name, side: pos.side,
+                    qty: prev.qty, avg_price: prev.avg_price,
+                    exit_price: pos.exit_price || null
+                })
+            });
+            delete wavgState[wid].prevPos;
             await loadAll();
         }
 
