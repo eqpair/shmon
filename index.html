@@ -588,6 +588,8 @@
                     }
                 });
 
+                // data-wid 없는 행 제거 (Loading... 등)
+                tbody.querySelectorAll('tr:not([data-wid])').forEach(function (tr) { tr.remove(); });
                 // 삭제된 행 제거 (포지션에서 없어진 경우)
                 var activeWids = active.map(function (p) { return 'w' + p._i; });
                 tbody.querySelectorAll('tr[data-wid]').forEach(function (tr) {
