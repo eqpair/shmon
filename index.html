@@ -783,6 +783,7 @@
                     exit_price: pos.exit_price || null
                 })
             });
+            wavgClose(wid);
             await loadAll();
         }
 
@@ -803,7 +804,22 @@
                 })
             });
             wavgState[wid].prevPos = null;
+            wavgClose(wid);
             await loadAll();
+        }
+
+        function wavgClose(wid) {
+            // 패널 닫기 + wavgState 초기화 (row 값, 결과, open 상태)
+            if (!wavgState[wid]) return;
+            wavgState[wid].open = false;
+            wavgState[wid].lastResult = null;
+            var panel = document.getElementById('wavg-panel-' + wid);
+            if (panel) { panel.style.display = 'none'; panel.innerHTML = ''; }
+            var cell = document.getElementById('wavg-cell-' + wid);
+            if (cell) {
+                var btn = cell.querySelector('.expand-btn');
+                if (btn) btn.textContent = '▼ Cal';
+            }
         }
 
         // ─── Position CRUD ────────────────────────────────────────────────────────────
