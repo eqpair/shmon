@@ -625,106 +625,118 @@
            - Apply 버튼: 클릭 시 DOM에서 값 수집 → 계산 → 결과 패널만 업데이트
         ─────────────────────────────────────────────────────────────────── */
 
+        // wavg 패널 HTML 생성 (문자열 연결 - template literal 중첩 방지)
         function renderWavg(wid, posIdx) {
             const state = wavgState[wid];
-
-            const rowsHtml = state.rows.map(r => `
-    <div class="wavg-row">
-      <input type="number" data-wid="${wid}" data-rid="${r.rid}" data-field="qty"
-        value="${r.qty}" placeholder="Q'ty">
-      <input type="number" data-wid="${wid}" data-rid="${r.rid}" data-field="price"
-        value="${r.price}" placeholder="Avg Price">
-      <button class="btn-icon btn-del" style="padding:3px 7px"
-        onclick="wavgDelRow('${wid}',${r.rid})">✕</button>
-    </div>`).join('');
-
-            return `<div class="wavg-panel">
-    <div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">Weighted Avg Cal</div>
-    <div id="wavg-rows-${wid}">${rowsHtml}</div>
-    <div style="display:flex;gap:6px;margin-top:4px">
-      <button class="btn-icon btn-edit" style="flex:1;font-size:.75rem"
-        onclick="wavgAddRow('${wid}',${posIdx})">+ Add Row</button>
-      <button class="btn-icon btn-save" style="font-size:.75rem;padding:3px 14px"
-        onclick="wavgApply('${wid}')">Apply</button>
-    </div>
-    <div class="wavg-result">
-      <div class="wavg-stat">
-        <div class="wavg-stat-label">Weighted Avg</div>
-        <div class="wavg-stat-value" id="wavg-val-${wid}">${state.lastResult && !isNaN(state.lastResult.avg) ? fmtP(state.lastResult.avg) : '—'}</div>
-      </div>
-      <div class="wavg-stat">
-        <div class="wavg-stat-label">Total Q'ty</div>
-        <div class="wavg-stat-value" id="wavg-qty-${wid}">${state.lastResult ? fmt(state.lastResult.totalQty) : '—'}</div>
-      </div>
-      <div class="wavg-stat">
-        <div class="wavg-stat-label">Total Amount</div>
-        <div class="wavg-stat-value" id="wavg-amt-${wid}">${state.lastResult ? fmt(Math.round(state.lastResult.totalAmt)) : '—'}</div>
-      </div>
-    </div>
-  </div>`;
+            let rowsHtml = '';
+            state.rows.forEach(function (r) {
+                const qv = r.qty || '';
+                const pv = r.price || '';
+                rowsHtml += '<div class="wavg-row">'
+                    + '<input type="number" data-wid="' + wid + '" data-rid="' + r.rid + '" data-field="qty" value="' + qv + '" placeholder="Q'ty" oninput="wavgCalc('' + wid + '')">'
+                        + '<input type="number" data-wid="' + wid + '" data-rid="' + r.rid + '" data-field="price" value="' + pv + '" placeholder="Avg Price" oninput="wavgCalc('' + wid + '')">'
+                            + '<button class="btn-icon btn-del" style="padding:3px 7px" onclick="wavgDelRow('' + wid + '',' + r.rid + ')">✕</button>'
+                                + '</div>';
+            });
+            const lr = state.lastResult;
+            const vVal = lr && !isNaN(lr.avg) ? fmtP(lr.avg) : '—';
+            const qVal = lr ? fmt(lr.totalQty) : '—';
+            const aVal = lr ? fmt(Math.round(lr.totalAmt)) : '—';
+            return '<div class="wavg-panel">'
+                + '<div style="font-size:.72rem;color:#6b7280;margin-bottom:8px;font-weight:700;">Weighted Avg Cal</div>'
+                + '<div id="wavg-rows-' + wid + '">' + rowsHtml + '</div>'
+                + '<div style="display:flex;gap:6px;margin-top:4px">'
+                + '<button class="btn-icon btn-edit" style="flex:1;font-size:.75rem" onclick="wavgAddRow('' + wid + '',' + posIdx + ')">+ Add Row</button>'
+                    + '<button class="btn-icon btn-save" style="font-size:.75rem;padding:3px 14px" onclick="wavgApply('' + wid + '',' + posIdx + ')">Apply</button>'
+                        + '</div>'
+                        + '<div class="wavg-result">'
+                        + '<div class="wavg-stat"><div class="wavg-stat-label">Weighted Avg</div><div class="wavg-stat-value" id="wavg-val-' + wid + '">' + vVal + '</div></div>'
+                        + '<div class="wavg-stat"><div class="wavg-stat-label">Total Q'ty</div > <div class="wavg-stat-value" id="wavg-qty-' + wid + '">' + qVal + '</div></div > '
+                            + '<div class="wavg-stat"><div class="wavg-stat-label">Total Amount</div><div class="wavg-stat-value" id="wavg-amt-' + wid + '">' + aVal + '</div></div>'
+                            + '</div></div>';
         }
 
         function toggleWavg(wid, posIdx) {
             wavgState[wid].open = !wavgState[wid].open;
-            document.getElementById('wavg-' + wid).style.display = wavgState[wid].open ? 'block' : 'none';
-            document.querySelector(`[onclick="toggleWavg('${wid}',${posIdx})"]`).textContent =
-                wavgState[wid].open ? '▲ Fold' : '▼ Cal';
-            if (wavgState[wid].open)
-                document.getElementById('wavg-' + wid).innerHTML = renderWavg(wid, posIdx);
+            const panel = document.getElementById('wavg-' + wid);
+            const btn = document.querySelector('[onclick="toggleWavg('' + wid + '',' + posIdx + ')"]');
+            if (wavgState[wid].open) {
+                panel.style.display = 'block';
+                panel.innerHTML = renderWavg(wid, posIdx);
+                if (btn) btn.textContent = '▲ Fold';
+            } else {
+                panel.style.display = 'none';
+                if (btn) btn.textContent = '▼ Cal';
+            }
         }
 
         function wavgAddRow(wid, posIdx) {
             const rid = ++wavgRowId;
-            wavgState[wid].rows.push({ rid, qty: '', price: '' });
-
+            wavgState[wid].rows.push({ rid: rid, qty: '', price: '' });
             const container = document.getElementById('wavg-rows-' + wid);
             if (!container) return;
-
             const div = document.createElement('div');
             div.className = 'wavg-row';
-            div.innerHTML = `
-      <input type="number" data-wid="${wid}" data-rid="${rid}" data-field="qty" placeholder="Q'ty">
-      <input type="number" data-wid="${wid}" data-rid="${rid}" data-field="price" placeholder="Avg Price">
-      <button class="btn-icon btn-del" style="padding:3px 7px"
-        onclick="wavgDelRow('${wid}',${rid})">✕</button>`;
+            div.innerHTML = '<input type="number" data-wid="' + wid + '" data-rid="' + rid + '" data-field="qty" placeholder="Q'ty" oninput="wavgCalc('' + wid + '')">'
+                + '<input type="number" data-wid="' + wid + '" data-rid="' + rid + '" data-field="price" placeholder="Avg Price" oninput="wavgCalc('' + wid + '')">'
+                    + '<button class="btn-icon btn-del" style="padding:3px 7px" onclick="wavgDelRow('' + wid + '',' + rid + ')">✕</button>';
             container.appendChild(div);
             div.querySelector('input').focus();
         }
 
         function wavgDelRow(wid, rid) {
-            wavgState[wid].rows = wavgState[wid].rows.filter(r => r.rid !== rid);
+            wavgState[wid].rows = wavgState[wid].rows.filter(function (r) { return r.rid !== rid; });
             const container = document.getElementById('wavg-rows-' + wid);
             if (!container) return;
-            const target = container.querySelector(`[data-rid="${rid}"]`);
+            const target = container.querySelector('[data-rid="' + rid + '"]');
             if (target) target.closest('.wavg-row').remove();
+            wavgCalc(wid);
         }
 
-        function wavgApply(wid) {
+        // 실시간 계산 - DOM 읽기만, wavgState.rows 건드리지 않음
+        function wavgCalc(wid) {
             const container = document.getElementById('wavg-rows-' + wid);
             if (!container) return;
-
-            // DOM에서 값 읽기만 — wavgState.rows 절대 건드리지 않음
             let totalQty = 0, totalAmt = 0;
-            container.querySelectorAll('.wavg-row').forEach(row => {
+            container.querySelectorAll('.wavg-row').forEach(function (row) {
                 let q = 0, p = 0;
-                row.querySelectorAll('input[data-rid]').forEach(inp => {
+                row.querySelectorAll('input[data-rid]').forEach(function (inp) {
                     if (inp.dataset.field === 'qty') q = parseFloat(inp.value) || 0;
                     if (inp.dataset.field === 'price') p = parseFloat(inp.value) || 0;
                 });
                 if (q > 0 && p > 0) { totalQty += q; totalAmt += q * p; }
             });
             const avg = totalQty > 0 ? totalAmt / totalQty : NaN;
-
-            // render() 후 복원을 위해 결과 캐시
-            wavgState[wid].lastResult = { avg, totalQty, totalAmt };
-
-            // 결과 패널만 업데이트 (input DOM 절대 건드리지 않음)
+            wavgState[wid].lastResult = { avg: avg, totalQty: totalQty, totalAmt: totalAmt };
             const vEl = document.getElementById('wavg-val-' + wid);
             const qEl = document.getElementById('wavg-qty-' + wid);
             const aEl = document.getElementById('wavg-amt-' + wid);
             if (vEl) vEl.textContent = isNaN(avg) ? '—' : fmtP(avg);
             if (qEl) qEl.textContent = fmt(totalQty);
             if (aEl) aEl.textContent = fmt(Math.round(totalAmt));
+        }
+
+        // Apply - 계산 후 서버에 포지션 저장
+        async function wavgApply(wid, posIdx) {
+            wavgCalc(wid);
+            const lr = wavgState[wid].lastResult;
+            if (!lr || isNaN(lr.avg) || lr.totalQty <= 0) {
+                alert('유효한 수량과 가격을 입력해주세요.'); return;
+            }
+            const pos = positions[posIdx];
+            if (!pos) return;
+            if (!confirm(pos.name + '\nQ\'ty: ' + fmt(lr.totalQty) + '  Avg: ' + fmtP(lr.avg) + '\n\n포지션에 반영하시겠습니까?')) return;
+            await fetch(API_BASE + '/positions/' + posIdx, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    symbol: pos.symbol, name: pos.name, side: pos.side,
+                    qty: lr.totalQty, avg_price: Math.round(lr.avg),
+                    exit_price: pos.exit_price || null
+                })
+            });
+            delete wavgState[wid];
+            await loadAll();
         }
 
         /* ─── Position CRUD ─────────────────────────────────────────────── */
