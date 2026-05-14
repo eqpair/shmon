@@ -464,6 +464,23 @@
         function render() {
             if (!liveData) return;
 
+            // render() 전에 열린 wavg 패널의 현재 입력값을 wavgState에 저장
+            Object.keys(wavgState).forEach(wid => {
+                const container = document.getElementById('wavg-rows-' + wid);
+                if (!container) return;
+                const savedRows = [];
+                container.querySelectorAll('.wavg-row').forEach(row => {
+                    let qty = '', price = '';
+                    row.querySelectorAll('input[data-rid]').forEach(inp => {
+                        if (inp.dataset.field === 'qty') qty = inp.value;
+                        if (inp.dataset.field === 'price') price = inp.value;
+                    });
+                    const rid = row.querySelector('input[data-rid]')?.dataset.rid;
+                    if (rid) savedRows.push({ rid: parseInt(rid), qty, price });
+                });
+                if (savedRows.length) wavgState[wid].rows = savedRows;
+            });
+
             // 헤더 업데이트
             document.getElementById('lastUpdated').textContent =
                 new Date(liveData.as_of).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
