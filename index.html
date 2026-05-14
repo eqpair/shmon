@@ -922,17 +922,11 @@
                 try {
                     var res = await fetch(API_BASE.replace('/api', '') + '/search?q=' + encodeURIComponent(q));
                     var data = await res.json();
-                    // 네이버 자동완성 응답: data.items 또는 data[1]
-                    var items = [];
-                    if (data && data.items && data.items[0]) {
-                        items = data.items[0].slice(0, 8);
-                    } else if (Array.isArray(data) && data[1]) {
-                        items = data[1].slice(0, 8);
-                    }
-                    if (!items.length) { dd.classList.remove('open'); dd.innerHTML = ''; return; }
-                    dd.innerHTML = items.map(function (it) {
-                        var code = it[0] || '';
-                        var name = it[1] || '';
+                    // {code, name} 배열 형식
+                    if (!Array.isArray(data) || !data.length) { dd.classList.remove('open'); dd.innerHTML = ''; return; }
+                    dd.innerHTML = data.map(function (it) {
+                        var code = it.code || '';
+                        var name = it.name || '';
                         var safeName = name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
                         return '<div class="ac-item" onclick="selectStock(this)"'
                             + ' data-code="' + code + '" data-name="' + safeName + '">'
