@@ -2,12 +2,16 @@
     "currency": "KRW",
     "positions": [
         {
-            "symbol": "440110",
-            "name": "파두",
+            "symbol": "456160",
+            "name": "지투지바이오",
             "side": "LONG",
-            "qty": 29000,
-            "avg_price": 62500.0,
-            "group": "파두"
+            "qty": 2680.0,
+            "avg_price": 99881.0,
+            "group": "지투지바이오",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
         },
         {
             "symbol": "456160",
@@ -50,20 +54,24 @@
             "realized_pnl": null
         },
         {
+            "symbol": "003380",
+            "name": "하림지주",
+            "side": "LONG",
+            "qty": 20000.0,
+            "avg_price": 15450.0,
+            "group": "하림지주",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
+        },
+        {
             "symbol": "263750",
             "name": "펄어비스",
             "side": "LONG",
             "qty": 7147,
             "avg_price": 56599.0,
             "group": "펄어비스"
-        },
-        {
-            "symbol": "003380",
-            "name": "하림지주",
-            "side": "LONG",
-            "qty": 20000,
-            "avg_price": 15450.0,
-            "group": "하림지주"
         },
         {
             "symbol": "352820",
@@ -182,5 +190,8 @@
             "realized_pnl": 910973200.0
         }
     ]
-} ]
+}it_date": "2026-05-14",
+            "realized_pnl": 910973200.0
+        }
+    ]
 }

@@ -651,8 +651,6 @@
                         tds[7].className = 'px-3 py-2 text-right ' + pnlColor;
                         tds[8].textContent = (ratio * 100).toFixed(1) + '%';
                         tds[8].className = 'px-3 py-2 text-right ' + pnlColor;
-                        // td[9]: wavg-cell → 건드리지 않음
-                        // td[10]: admin-cell → activeIdx 갱신을 위해 재렌더
                         renderAdminCell(wid, i, activeIdx, active.length);
                     } else {
                         var tr = document.createElement('tr');
@@ -682,7 +680,6 @@
                 });
             }
 
-            // Closed Position
             var delSec = document.getElementById('deleted-section');
             if (deleted.length > 0) {
                 delSec.style.display = '';
@@ -732,12 +729,9 @@
             cell.appendChild(panel);
         }
 
-        // ─── [FIX] renderAdminCell: activeIdx와 activeCount를 받아 경계 체크 ───────────
-
         function renderAdminCell(wid, posIdx, activeIdx, activeCount) {
             var cell = document.getElementById('admin-cell-' + wid);
             if (!cell) return;
-            // active 배열 내 첫 번째면 ▲ 비활성, 마지막이면 ▼ 비활성
             var upDisabled = activeIdx === 0 ? ' disabled style="opacity:.35;cursor:default"' : '';
             var downDisabled = activeIdx === activeCount - 1 ? ' disabled style="opacity:.35;cursor:default"' : '';
             cell.innerHTML = ''
@@ -904,61 +898,10 @@
             }
         }
 
-        // ─── [FIX] movePos: active 배열 기준으로 swap 상대방 _i를 찾아 두 슬롯을 교체 ────
-        //
-        // 기존 코드는 서버의 /move API에 현재 포지션의 전체 배열 인덱스(_i)를 그대로 넘겼음.
-        // 서버는 _i와 _i±1 슬롯을 swap하는데, deleted 항목이 중간에 있으면
-        // active 기준 "한 칸"이 전체 배열에서 한 칸이 아닌 경우가 생겨 오동작함.
-        //
-        // 수정: active 배열에서 swap 상대방(_j)을 직접 구한 뒤,
-        //       두 슬롯의 내용을 서로 PUT으로 교체.
-        //       서버 /move API는 더 이상 사용하지 않음.
+        // ─── movePos: 서버 /move API 사용 (서버에서 active 기준 swap 처리) ─────────────
 
-        // PUT body에 포함할 필드만 추출 (서버 관리 메타 필드 제외)
-        function posFields(p) {
-            return {
-                symbol: p.symbol,
-                name: p.name,
-                side: p.side,
-                qty: p.qty,
-                avg_price: p.avg_price,
-                exit_price: p.exit_price || null,
-                deleted: p.deleted || false
-            };
-        }
-
-        async function movePos(currentPosIdx, direction) {
-            // 매 호출마다 현재 positions에서 active 목록을 직접 재계산 (stale 방지)
-            var active = positions
-                .map(function (p, i) { return { _i: i, p: p }; })
-                .filter(function (x) { return !x.p.deleted; })
-                .sort(function (a, b) { return a._i - b._i; });
-
-            var myActiveIdx = -1;
-            for (var k = 0; k < active.length; k++) {
-                if (active[k]._i === currentPosIdx) { myActiveIdx = k; break; }
-            }
-            if (myActiveIdx === -1) return;
-
-            var swapActiveIdx = direction === 'up' ? myActiveIdx - 1 : myActiveIdx + 1;
-            if (swapActiveIdx < 0 || swapActiveIdx >= active.length) return;
-
-            var a = active[myActiveIdx];   // { _i, p }
-            var b = active[swapActiveIdx]; // { _i, p }
-
-            // a 슬롯에 b의 내용을, b 슬롯에 a의 내용을 저장
-            await Promise.all([
-                fetch(API_BASE + '/positions/' + a._i, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(posFields(b.p))
-                }),
-                fetch(API_BASE + '/positions/' + b._i, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(posFields(a.p))
-                })
-            ]);
+        async function movePos(i, direction) {
+            await fetch(API_BASE + '/positions/' + i + '/move?direction=' + direction, { method: 'POST' });
             await loadAll();
         }
 
