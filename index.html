@@ -296,14 +296,12 @@
             font-family: monospace
         }
 
-        /* ── [CHANGE 1] P&L ratio inline style ── */
         .pnl-ratio {
             font-size: .8rem;
             font-weight: 600;
             margin-left: 6px;
         }
 
-        /* ── [CHANGE 2] alloc ratio inline style ── */
         .alloc-ratio {
             font-size: .72rem;
             color: #9ca3af;
@@ -368,7 +366,6 @@
                     <div class="text-right">
                         <div class="text-sm text-gray-600 font-bold">Total Exposure</div>
                         <div id="totalExposure" class="text-xl font-bold text-green-600">-</div>
-                        <!-- [CHANGE 1] totalPnL + 수익률 괄호 -->
                         <div class="text-sm text-gray-500 mt-1">
                             <span id="totalPnL" class="font-medium">-</span><span id="totalPnLRatio"
                                 class="pnl-ratio"></span>
@@ -516,7 +513,6 @@
         let editIndex = -1;
         let deleteIndex = -1;
 
-        // wavgState[wid] = { rows:[{rid,qty,price}], lastResult:{avg,totalQty,totalAmt}|null, prevPos:{qty,avg_price}|null }
         const wavgState = {};
         let wavgRowId = 0;
 
@@ -548,13 +544,10 @@
         }
 
         // ─── 렌더 ─────────────────────────────────────────────────────────────────────
-        // 핵심 원칙: wavg 패널이 들어있는 td(#wavg-cell-{wid})는 render()에서 절대 건드리지 않음
-        // 해당 td는 toggleWavg/wavgAddRow/wavgDelRow/wavgCalc 함수들이 직접 관리
 
         function render() {
             if (!liveData) return;
 
-            // 헤더
             document.getElementById('lastUpdated').textContent =
                 new Date(liveData.as_of).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
 
@@ -567,7 +560,6 @@
             tpnlEl.textContent = (tpnl > 0 ? '+' : '') + Math.round(tpnl).toLocaleString('ko-KR');
             tpnlEl.className = tpnl > 0 ? 'text-red-600 font-bold' : tpnl < 0 ? 'text-blue-600 font-bold' : 'text-gray-600 font-bold';
 
-            // [CHANGE 1] Total Exposure 대비 수익률 괄호 표시
             var ratioEl = document.getElementById('totalPnLRatio');
             if (ratioEl) {
                 if (totalExp > 0) {
@@ -585,7 +577,6 @@
             if (liveData.wti)
                 document.getElementById('fx-wti').textContent = '$ ' + Number(liveData.wti).toFixed(2);
 
-            // 마켓 상태
             var msEl = document.getElementById('market-status');
             var now = new Date();
             var kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
@@ -599,7 +590,6 @@
                 .filter(function (p) { return !p.deleted; })
                 .sort(function (a, b) { return a._i - b._i; });
 
-            // [CHANGE 3] 최근 삭제 순(deleted_at 내림차순, fallback: 배열 역순)
             var deleted = positions
                 .map(function (p, i) { return Object.assign({}, p, { _i: i }); })
                 .filter(function (p) { return p.deleted; })
@@ -615,7 +605,10 @@
             if (active.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
             } else {
-                active.forEach(function (p) {
+                // active 배열 자체를 render에서 보관 → movePos에서 참조
+                window._activeList = active;
+
+                active.forEach(function (p, activeIdx) {
                     var i = p._i;
                     var wid = 'w' + i;
                     var avg = Number(p.avg_price) || 0;
@@ -633,14 +626,12 @@
                             ? '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>'
                             : '';
 
-                    // [CHANGE 2] Total Exposure 대비 투입률
                     var allocStr = '';
                     if (totalExp > 0) {
                         var allocRatio = cost / totalExp * 100;
                         allocStr = '<span class="alloc-ratio">(' + allocRatio.toFixed(1) + '%)</span>';
                     }
 
-                    // wavgState 초기화 (최초 1회만)
                     if (!wavgState[wid]) {
                         wavgState[wid] = {
                             rows: [{ rid: ++wavgRowId, qty: String(qty), price: String(avg) }],
@@ -651,32 +642,22 @@
 
                     var existingTr = tbody.querySelector('tr[data-wid="' + wid + '"]');
                     if (existingTr) {
-                        // 행이 이미 있으면 wavg-cell 제외한 나머지 td만 업데이트
                         var tds = existingTr.querySelectorAll('td');
-                        // td 0: 종목명
                         tds[0].innerHTML = '<a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a>';
-                        // td 1: DIR
                         tds[1].innerHTML = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span>';
-                        // td 2: REF PX
                         tds[2].textContent = fmt(Math.round(avg));
-                        // td 3: VAL PX
                         tds[3].innerHTML = '<span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge;
-                        // td 4: Q'ty
                         tds[4].textContent = fmt(qty);
-                        // td 5: EXP + [CHANGE 2] 투입률
                         tds[5].innerHTML = fmt(Math.round(cost)) + allocStr;
-                        // td 6: VAL
                         tds[6].textContent = fmt(Math.round(mv));
-                        // td 7: N PROFIT
                         tds[7].textContent = fmt(Math.round(pnl));
                         tds[7].className = 'px-3 py-2 text-right ' + pnlColor;
-                        // td 8: N %
                         tds[8].textContent = (ratio * 100).toFixed(1) + '%';
                         tds[8].className = 'px-3 py-2 text-right ' + pnlColor;
-                        // td 9: wavg-cell → 절대 건드리지 않음
-                        // td 10: Admin → 건드리지 않음
+                        // td[9]: wavg-cell → 건드리지 않음
+                        // td[10]: admin-cell → activeIdx 갱신을 위해 재렌더
+                        renderAdminCell(wid, i, activeIdx, active.length);
                     } else {
-                        // 행이 없으면 새로 생성
                         var tr = document.createElement('tr');
                         tr.setAttribute('data-wid', wid);
                         tr.innerHTML = ''
@@ -692,16 +673,12 @@
                             + '<td class="px-3 py-2 text-center" id="wavg-cell-' + wid + '"></td>'
                             + '<td class="px-3 py-2 text-center" style="white-space:nowrap" id="admin-cell-' + wid + '"></td>';
                         tbody.appendChild(tr);
-                        // wavg cell 초기화
                         renderWavgCell(wid, i);
-                        // admin cell 초기화
-                        renderAdminCell(wid, i);
+                        renderAdminCell(wid, i, activeIdx, active.length);
                     }
                 });
 
-                // data-wid 없는 행 제거 (Loading... 등)
                 tbody.querySelectorAll('tr:not([data-wid])').forEach(function (tr) { tr.remove(); });
-                // 삭제된 행 제거 (포지션에서 없어진 경우)
                 var activeWids = active.map(function (p) { return 'w' + p._i; });
                 tbody.querySelectorAll('tr[data-wid]').forEach(function (tr) {
                     if (activeWids.indexOf(tr.dataset.wid) === -1) tr.remove();
@@ -735,8 +712,7 @@
             }
         }
 
-        // ─── Wavg Cell 렌더 ──────────────────────────────────────────────────────────
-        // wavg-cell은 render()에서 생성만 하고, 이후 내용은 이 함수들이 전담
+        // ─── Wavg Cell 렌더 ───────────────────────────────────────────────────────────
 
         function renderWavgCell(wid, posIdx) {
             var cell = document.getElementById('wavg-cell-' + wid);
@@ -759,18 +735,21 @@
             cell.appendChild(panel);
         }
 
-        function renderAdminCell(wid, posIdx) {
-            var i = posIdx;
+        // ─── [FIX] renderAdminCell: activeIdx와 activeCount를 받아 경계 체크 ───────────
+
+        function renderAdminCell(wid, posIdx, activeIdx, activeCount) {
             var cell = document.getElementById('admin-cell-' + wid);
             if (!cell) return;
+            // active 배열 내 첫 번째면 ▲ 비활성, 마지막이면 ▼ 비활성
+            var upDisabled = activeIdx === 0 ? ' disabled style="opacity:.35;cursor:default"' : '';
+            var downDisabled = activeIdx === activeCount - 1 ? ' disabled style="opacity:.35;cursor:default"' : '';
             cell.innerHTML = ''
-                + '<button class="btn-icon btn-edit" onclick="movePos(' + i + ',\'up\')" style="margin-right:2px">▲</button>'
-                + '<button class="btn-icon btn-edit" onclick="movePos(' + i + ',\'down\')" style="margin-right:4px">▼</button>'
-                + '<button class="btn-icon btn-edit" onclick="openEdit(' + i + ')" style="margin-right:3px">Modify</button>'
-                + '<button class="btn-icon btn-del" onclick="openDeleteModal(' + i + ')">Delete</button>';
+                + '<button class="btn-icon btn-edit" onclick="movePos(' + posIdx + ',\'up\')"' + upDisabled + ' style="margin-right:2px' + (activeIdx === 0 ? ';opacity:.35;cursor:default' : '') + '">▲</button>'
+                + '<button class="btn-icon btn-edit" onclick="movePos(' + posIdx + ',\'down\')"' + downDisabled + ' style="margin-right:4px' + (activeIdx === activeCount - 1 ? ';opacity:.35;cursor:default' : '') + '">▼</button>'
+                + '<button class="btn-icon btn-edit" onclick="openEdit(' + posIdx + ')" style="margin-right:3px">Modify</button>'
+                + '<button class="btn-icon btn-del" onclick="openDeleteModal(' + posIdx + ')">Delete</button>';
         }
 
-        // wavg 패널 내부 HTML (순수 문자열, 이벤트 핸들러는 inline onclick)
         function buildWavgPanelHTML(wid, posIdx) {
             var state = wavgState[wid];
             var rowsHTML = '';
@@ -850,7 +829,6 @@
             wavgCalc(wid);
         }
 
-        // 실시간 계산 - input DOM 절대 건드리지 않음, 결과 패널만 업데이트
         function wavgCalc(wid) {
             var state = wavgState[wid];
             if (!state) return;
@@ -873,7 +851,6 @@
             if (aEl) aEl.textContent = fmt(Math.round(totalAmt));
         }
 
-        // Apply - 포지션 서버 저장
         async function wavgApply(wid, posIdx) {
             wavgCalc(wid);
             var lr = wavgState[wid].lastResult;
@@ -883,7 +860,6 @@
             var pos = positions[posIdx];
             if (!pos) return;
             if (!confirm(pos.name + '\nQ\'ty: ' + fmt(lr.totalQty) + '  Avg: ' + fmtP(lr.avg) + '\n\n포지션에 반영하시겠습니까?')) return;
-            // 이전값 백업
             wavgState[wid].prevPos = { qty: pos.qty, avg_price: pos.avg_price };
             await fetch(API_BASE + '/positions/' + posIdx, {
                 method: 'PUT',
@@ -898,7 +874,6 @@
             await loadAll();
         }
 
-        // Undo - 이전값 복원
         async function wavgUndo(wid, posIdx) {
             var prev = wavgState[wid] && wavgState[wid].prevPos;
             if (!prev) return;
@@ -920,7 +895,6 @@
         }
 
         function wavgClose(wid) {
-            // 패널 닫기 + wavgState 초기화 (row 값, 결과, open 상태)
             if (!wavgState[wid]) return;
             wavgState[wid].open = false;
             wavgState[wid].lastResult = null;
@@ -931,6 +905,54 @@
                 var btn = cell.querySelector('.expand-btn');
                 if (btn) btn.textContent = '▼';
             }
+        }
+
+        // ─── [FIX] movePos: active 배열 기준으로 swap 상대방 _i를 찾아 두 슬롯을 교체 ────
+        //
+        // 기존 코드는 서버의 /move API에 현재 포지션의 전체 배열 인덱스(_i)를 그대로 넘겼음.
+        // 서버는 _i와 _i±1 슬롯을 swap하는데, deleted 항목이 중간에 있으면
+        // active 기준 "한 칸"이 전체 배열에서 한 칸이 아닌 경우가 생겨 오동작함.
+        //
+        // 수정: active 배열에서 swap 상대방(_j)을 직접 구한 뒤,
+        //       두 슬롯의 내용을 서로 PUT으로 교체.
+        //       서버 /move API는 더 이상 사용하지 않음.
+
+        async function movePos(currentPosIdx, direction) {
+            var active = (window._activeList || []);
+            // currentPosIdx(_i) 기준으로 active 내 위치 찾기
+            var myActiveIdx = -1;
+            for (var k = 0; k < active.length; k++) {
+                if (active[k]._i === currentPosIdx) { myActiveIdx = k; break; }
+            }
+            if (myActiveIdx === -1) return;
+
+            var swapActiveIdx = direction === 'up' ? myActiveIdx - 1 : myActiveIdx + 1;
+            if (swapActiveIdx < 0 || swapActiveIdx >= active.length) return; // 경계
+
+            var a = active[myActiveIdx];   // 현재 항목, 전체 배열 슬롯 a._i
+            var b = active[swapActiveIdx]; // swap 대상, 전체 배열 슬롯 b._i
+
+            // a 슬롯에 b의 데이터를, b 슬롯에 a의 데이터를 저장 → 화면상 순서가 바뀜
+            // deleted 필드는 각 슬롯 원래 값을 유지 (둘 다 active이므로 false지만 명시)
+            var bodyA = Object.assign({}, b, { _i: undefined, deleted: a.deleted, deleted_at: a.deleted_at, realized_pnl: b.realized_pnl });
+            var bodyB = Object.assign({}, a, { _i: undefined, deleted: b.deleted, deleted_at: b.deleted_at, realized_pnl: a.realized_pnl });
+
+            // _i, deleted_at 등 서버가 관리하는 메타 필드 제거
+            ['_i', 'deleted_at'].forEach(function (k) { delete bodyA[k]; delete bodyB[k]; });
+
+            await Promise.all([
+                fetch(API_BASE + '/positions/' + a._i, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyA)
+                }),
+                fetch(API_BASE + '/positions/' + b._i, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyB)
+                })
+            ]);
+            await loadAll();
         }
 
         // ─── Position CRUD ────────────────────────────────────────────────────────────
@@ -970,7 +992,6 @@
                 try {
                     var res = await fetch(API_BASE + '/search?q=' + encodeURIComponent(q));
                     var data = await res.json();
-                    // {code, name} 배열 형식
                     if (!Array.isArray(data) || !data.length) { dd.classList.remove('open'); dd.innerHTML = ''; return; }
                     dd.innerHTML = data.map(function (it) {
                         var code = it.code || '';
@@ -996,7 +1017,6 @@
             document.getElementById('ac-dropdown').classList.remove('open');
         }
 
-        // 드롭다운 외부 클릭시 닫기
         document.addEventListener('click', function (e) {
             if (!e.target.closest('.search-wrap')) {
                 var dd = document.getElementById('ac-dropdown');
@@ -1066,11 +1086,6 @@
         async function hardDeletePos(i, name) {
             if (!confirm(name + '\n\n완전히 삭제합니다. 복구할 수 없습니다.\n계속하시겠습니까?')) return;
             await fetch(API_BASE + '/positions/' + i + '/purge', { method: 'DELETE' });
-            await loadAll();
-        }
-
-        async function movePos(i, direction) {
-            await fetch(API_BASE + '/positions/' + i + '/move?direction=' + direction, { method: 'POST' });
             await loadAll();
         }
 
