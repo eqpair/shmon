@@ -617,6 +617,13 @@
                     var pnlColor = pnl > 0 ? 'profit-plus' : pnl < 0 ? 'profit-minus' : '';
                     var mkt = liveData.positions.find(function (lp) { return lp.symbol === p.symbol; });
                     var mktMarket = mkt ? mkt.actual_market : null;
+
+                    var changeRate = mkt ? mkt.change_rate : null;
+                    var changeStr = '';
+                    if (changeRate !== null && changeRate !== undefined) {
+                        var changeColor = changeRate > 0 ? '#dc2626' : changeRate < 0 ? '#2563eb' : '#6b7280';
+                        changeStr = '<span style="font-size:.7rem;color:' + changeColor + ';margin-left:3px;font-weight:600;">(' + (changeRate > 0 ? '+' : '') + changeRate.toFixed(2) + '%)</span>';
+                    }
                     var mktBadge = mktMarket === 'NX'
                         ? '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>'
                         : mktMarket === 'J'
@@ -643,7 +650,7 @@
                         tds[0].innerHTML = '<a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a>';
                         tds[1].innerHTML = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span>';
                         tds[2].textContent = fmt(Math.round(avg));
-                        tds[3].innerHTML = '<span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge;
+                        tds[3].innerHTML = '<span class="font-bold text-green-700">' + fmt(last) + '</span>' + changeStr + mktBadge
                         tds[4].textContent = fmt(qty);
                         tds[5].innerHTML = fmt(Math.round(cost)) + allocStr;
                         tds[6].textContent = fmt(Math.round(mv));
