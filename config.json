@@ -98,12 +98,12 @@
             "realized_pnl": null
         },
         {
-            "symbol": "373220",
-            "name": "LG에너지솔루션",
+            "symbol": "018260",
+            "name": "삼성에스디에스",
             "side": "LONG",
-            "qty": 826.0,
-            "avg_price": 456509.0,
-            "group": "LG에너지솔루션",
+            "qty": 1150.0,
+            "avg_price": 176700.0,
+            "group": "삼성에스디에스",
             "deleted": false,
             "exit_price": null,
             "exit_date": null,
@@ -134,13 +134,16 @@
             "realized_pnl": 191909840.0
         },
         {
-            "symbol": "005935",
-            "name": "삼성전자우",
+            "symbol": "373220",
+            "name": "LG에너지솔루션",
             "side": "LONG",
-            "qty": 600.0,
-            "avg_price": 185992.0,
-            "group": "삼성전자우",
-            "deleted": false
+            "qty": 826.0,
+            "avg_price": 456509.0,
+            "group": "LG에너지솔루션",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
         },
         {
             "symbol": "229200",
@@ -155,12 +158,16 @@
             "realized_pnl": 379660.0
         },
         {
-            "symbol": "018260",
-            "name": "삼성에스디에스",
+            "symbol": "005935",
+            "name": "삼성전자우",
             "side": "LONG",
-            "qty": 1150,
-            "avg_price": 176700.0,
-            "group": "삼성에스디에스"
+            "qty": 600.0,
+            "avg_price": 185992.0,
+            "group": "삼성전자우",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
         },
         {
             "symbol": "440110",
@@ -175,4 +182,5 @@
             "realized_pnl": 910973200.0
         }
     ]
+} ]
 }

@@ -605,9 +605,6 @@
             if (active.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
             } else {
-                // active 배열 자체를 render에서 보관 → movePos에서 참조
-                window._activeList = active;
-
                 active.forEach(function (p, activeIdx) {
                     var i = p._i;
                     var wid = 'w' + i;
@@ -917,9 +914,26 @@
         //       두 슬롯의 내용을 서로 PUT으로 교체.
         //       서버 /move API는 더 이상 사용하지 않음.
 
+        // PUT body에 포함할 필드만 추출 (서버 관리 메타 필드 제외)
+        function posFields(p) {
+            return {
+                symbol: p.symbol,
+                name: p.name,
+                side: p.side,
+                qty: p.qty,
+                avg_price: p.avg_price,
+                exit_price: p.exit_price || null,
+                deleted: p.deleted || false
+            };
+        }
+
         async function movePos(currentPosIdx, direction) {
-            var active = (window._activeList || []);
-            // currentPosIdx(_i) 기준으로 active 내 위치 찾기
+            // 매 호출마다 현재 positions에서 active 목록을 직접 재계산 (stale 방지)
+            var active = positions
+                .map(function (p, i) { return { _i: i, p: p }; })
+                .filter(function (x) { return !x.p.deleted; })
+                .sort(function (a, b) { return a._i - b._i; });
+
             var myActiveIdx = -1;
             for (var k = 0; k < active.length; k++) {
                 if (active[k]._i === currentPosIdx) { myActiveIdx = k; break; }
@@ -927,29 +941,22 @@
             if (myActiveIdx === -1) return;
 
             var swapActiveIdx = direction === 'up' ? myActiveIdx - 1 : myActiveIdx + 1;
-            if (swapActiveIdx < 0 || swapActiveIdx >= active.length) return; // 경계
+            if (swapActiveIdx < 0 || swapActiveIdx >= active.length) return;
 
-            var a = active[myActiveIdx];   // 현재 항목, 전체 배열 슬롯 a._i
-            var b = active[swapActiveIdx]; // swap 대상, 전체 배열 슬롯 b._i
+            var a = active[myActiveIdx];   // { _i, p }
+            var b = active[swapActiveIdx]; // { _i, p }
 
-            // a 슬롯에 b의 데이터를, b 슬롯에 a의 데이터를 저장 → 화면상 순서가 바뀜
-            // deleted 필드는 각 슬롯 원래 값을 유지 (둘 다 active이므로 false지만 명시)
-            var bodyA = Object.assign({}, b, { _i: undefined, deleted: a.deleted, deleted_at: a.deleted_at, realized_pnl: b.realized_pnl });
-            var bodyB = Object.assign({}, a, { _i: undefined, deleted: b.deleted, deleted_at: b.deleted_at, realized_pnl: a.realized_pnl });
-
-            // _i, deleted_at 등 서버가 관리하는 메타 필드 제거
-            ['_i', 'deleted_at'].forEach(function (k) { delete bodyA[k]; delete bodyB[k]; });
-
+            // a 슬롯에 b의 내용을, b 슬롯에 a의 내용을 저장
             await Promise.all([
                 fetch(API_BASE + '/positions/' + a._i, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bodyA)
+                    body: JSON.stringify(posFields(b.p))
                 }),
                 fetch(API_BASE + '/positions/' + b._i, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bodyB)
+                    body: JSON.stringify(posFields(a.p))
                 })
             ]);
             await loadAll();
