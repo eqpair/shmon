@@ -2,16 +2,12 @@
     "currency": "KRW",
     "positions": [
         {
-            "symbol": "456160",
-            "name": "지투지바이오",
+            "symbol": "440110",
+            "name": "파두",
             "side": "LONG",
-            "qty": 2680.0,
-            "avg_price": 99881.0,
-            "group": "지투지바이오",
-            "deleted": false,
-            "exit_price": null,
-            "exit_date": null,
-            "realized_pnl": null
+            "qty": 29000,
+            "avg_price": 62500.0,
+            "group": "파두"
         },
         {
             "symbol": "456160",
@@ -187,10 +183,6 @@
             "deleted": true,
             "exit_price": 100200.0,
             "exit_date": "2026-05-14",
-            "realized_pnl": 910973200.0
-        }
-    ]
-}it_date": "2026-05-14",
             "realized_pnl": 910973200.0
         }
     ]
