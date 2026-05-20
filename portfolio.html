@@ -136,7 +136,7 @@
         const lossPos = [...positions].filter(p => p.pnl < 0).sort((a,b) => a.pnl_ratio - b.pnl_ratio)
 
         let bars = sorted.slice(0,5).map(p => {
-            const w = totalExposure > 0 ? (p.mv/totalMv*100) : 0
+            const w = totalExposure > 0 ? (p.exposure/totalExposure*100) : 0
             return '<div class="flex items-center gap-3 mb-2">' +
                 '<div class="text-xs text-gray-600 w-24 flex-shrink-0">' + p.name + '</div>' +
                 '<div class="flex-1 risk-bar"><div class="risk-bar-fill" style="width:' + Math.min(w,100) + '%;background:' + (w>30?'#dc2626':w>20?'#d97706':'#2563eb') + ';"></div></div>' +
