@@ -296,7 +296,6 @@
 
             calcTotals()
             renderSummary()
-            renderPositions()
             renderRisk()
             runAIAnalysis()
         }
@@ -514,10 +513,12 @@ ${positionSummary}
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ messages: [{ role: "user", content: prompt }] })
                 })
+                if (!res.ok) throw new Error(`서버 오류 ${res.status}`)
                 const data = await res.json()
+                if (data.error) throw new Error(data.error)
                 document.getElementById("ai-content").innerHTML = markdownToHtml(data.answer || "응답 없음")
             } catch (e) {
-                document.getElementById("ai-content").innerHTML = `<div class="text-red-500 text-sm">오류: ${e.message}</div>`
+                document.getElementById("ai-content").innerHTML = `<div class="text-sm text-gray-500 p-4">분석 오류: ${e.message}<br><button onclick="runAIAnalysis()" style="margin-top:8px;padding:4px 12px;background:#1e40af;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;">재시도</button></div>`
             }
             btn.disabled = false; btn.textContent = "다시 분석"
         }
