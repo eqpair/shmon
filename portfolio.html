@@ -259,7 +259,6 @@
 
     <script>
         const API_BASE = "https://eqmon.duckdns.org/api"
-        const NAVER_BASE = "https://m.stock.naver.com/api/stock"
         const EQAI_JSON = "https://eqpair.github.io/semon/data/eqai_report.json"
         const CHAT_URL = "https://eqmon.duckdns.org/eqai-chat/chat"
 
@@ -299,18 +298,16 @@
         }
 
         async function loadPrices() {
-            await Promise.all(positions.map(async p => {
-                try {
-                    const res = await fetch(`${NAVER_BASE}/${p.symbol}/basic`)
-                    if (!res.ok) return
-                    const d = await res.json()
-                    priceMap[p.symbol] = {
-                        price: parseInt(d.closePrice.replace(/,/g, "")),
-                        change: parseFloat(d.fluctuationsRatio),
-                        status: d.marketStatus || ""
+            try {
+                const codes = positions.map(p => p.symbol).join(",")
+                const res = await fetch(`${API_BASE}/prices?codes=${codes}`)
+                const data = await res.json()
+                for (const [code, info] of Object.entries(data)) {
+                    if (info.price) {
+                        priceMap[code] = { price: info.price, change: info.change || 0, status: "KIS" }
                     }
-                } catch (e) { }
-            }))
+                }
+            } catch(e) { console.error("현재가 로드 실패:", e) }
         }
 
         // ── 렌더링 ───────────────────────────────────────────────────
@@ -325,6 +322,7 @@
             renderSummary()
             renderPositions()
             renderRisk()
+            runAIAnalysis()
         }
 
         function calcTotals() {
