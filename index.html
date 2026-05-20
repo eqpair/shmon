@@ -357,10 +357,7 @@
                             class="font-medium">-</span></div>
                     <div class="text-sm text-gray-600 mt-1">Market: <span id="market-status" class="font-bold">-</span>
                     </div>
-                    <div class="text-sm text-gray-600 mt-1">
-                        USD/KRW: <span id="fx-usd-krw" class="font-bold text-blue-600">-</span>
-                        &nbsp;|&nbsp;WTI: <span id="fx-wti" class="font-bold text-blue-600">-</span>
-                    </div>
+
                 </div>
                 <div class="flex flex-col items-end gap-2 header-right">
                     <div class="text-right">
@@ -373,6 +370,7 @@
                         <br>
                         <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
                             <a href="https://eqmon.duckdns.org" class="nav-link">🏠HOME</a>
+                            <a href="./portfolio.html" class="nav-link">Portfolio</a>
                             <button onclick="openAdd()" class="nav-link">＋ ADD POSITION</button>
                         </nav>
                     </div>
@@ -571,11 +569,7 @@
                 }
             }
 
-            if (liveData.usd_krw)
-                document.getElementById('fx-usd-krw').textContent =
-                    Number(liveData.usd_krw).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
-            if (liveData.wti)
-                document.getElementById('fx-wti').textContent = '$ ' + Number(liveData.wti).toFixed(2);
+
 
             var msEl = document.getElementById('market-status');
             var now = new Date();
