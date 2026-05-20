@@ -28,7 +28,6 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
 <div class="container mx-auto px-4 py-6 max-w-7xl">
-
     <header class="mb-6">
         <div class="flex justify-between items-center">
             <div>
@@ -36,22 +35,16 @@
                 <div class="text-sm text-gray-500 mt-1" id="header-meta">로딩 중...</div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="loadAll()" class="px-3 py-1 text-xs rounded font-medium"
-                    style="background:#0f172a;color:#fff;border:1px solid #334155;">새로고침</button>
-                <a href="https://eqpair.github.io/shmon/index.html"
-                    style="font-size:12px;color:#fff;text-decoration:none;padding:4px 10px;border:1px solid #334155;border-radius:6px;background:#1e293b;">SHmon</a>
+                <button onclick="loadAll()" class="px-3 py-1 text-xs rounded font-medium" style="background:#0f172a;color:#fff;border:1px solid #334155;">새로고침</button>
+                <a href="https://eqpair.github.io/shmon/index.html" style="font-size:12px;color:#fff;text-decoration:none;padding:4px 10px;border:1px solid #334155;border-radius:6px;background:#1e293b;">SHmon</a>
             </div>
         </div>
     </header>
-
     <div id="loading-state" class="text-center py-20 text-gray-400">
         <div class="text-lg font-medium text-gray-600 mb-2">포트폴리오 분석 중</div>
-        <div class="text-sm">현재가 및 데이터를 불러오고 있어요</div>
+        <div class="text-sm">데이터를 불러오고 있어요</div>
     </div>
-
     <div id="main-content" style="display:none;">
-
-        <!-- 포트폴리오 요약 -->
         <div class="section-card mb-4">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">포트폴리오 요약</h2>
@@ -59,13 +52,10 @@
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="summary-cards"></div>
         </div>
-
-        <!-- AI 매매 전략 -->
         <div class="section-card mb-4">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">AI 매매 전략</h2>
-                <button onclick="runAIAnalysis()" id="ai-btn" class="text-xs px-3 py-1 rounded font-medium"
-                    style="background:#1e40af;color:#fff;border:none;cursor:pointer;">다시 분석</button>
+                <button onclick="runAIAnalysis()" id="ai-btn" class="text-xs px-3 py-1 rounded font-medium" style="background:#1e40af;color:#fff;border:none;cursor:pointer;">다시 분석</button>
             </div>
             <div id="ai-content">
                 <div class="flex items-center gap-2 py-8 justify-center text-gray-400 text-sm">
@@ -74,8 +64,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- 리스크 분석 -->
         <div class="section-card">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">리스크 분석</h2>
@@ -83,16 +71,13 @@
             </div>
             <div id="risk-content"></div>
         </div>
-
     </div>
 </div>
-
 <script>
     const API_BASE  = "https://eqmon.duckdns.org/api"
     const EQAI_JSON = "https://eqpair.github.io/semon/data/eqai_report.json"
     const CHAT_URL  = "https://eqmon.duckdns.org/eqai-chat/chat"
-
-    let positions = [], priceMap = {}, rrgMap = {}, eqaiData = null, totalExposure = 0
+    let positions = [], priceMap = {}, eqaiData = null, totalExposure = 0
 
     async function loadAll() {
         document.getElementById("loading-state").style.display = "block"
@@ -102,12 +87,12 @@
             await loadPrices()
             render()
         } catch(e) {
-            document.getElementById("loading-state").innerHTML = `<div class="text-red-500">로드 실패: ${e.message}</div>`
+            document.getElementById("loading-state").innerHTML = '<div class="text-red-500">로드 실패: ' + e.message + '</div>'
         }
     }
 
     async function loadPositions() {
-        const res = await fetch(`${API_BASE}/positions`)
+        const res = await fetch(API_BASE + "/positions")
         const all = await res.json()
         positions = all.filter(p => !p.deleted && p.qty > 0)
     }
@@ -115,13 +100,12 @@
     async function loadEqai() {
         const res = await fetch(EQAI_JSON + "?t=" + Date.now())
         eqaiData = await res.json()
-        for (const [sector, d] of Object.entries(eqaiData.sector_rrg || {})) rrgMap[sector] = d
     }
 
     async function loadPrices() {
         try {
             const codes = positions.map(p => p.symbol).join(",")
-            const res = await fetch(`${API_BASE}/prices?codes=${codes}`)
+            const res = await fetch(API_BASE + "/prices?codes=" + codes)
             const data = await res.json()
             for (const [code, info] of Object.entries(data)) {
                 if (info.price) priceMap[code] = { price: info.price, change: info.change || 0 }
@@ -133,7 +117,7 @@
         document.getElementById("loading-state").style.display = "none"
         document.getElementById("main-content").style.display  = "block"
         document.getElementById("updated-at").textContent = new Date().toLocaleTimeString("ko-KR")
-        document.getElementById("header-meta").textContent = `활성 종목 ${positions.length}개 | ${eqaiData?.generated_at || ""} 기준`
+        document.getElementById("header-meta").textContent = "활성 종목 " + positions.length + "개 | " + (eqaiData && eqaiData.generated_at || "") + " 기준"
         calcTotals()
         renderSummary()
         renderRisk()
@@ -141,11 +125,11 @@
     }
 
     function calcTotals() {
-        totalExposure = positions.reduce((s,p) => s + (priceMap[p.symbol]?.price || p.avg_price) * p.qty, 0)
+        totalExposure = positions.reduce((s,p) => s + (priceMap[p.symbol] ? priceMap[p.symbol].price : p.avg_price) * p.qty, 0)
     }
 
     function getPnl(p) {
-        const curr = priceMap[p.symbol]?.price || p.avg_price
+        const curr = priceMap[p.symbol] ? priceMap[p.symbol].price : p.avg_price
         const cost = p.avg_price * p.qty
         const val  = curr * p.qty
         const pnl  = val - cost
@@ -156,155 +140,125 @@
     function renderSummary() {
         let totalCost=0, totalVal=0, winCount=0, lossCount=0
         for (const p of positions) {
-            const {cost,val,pnl} = getPnl(p)
-            totalCost += cost; totalVal += val
-            if (pnl >= 0) winCount++; else lossCount++
+            const r = getPnl(p)
+            totalCost += r.cost; totalVal += r.val
+            if (r.pnl >= 0) winCount++; else lossCount++
         }
         const totalPnl = totalVal - totalCost
         const totalPct = totalCost > 0 ? (totalPnl/totalCost)*100 : 0
         const pnlColor = totalPnl >= 0 ? "#16a34a" : "#dc2626"
-        document.getElementById("summary-cards").innerHTML = `
-            <div class="stat-card">
-                <div class="text-xs text-gray-400 mb-1">총 평가금액</div>
-                <div class="text-base font-bold text-gray-800">${fmtNum(totalVal)}</div>
-                <div class="text-xs text-gray-500 mt-1">투자원금 ${fmtNum(totalCost)}</div>
-            </div>
-            <div class="stat-card">
-                <div class="text-xs text-gray-400 mb-1">총 손익</div>
-                <div class="text-base font-bold" style="color:${pnlColor}">${totalPnl>=0?"+":""}${fmtNum(totalPnl)}</div>
-                <div class="text-xs font-medium mt-1" style="color:${pnlColor}">${totalPct>=0?"+":""}${totalPct.toFixed(2)}%</div>
-            </div>
-            <div class="stat-card">
-                <div class="text-xs text-gray-400 mb-1">종목 현황</div>
-                <div class="text-base font-bold text-gray-800">${positions.length}종목</div>
-                <div class="text-xs mt-1">
-                    <span style="color:#16a34a;">수익 ${winCount}</span>
-                    <span class="text-gray-300 mx-1">|</span>
-                    <span style="color:#dc2626;">손실 ${lossCount}</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="text-xs text-gray-400 mb-1">시장 심리</div>
-                <div class="text-base font-bold" style="color:${eqaiData?.global_sentiment==='risk_on'?'#16a34a':'#dc2626'}">
-                    ${eqaiData?.global_sentiment==='risk_on'?'리스크 온':'리스크 오프'}
-                </div>
-                <div class="text-xs text-gray-400 mt-1">${(eqaiData?.sentiment_reason||"").slice(0,30)}...</div>
-            </div>`
+        const gs = eqaiData && eqaiData.global_sentiment
+        const gsColor = gs === "risk_on" ? "#16a34a" : "#dc2626"
+        const gsLabel = gs === "risk_on" ? "리스크 온" : "리스크 오프"
+        const gsReason = eqaiData && eqaiData.sentiment_reason ? eqaiData.sentiment_reason.slice(0,30) + "..." : ""
+        document.getElementById("summary-cards").innerHTML =
+            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">총 평가금액</div><div class="text-base font-bold text-gray-800">' + fmtNum(totalVal) + '</div><div class="text-xs text-gray-500 mt-1">투자원금 ' + fmtNum(totalCost) + '</div></div>' +
+            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">총 손익</div><div class="text-base font-bold" style="color:' + pnlColor + '">' + (totalPnl>=0?"+":"") + fmtNum(totalPnl) + '</div><div class="text-xs font-medium mt-1" style="color:' + pnlColor + '">' + (totalPct>=0?"+":"") + totalPct.toFixed(2) + '%</div></div>' +
+            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">종목 현황</div><div class="text-base font-bold text-gray-800">' + positions.length + '종목</div><div class="text-xs mt-1"><span style="color:#16a34a;">수익 ' + winCount + '</span> | <span style="color:#dc2626;">손실 ' + lossCount + '</span></div></div>' +
+            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">시장 심리</div><div class="text-base font-bold" style="color:' + gsColor + '">' + gsLabel + '</div><div class="text-xs text-gray-400 mt-1">' + gsReason + '</div></div>'
     }
 
     function renderRisk() {
         const weighted = positions.map(p => {
-            const {val} = getPnl(p)
-            return {...p, val, weight: totalExposure>0?(val/totalExposure*100):0}
-        }).sort((a,b) => b.weight-a.weight)
+            const r = getPnl(p)
+            return Object.assign({}, p, { val: r.val, weight: totalExposure > 0 ? (r.val/totalExposure*100) : 0 })
+        }).sort((a,b) => b.weight - a.weight)
+        const top3Weight = weighted.slice(0,3).reduce((s,p) => s+p.weight, 0)
+        const lossPos = positions.filter(p => getPnl(p).pnl < 0)
+            .map(p => Object.assign({}, p, getPnl(p))).sort((a,b) => a.pct-b.pct)
 
-        const top3Weight = weighted.slice(0,3).reduce((s,p)=>s+p.weight,0)
-        const lossPos = positions.filter(p=>getPnl(p).pnl<0)
-            .map(p=>({...p,...getPnl(p)})).sort((a,b)=>a.pct-b.pct)
+        let bars = weighted.slice(0,5).map(p =>
+            '<div class="flex items-center gap-3 mb-2">' +
+            '<div class="text-xs text-gray-600 w-24 flex-shrink-0">' + p.name + '</div>' +
+            '<div class="flex-1 risk-bar"><div class="risk-bar-fill" style="width:' + Math.min(p.weight,100) + '%;background:' + (p.weight>30?'#dc2626':p.weight>20?'#d97706':'#2563eb') + ';"></div></div>' +
+            '<div class="text-xs font-medium text-gray-700 w-10 text-right">' + p.weight.toFixed(1) + '%</div></div>'
+        ).join("")
 
-        document.getElementById("risk-content").innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <div class="text-xs font-semibold text-gray-600 mb-3">종목 집중도</div>
-                    ${weighted.slice(0,5).map(p=>`
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="text-xs text-gray-600 w-24 flex-shrink-0">${p.name}</div>
-                        <div class="flex-1 risk-bar">
-                            <div class="risk-bar-fill" style="width:${p.weight}%;background:${p.weight>30?'#dc2626':p.weight>20?'#d97706':'#2563eb'};"></div>
-                        </div>
-                        <div class="text-xs font-medium text-gray-700 w-10 text-right">${p.weight.toFixed(1)}%</div>
-                    </div>`).join("")}
-                    <div class="mt-3 p-3 rounded-lg text-xs ${top3Weight>60?'bg-red-50 text-red-700':'bg-blue-50 text-blue-700'}">
-                        상위 3종목 비중: <strong>${top3Weight.toFixed(1)}%</strong>
-                        ${top3Weight>60?' — 집중도 높음, 분산 검토 권장':''}
-                    </div>
-                </div>
-                <div>
-                    <div class="text-xs font-semibold text-gray-600 mb-3">손실 종목 현황</div>
-                    ${lossPos.length===0
-                        ?'<div class="text-xs text-gray-400 py-4 text-center">손실 종목 없음</div>'
-                        :lossPos.slice(0,5).map(p=>`
-                    <div class="flex items-center justify-between mb-2 p-2 bg-red-50 rounded-lg">
-                        <div class="text-xs font-medium text-gray-700">${p.name}</div>
-                        <div class="text-xs font-bold text-red-600">${p.pct.toFixed(2)}%</div>
-                    </div>`).join("")}
-                    ${lossPos.length>0?`
-                    <div class="mt-3 p-3 bg-amber-50 rounded-lg text-xs text-amber-700">
-                        손실 종목 ${lossPos.length}개 · 평균 ${(lossPos.reduce((s,p)=>s+p.pct,0)/lossPos.length).toFixed(2)}%
-                    </div>`:""}
-                </div>
-            </div>`
+        let lossList = lossPos.length === 0 ? '<div class="text-xs text-gray-400 py-4 text-center">손실 종목 없음</div>' :
+            lossPos.slice(0,5).map(p =>
+                '<div class="flex items-center justify-between mb-2 p-2 bg-red-50 rounded-lg">' +
+                '<div class="text-xs font-medium text-gray-700">' + p.name + '</div>' +
+                '<div class="text-xs font-bold text-red-600">' + p.pct.toFixed(2) + '%</div></div>'
+            ).join("")
+        if (lossPos.length > 0) {
+            const avg = lossPos.reduce((s,p) => s+p.pct, 0) / lossPos.length
+            lossList += '<div class="mt-3 p-3 bg-amber-50 rounded-lg text-xs text-amber-700">손실 종목 ' + lossPos.length + '개 · 평균 ' + avg.toFixed(2) + '%</div>'
+        }
+
+        const warnClass = top3Weight > 60 ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'
+        const warnMsg = top3Weight > 60 ? ' — 집중도 높음, 분산 검토 권장' : ''
+
+        document.getElementById("risk-content").innerHTML =
+            '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+            '<div><div class="text-xs font-semibold text-gray-600 mb-3">종목 집중도</div>' + bars +
+            '<div class="mt-3 p-3 rounded-lg text-xs ' + warnClass + '">상위 3종목 비중: <strong>' + top3Weight.toFixed(1) + '%</strong>' + warnMsg + '</div></div>' +
+            '<div><div class="text-xs font-semibold text-gray-600 mb-3">손실 종목 현황</div>' + lossList + '</div></div>'
     }
 
     async function runAIAnalysis() {
         const btn = document.getElementById("ai-btn")
         btn.disabled = true; btn.textContent = "분석 중..."
-        document.getElementById("ai-content").innerHTML = `
-            <div class="flex items-center gap-2 py-8 justify-center text-gray-400 text-sm">
-                <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
-                <span class="ml-2">AI가 포트폴리오를 분석하고 있어요</span>
-            </div>`
+        document.getElementById("ai-content").innerHTML =
+            '<div class="flex items-center gap-2 py-8 justify-center text-gray-400 text-sm">' +
+            '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>' +
+            '<span class="ml-2">AI가 포트폴리오를 분석하고 있어요</span></div>'
 
         const summary = positions.map(p => {
-            const {curr,pct,val} = getPnl(p)
-            const w = totalExposure>0?(val/totalExposure*100):0
-            return `${p.name}(${p.symbol}): 현재가 ${curr.toLocaleString()}원, 수익률 ${pct.toFixed(2)}%, 비중 ${w.toFixed(1)}%`
+            const r = getPnl(p)
+            const w = totalExposure > 0 ? (r.val/totalExposure*100) : 0
+            return p.name + "(" + p.symbol + "): 현재가 " + r.curr.toLocaleString() + "원, 수익률 " + r.pct.toFixed(2) + "%, 비중 " + w.toFixed(1) + "%"
         }).join("\n")
 
-        const prompt = `아래는 현재 보유 포트폴리오입니다. 각 종목별 홀드/손절/추가매수 전략을 제안하고 포트폴리오 전체 총평을 해주세요.
-
-[보유 종목]
-${summary}
-
-[시장 상황]
-- 심리: ${eqaiData?.global_sentiment} (${eqaiData?.sentiment_reason})
-- 핵심 리스크: ${(eqaiData?.key_factors||[]).join(", ")}`
+        const gs = eqaiData && eqaiData.global_sentiment || ""
+        const gr = eqaiData && eqaiData.sentiment_reason || ""
+        const kf = eqaiData && eqaiData.key_factors ? eqaiData.key_factors.join(", ") : ""
+        const prompt = "아래는 현재 보유 포트폴리오입니다. 각 종목별 홀드/손절/추가매수 전략을 제안하고 포트폴리오 전체 총평을 해주세요.\n\n[보유 종목]\n" + summary + "\n\n[시장 상황]\n- 심리: " + gs + " (" + gr + ")\n- 핵심 리스크: " + kf
 
         try {
             const res = await fetch(CHAT_URL, {
-                method:"POST",
-                headers:{"Content-Type":"application/json"},
-                body:JSON.stringify({messages:[{role:"user",content:prompt}]})
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({messages: [{role:"user", content:prompt}]})
             })
-            if (!res.ok) throw new Error(`서버 오류 ${res.status}`)
+            if (!res.ok) throw new Error("서버 오류 " + res.status)
             const data = await res.json()
             if (data.error) throw new Error(data.error)
-            document.getElementById("ai-content").innerHTML = markdownToHtml(data.answer||"응답 없음")
+            document.getElementById("ai-content").innerHTML = markdownToHtml(data.answer || "응답 없음")
         } catch(e) {
-            document.getElementById("ai-content").innerHTML = `
-                <div class="text-sm text-gray-500 p-4">분석 오류: ${e.message}
-                <br><button onclick="runAIAnalysis()" style="margin-top:8px;padding:4px 12px;background:#1e40af;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;">재시도</button></div>`
+            document.getElementById("ai-content").innerHTML =
+                '<div class="text-sm text-gray-500 p-4">분석 오류: ' + e.message +
+                '<br><button onclick="runAIAnalysis()" style="margin-top:8px;padding:4px 12px;background:#1e40af;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;">재시도</button></div>'
         }
-        btn.disabled=false; btn.textContent="다시 분석"
+        btn.disabled = false; btn.textContent = "다시 분석"
     }
 
     function fmtNum(n) { return Math.round(n).toLocaleString("ko-KR") }
 
     function markdownToHtml(text) {
-        text = text.replace(/```[\s\S]*?```/g,"")
-        const bold = s => s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+        text = text.replace(/```[\s\S]*?```/g, "")
+        const bold = s => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
         const lines = text.split("\n")
-        let html="", inTable=false
+        let html = "", inTable = false
         for (const line of lines) {
             const trim = line.trim()
-            if (trim.startsWith("|")&&trim.endsWith("|")) {
+            if (trim.startsWith("|") && trim.endsWith("|")) {
                 if (/^[|\s-]+$/.test(trim)) continue
-                const cells = trim.slice(1,-1).split("|").map(c=>bold(c.trim()))
-                if (!inTable) { html+='<table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;">'; inTable=true; html+='<tr>'+cells.map(c=>`<th style="text-align:left;padding:5px 8px;background:#f3f4f6;border:1px solid #e5e7eb;">${c}</th>`).join("")+'</tr>' }
-                else html+='<tr>'+cells.map(c=>`<td style="padding:5px 8px;border:1px solid #e5e7eb;">${c}</td>`).join("")+'</tr>'
+                const cells = trim.slice(1,-1).split("|").map(c => bold(c.trim()))
+                if (!inTable) { html += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;">'; inTable=true; html += '<tr>' + cells.map(c => '<th style="text-align:left;padding:5px 8px;background:#f3f4f6;border:1px solid #e5e7eb;">' + c + '</th>').join("") + '</tr>' }
+                else html += '<tr>' + cells.map(c => '<td style="padding:5px 8px;border:1px solid #e5e7eb;">' + c + '</td>').join("") + '</tr>'
                 continue
             }
-            if (inTable) { html+='</table>'; inTable=false }
-            if (!trim) { html+='<div style="height:6px"></div>'; continue }
-            if      (trim.startsWith("### ")) html+=`<div style="font-size:13px;font-weight:700;color:#1e40af;margin-top:14px;margin-bottom:4px;">${bold(trim.slice(4))}</div>`
-            else if (trim.startsWith("## "))  html+=`<div style="font-size:14px;font-weight:700;color:#111827;margin-top:16px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e5e7eb;">${bold(trim.slice(3))}</div>`
-            else if (trim.startsWith("# "))   html+=`<div style="font-size:15px;font-weight:700;color:#111827;margin-top:16px;margin-bottom:8px;">${bold(trim.slice(2))}</div>`
-            else if (trim.startsWith("- ")||trim.startsWith("* ")) html+=`<div style="display:flex;gap:6px;margin:3px 0;"><span style="color:#6b7280;flex-shrink:0;">•</span><span>${bold(trim.slice(2))}</span></div>`
-            else if (/^\d+\.\s/.test(trim)) { const num=trim.match(/^(\d+)\.\s/)[1]; html+=`<div style="display:flex;gap:6px;margin:3px 0;"><span style="color:#3b82f6;font-weight:600;flex-shrink:0;min-width:16px;">${num}.</span><span>${bold(trim.replace(/^\d+\.\s/,""))}</span></div>` }
-            else if (trim==="---") html+=`<hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 0;">`
-            else html+=`<div style="margin:2px 0;line-height:1.6;">${bold(trim)}</div>`
+            if (inTable) { html += '</table>'; inTable = false }
+            if (!trim) { html += '<div style="height:6px"></div>'; continue }
+            if (trim.startsWith("### ")) html += '<div style="font-size:13px;font-weight:700;color:#1e40af;margin-top:14px;margin-bottom:4px;">' + bold(trim.slice(4)) + '</div>'
+            else if (trim.startsWith("## ")) html += '<div style="font-size:14px;font-weight:700;color:#111827;margin-top:16px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e5e7eb;">' + bold(trim.slice(3)) + '</div>'
+            else if (trim.startsWith("# ")) html += '<div style="font-size:15px;font-weight:700;color:#111827;margin-top:16px;margin-bottom:8px;">' + bold(trim.slice(2)) + '</div>'
+            else if (trim.startsWith("- ") || trim.startsWith("* ")) html += '<div style="display:flex;gap:6px;margin:3px 0;"><span style="color:#6b7280;flex-shrink:0;">•</span><span>' + bold(trim.slice(2)) + '</span></div>'
+            else if (/^\d+\.\s/.test(trim)) { const num = trim.match(/^(\d+)\.\s/)[1]; html += '<div style="display:flex;gap:6px;margin:3px 0;"><span style="color:#3b82f6;font-weight:600;flex-shrink:0;min-width:16px;">' + num + '.</span><span>' + bold(trim.replace(/^\d+\.\s/, "")) + '</span></div>' }
+            else if (trim === "---") html += '<hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 0;">'
+            else html += '<div style="margin:2px 0;line-height:1.6;">' + bold(trim) + '</div>'
         }
-        if (inTable) html+='</table>'
+        if (inTable) html += '</table>'
         return html
     }
 
