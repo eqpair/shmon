@@ -89,7 +89,7 @@
         const res = await fetch(LIVE_URL + "?t=" + Date.now())
         const d = await res.json()
         positions = (d.positions || []).filter(p => p.last_price > 0)
-        totalExposure = (d.positions || []).reduce((s,p) => s + (p.exposure||0), 0)
+        totalExposure = d.total_exposure || 0
         totalMv       = (d.positions || []).reduce((s,p) => s + (p.mv||0), 0)
         totalPnl = d.total_pnl || 0
     }
@@ -112,8 +112,8 @@
     }
 
     function renderSummary() {
-        const totalVal  = totalMv
-        const totalCost = totalExposure
+        const totalVal  = totalExposure
+        const totalCost = totalExposure - totalPnl
         const pnl       = totalPnl
         const pct       = totalCost > 0 ? (pnl/totalCost)*100 : 0
         const pnlColor  = pnl >= 0 ? "#16a34a" : "#dc2626"
