@@ -48,6 +48,13 @@
         </div>
         <div class="section-card mb-4">
             <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">리스크 분석</h2>
+                <span class="text-xs text-gray-400">집중도 · 손실 현황</span>
+            </div>
+            <div id="risk-content"></div>
+        </div>
+        <div class="section-card">
+            <div class="flex items-center justify-between mb-4">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">AI 매매 전략</h2>
                 <button onclick="runAIAnalysis()" id="ai-btn" class="text-xs px-3 py-1 rounded font-medium" style="background:#1e40af;color:#fff;border:none;cursor:pointer;">다시 분석</button>
             </div>
@@ -57,13 +64,6 @@
                     <span class="ml-2">분석 중...</span>
                 </div>
             </div>
-        </div>
-        <div class="section-card">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">리스크 분석</h2>
-                <span class="text-xs text-gray-400">집중도 · 손실 현황</span>
-            </div>
-            <div id="risk-content"></div>
         </div>
     </div>
 </div>
@@ -112,24 +112,45 @@
     }
 
     function renderSummary() {
-        const totalVal  = totalExposure
-        const totalCost = totalExposure - totalPnl
-        const pnl       = totalPnl
-        const pct       = totalCost > 0 ? (pnl/totalCost)*100 : 0
-        // index 기준: Total Exposure = 투자원금+손익(현재가치), total_pnl = 손익
-        const pnlColor  = pnl >= 0 ? "#16a34a" : "#dc2626"
+        const pnl      = totalPnl
+        const pnlColor = pnl >= 0 ? "text-red-600" : "text-blue-600"
+        const pnlRatioColor = pnl >= 0 ? "text-red-500" : "text-blue-500"
+        const pnlRatio = totalExposure > 0 ? (pnl/totalExposure*100) : 0
         const winCount  = positions.filter(p => p.pnl >= 0).length
         const lossCount = positions.filter(p => p.pnl < 0).length
         const gs = eqaiData && eqaiData.global_sentiment
         const gsColor = gs === "risk_on" ? "#16a34a" : "#dc2626"
         const gsLabel = gs === "risk_on" ? "리스크 온" : "리스크 오프"
-        const gsReason = eqaiData && eqaiData.sentiment_reason ? eqaiData.sentiment_reason.slice(0,30) + "..." : ""
+
+        const now = new Date()
+        const kst = new Date(now.getTime() + (9*60+now.getTimezoneOffset())*60000)
+        const t = kst.getHours()*60+kst.getMinutes(), wd = kst.getDay()
+        let mktText = "CLOSED", mktColor = "#9ca3af"
+        if (t>=540&&t<=930&&wd>=1&&wd<=5) { mktText="KRX"; mktColor="#16a34a" }
+        else if ((t>=480&&t<540)||(t>930&&t<=1200)) { mktText="NXT"; mktColor="#2563eb" }
+
         document.getElementById("summary-cards").innerHTML =
-            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">Total Exposure</div><div class="text-base font-bold text-gray-800">' + fmtNum(totalVal) + '</div><div class="text-xs text-gray-500 mt-1">투자원금 ' + fmtNum(totalCost) + '</div></div>' +
-            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">총 손익</div><div class="text-base font-bold" style="color:' + pnlColor + '">' + (pnl>=0?"+":"") + fmtNum(pnl) + '</div><div class="text-xs font-medium mt-1" style="color:' + pnlColor + '">' + (pct>=0?"+":"") + pct.toFixed(2) + '%</div></div>' +
-            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">종목 현황</div><div class="text-base font-bold text-gray-800">' + positions.length + '종목</div><div class="text-xs mt-1"><span style="color:#16a34a;">수익 ' + winCount + '</span> | <span style="color:#dc2626;">손실 ' + lossCount + '</span></div></div>' +
-            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">시장 심리</div><div class="text-base font-bold" style="color:' + gsColor + '">' + gsLabel + '</div><div class="text-xs text-gray-400 mt-1">' + gsReason + '</div></div>'
+            '<div class="stat-card" style="grid-column:span 2">' +
+            '  <div class="text-sm text-gray-600 font-bold mb-1">Total Exposure</div>' +
+            '  <div class="text-xl font-bold text-green-600">' + fmtNum(totalExposure) + '</div>' +
+            '  <div class="text-sm mt-1">' +
+            '    <span class="font-medium ' + pnlColor + '">' + (pnl>=0?"+":"") + fmtNum(pnl) + '</span>' +
+            '    <span class="' + pnlRatioColor + '" style="font-size:.8rem;font-weight:600;margin-left:6px;">(' + (pnlRatio>=0?"+":"") + pnlRatio.toFixed(2) + '%)</span>' +
+            '  </div>' +
+            '</div>' +
+            '<div class="stat-card">' +
+            '  <div class="text-xs text-gray-400 mb-1">종목 현황</div>' +
+            '  <div class="text-base font-bold text-gray-800">' + positions.length + '종목</div>' +
+            '  <div class="text-xs mt-1"><span style="color:#16a34a;">수익 ' + winCount + '</span> | <span style="color:#dc2626;">손실 ' + lossCount + '</span></div>' +
+            '  <div class="text-xs mt-1" style="color:' + mktColor + ';font-weight:600;">● ' + mktText + '</div>' +
+            '</div>' +
+            '<div class="stat-card">' +
+            '  <div class="text-xs text-gray-400 mb-1">시장 심리</div>' +
+            '  <div class="text-base font-bold" style="color:' + gsColor + '">' + gsLabel + '</div>' +
+            '  <div class="text-xs text-gray-400 mt-1">' + ((eqaiData&&eqaiData.sentiment_reason)||"").slice(0,30) + '...</div>' +
+            '</div>'
     }
+
 
     function renderRisk() {
         const sorted = [...positions].sort((a,b) => b.mv - a.mv)
