@@ -72,7 +72,7 @@
     const EQAI_JSON = "https://eqpair.github.io/semon/data/eqai_report.json"
     const CHAT_URL  = "https://eqmon.duckdns.org/eqai-chat/chat"
 
-    let positions = [], eqaiData = null, totalExposure = 0, totalPnl = 0
+    let positions = [], eqaiData = null, totalExposure = 0, totalMv = 0, totalPnl = 0
 
     async function loadAll() {
         document.getElementById("loading-state").style.display = "block"
@@ -89,7 +89,8 @@
         const res = await fetch(LIVE_URL + "?t=" + Date.now())
         const d = await res.json()
         positions = (d.positions || []).filter(p => p.last_price > 0)
-        totalExposure = d.total_exposure || 0
+        totalExposure = (d.positions || []).reduce((s,p) => s + (p.exposure||0), 0)
+        totalMv       = (d.positions || []).reduce((s,p) => s + (p.mv||0), 0)
         totalPnl = d.total_pnl || 0
     }
 
@@ -111,9 +112,9 @@
     }
 
     function renderSummary() {
-        const totalVal  = positions.reduce((s,p) => s + p.mv, 0)
-        const totalCost = positions.reduce((s,p) => s + p.exposure, 0)
-        const pnl       = totalVal - totalCost
+        const totalVal  = totalMv
+        const totalCost = totalExposure
+        const pnl       = totalPnl
         const pct       = totalCost > 0 ? (pnl/totalCost)*100 : 0
         const pnlColor  = pnl >= 0 ? "#16a34a" : "#dc2626"
         const winCount  = positions.filter(p => p.pnl >= 0).length
@@ -131,11 +132,11 @@
 
     function renderRisk() {
         const sorted = [...positions].sort((a,b) => b.mv - a.mv)
-        const top3w  = sorted.slice(0,3).reduce((s,p) => s + (p.mv/totalExposure*100), 0)
+        const top3w  = sorted.slice(0,3).reduce((s,p) => s + (p.mv/totalMv*100), 0)
         const lossPos = [...positions].filter(p => p.pnl < 0).sort((a,b) => a.pnl_ratio - b.pnl_ratio)
 
         let bars = sorted.slice(0,5).map(p => {
-            const w = totalExposure > 0 ? (p.mv/totalExposure*100) : 0
+            const w = totalExposure > 0 ? (p.mv/totalMv*100) : 0
             return '<div class="flex items-center gap-3 mb-2">' +
                 '<div class="text-xs text-gray-600 w-24 flex-shrink-0">' + p.name + '</div>' +
                 '<div class="flex-1 risk-bar"><div class="risk-bar-fill" style="width:' + Math.min(w,100) + '%;background:' + (w>30?'#dc2626':w>20?'#d97706':'#2563eb') + ';"></div></div>' +
@@ -171,7 +172,7 @@
             '<span class="ml-2">AI가 포트폴리오를 분석하고 있어요</span></div>'
 
         const summary = positions.map(p =>
-            p.name + "(" + p.symbol + "): 현재가 " + fmtNum(p.last_price) + "원, 수익률 " + (p.pnl_ratio*100).toFixed(2) + "%, 비중 " + (p.mv/totalExposure*100).toFixed(1) + "%"
+            p.name + "(" + p.symbol + "): 현재가 " + fmtNum(p.last_price) + "원, 수익률 " + (p.pnl_ratio*100).toFixed(2) + "%, 비중 " + (p.mv/totalMv*100).toFixed(1) + "%"
         ).join("\n")
 
         const gs = eqaiData && eqaiData.global_sentiment || ""
