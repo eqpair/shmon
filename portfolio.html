@@ -116,6 +116,7 @@
         const totalCost = totalExposure - totalPnl
         const pnl       = totalPnl
         const pct       = totalCost > 0 ? (pnl/totalCost)*100 : 0
+        // index 기준: Total Exposure = 투자원금+손익(현재가치), total_pnl = 손익
         const pnlColor  = pnl >= 0 ? "#16a34a" : "#dc2626"
         const winCount  = positions.filter(p => p.pnl >= 0).length
         const lossCount = positions.filter(p => p.pnl < 0).length
@@ -124,7 +125,7 @@
         const gsLabel = gs === "risk_on" ? "리스크 온" : "리스크 오프"
         const gsReason = eqaiData && eqaiData.sentiment_reason ? eqaiData.sentiment_reason.slice(0,30) + "..." : ""
         document.getElementById("summary-cards").innerHTML =
-            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">총 평가금액</div><div class="text-base font-bold text-gray-800">' + fmtNum(totalVal) + '</div><div class="text-xs text-gray-500 mt-1">투자원금 ' + fmtNum(totalCost) + '</div></div>' +
+            '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">Total Exposure</div><div class="text-base font-bold text-gray-800">' + fmtNum(totalVal) + '</div><div class="text-xs text-gray-500 mt-1">투자원금 ' + fmtNum(totalCost) + '</div></div>' +
             '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">총 손익</div><div class="text-base font-bold" style="color:' + pnlColor + '">' + (pnl>=0?"+":"") + fmtNum(pnl) + '</div><div class="text-xs font-medium mt-1" style="color:' + pnlColor + '">' + (pct>=0?"+":"") + pct.toFixed(2) + '%</div></div>' +
             '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">종목 현황</div><div class="text-base font-bold text-gray-800">' + positions.length + '종목</div><div class="text-xs mt-1"><span style="color:#16a34a;">수익 ' + winCount + '</span> | <span style="color:#dc2626;">손실 ' + lossCount + '</span></div></div>' +
             '<div class="stat-card"><div class="text-xs text-gray-400 mb-1">시장 심리</div><div class="text-base font-bold" style="color:' + gsColor + '">' + gsLabel + '</div><div class="text-xs text-gray-400 mt-1">' + gsReason + '</div></div>'
