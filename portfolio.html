@@ -217,6 +217,16 @@
                         </select>
                     </div>
                 </div>
+                <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.5fr 1.5fr 1.5fr 1fr;gap:8px;padding:6px 0;border-bottom:2px solid #e5e7eb;margin-bottom:4px;">
+                    <div class="text-xs font-semibold text-gray-400">종목</div>
+                    <div class="text-xs font-semibold text-gray-400 text-right">REF PX</div>
+                    <div class="text-xs font-semibold text-gray-400 text-right">VAL PX</div>
+                    <div class="text-xs font-semibold text-gray-400 text-right">QTY</div>
+                    <div class="text-xs font-semibold text-gray-400 text-right">EXP</div>
+                    <div class="text-xs font-semibold text-gray-400 text-right">VAL</div>
+                    <div class="text-xs font-semibold text-gray-400 text-right">N PROFIT</div>
+                    <div class="text-xs font-semibold text-gray-400 text-right">N %</div>
+                </div>
                 <div id="positions-list"></div>
             </div>
 
@@ -396,32 +406,38 @@
                     : `<span class="badge badge-unknown">-</span>`
 
                 return `<div class="pos-row">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <a href="https://finance.naver.com/item/main.naver?code=${p.symbol}" target="_blank"
-                                   class="text-sm font-semibold text-gray-800 hover:text-blue-600">${p.name}</a>
-                                <span class="text-xs text-gray-400">${p.symbol}</span>
-                                ${rrgBadge}
-                            </div>
-                            <div class="text-xs text-gray-400 mt-0.5">
-                                평균 ${fmtNum(p.avg_price)}원 · ${fmtNum(p.qty)}주 · 비중 ${weight.toFixed(1)}%
-                            </div>
+                <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.5fr 1.5fr 1.5fr 1fr;gap:8px;align-items:center;">
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <a href="https://finance.naver.com/item/main.naver?code=${p.symbol}" target="_blank"
+                               class="text-sm font-semibold text-gray-800 hover:text-blue-600">${p.name}</a>
+                            <span class="text-xs text-gray-400">${p.symbol}</span>
+                            ${rrgBadge}
                         </div>
+                        <div class="text-xs text-gray-400 mt-0.5">${p.side}</div>
                     </div>
                     <div class="text-right">
-                        <div class="text-sm font-bold text-gray-800">${fmtNum(curr)}원
-                            <span style="font-size:11px;color:${chgColor};font-weight:500;">${chg >= 0 ? "+" : ""}${chg.toFixed(2)}%</span>
-                        </div>
-                        <div class="text-xs font-medium mt-0.5" style="color:${pnlColor}">
-                            ${pnl >= 0 ? "+" : ""}${fmtNum(pnl)} (${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%)
-                        </div>
+                        <div class="text-xs text-gray-700">${fmtNum(p.avg_price)}</div>
                     </div>
-                </div>
-                <div class="mt-2">
-                    <div class="profit-bar">
-                        <div class="profit-bar-fill" style="width:${Math.min(Math.abs(pct), 50) * 2}%;background:${pnl >= 0 ? '#16a34a' : '#dc2626'};${pnl < 0 ? 'margin-left:auto' : ''}"></div>
+                    <div class="text-right">
+                        <div class="text-xs font-bold text-gray-800">${fmtNum(curr)}</div>
+                        <div style="font-size:10px;color:${chgColor};">${chg >= 0 ? "+" : ""}${chg.toFixed(2)}%</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-gray-700">${fmtNum(p.qty)}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-gray-700">${fmtNum(cost)}</div>
+                        <div class="text-xs text-gray-400">${weight.toFixed(1)}%</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-gray-700">${fmtNum(val)}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-bold" style="color:${pnlColor}">${pnl >= 0 ? "+" : ""}${fmtNum(pnl)}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs font-bold" style="color:${pnlColor}">${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%</div>
                     </div>
                 </div>
             </div>`
