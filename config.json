@@ -10,20 +10,28 @@
             "group": "파두"
         },
         {
-            "symbol": "456160",
-            "name": "지투지바이오",
+            "symbol": "004020",
+            "name": "현대제철",
             "side": "LONG",
-            "qty": 2680.0,
-            "avg_price": 99881.0,
-            "group": "지투지바이오"
+            "qty": 10290.0,
+            "avg_price": 43624.0,
+            "group": "현대제철",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
         },
         {
-            "symbol": "035720",
-            "name": "카카오",
+            "symbol": "011210",
+            "name": "현대위아",
             "side": "LONG",
-            "qty": 1580,
-            "avg_price": 62620.0,
-            "group": "카카오"
+            "qty": 6350.0,
+            "avg_price": 94599.0,
+            "group": "현대위아",
+            "deleted": false,
+            "exit_price": null,
+            "exit_date": null,
+            "realized_pnl": null
         },
         {
             "symbol": "440110",
@@ -38,16 +46,20 @@
             "realized_pnl": 587152284.0
         },
         {
-            "symbol": "011210",
-            "name": "현대위아",
+            "symbol": "456160",
+            "name": "지투지바이오",
             "side": "LONG",
-            "qty": 6350.0,
-            "avg_price": 94599.0,
-            "group": "현대위아",
-            "deleted": false,
-            "exit_price": null,
-            "exit_date": null,
-            "realized_pnl": null
+            "qty": 2680.0,
+            "avg_price": 99881.0,
+            "group": "지투지바이오"
+        },
+        {
+            "symbol": "035720",
+            "name": "카카오",
+            "side": "LONG",
+            "qty": 1580,
+            "avg_price": 62620.0,
+            "group": "카카오"
         },
         {
             "symbol": "003380",
@@ -78,23 +90,11 @@
             "group": "하이브"
         },
         {
-            "symbol": "004020",
-            "name": "현대제철",
-            "side": "LONG",
-            "qty": 9040.0,
-            "avg_price": 44282.0,
-            "group": "현대제철",
-            "deleted": false,
-            "exit_price": null,
-            "exit_date": null,
-            "realized_pnl": null
-        },
-        {
             "symbol": "229200",
             "name": "KODEX 코스닥 150 ETF",
             "side": "LONG",
-            "qty": 24000.0,
-            "avg_price": 19069.0,
+            "qty": 25800.0,
+            "avg_price": 18986.0,
             "group": "KODEX 코스닥 150 ETF",
             "deleted": false,
             "exit_price": null,
@@ -102,12 +102,12 @@
             "realized_pnl": null
         },
         {
-            "symbol": "018260",
-            "name": "삼성에스디에스",
+            "symbol": "373220",
+            "name": "LG에너지솔루션",
             "side": "LONG",
-            "qty": 1150.0,
-            "avg_price": 176700.0,
-            "group": "삼성에스디에스",
+            "qty": 826.0,
+            "avg_price": 456509.0,
+            "group": "LG에너지솔루션",
             "deleted": false,
             "exit_price": null,
             "exit_date": null,
@@ -138,12 +138,12 @@
             "realized_pnl": 191909840.0
         },
         {
-            "symbol": "373220",
-            "name": "LG에너지솔루션",
+            "symbol": "018260",
+            "name": "삼성에스디에스",
             "side": "LONG",
-            "qty": 826.0,
-            "avg_price": 456509.0,
-            "group": "LG에너지솔루션",
+            "qty": 1150.0,
+            "avg_price": 176700.0,
+            "group": "삼성에스디에스",
             "deleted": false,
             "exit_price": null,
             "exit_date": null,
@@ -165,8 +165,8 @@
             "symbol": "005935",
             "name": "삼성전자우",
             "side": "LONG",
-            "qty": 600.0,
-            "avg_price": 185992.0,
+            "qty": 1200.0,
+            "avg_price": 183480.0,
             "group": "삼성전자우",
             "deleted": false,
             "exit_price": null,

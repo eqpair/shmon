@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Portfolio Analysis</title>
+    <link rel="icon" href="./favicon.svg" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --profit: #16a34a;
+            --loss: #dc2626;
+            --neutral: #6b7280;
+            --leading: #16a34a;
+            --improving: #2563eb;
+            --weakening: #d97706;
+            --lagging: #dc2626;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .section-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            padding: 20px;
+        }
+
+        .stat-card {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+
+        .pos-row {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 12px 0;
+        }
+
+        .pos-row:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
+
+        .badge-leading {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-improving {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-weakening {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-lagging {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .strategy-hold {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .strategy-cut {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .strategy-add {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .strategy-watch {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .profit-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .profit-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.6s;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 2px;
+        }
+
+        .typing-dot {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #9ca3af;
+            animation: typing 1.2s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0)
+            }
+
+            30% {
+                transform: translateY(-5px)
+            }
+        }
+
+        .risk-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+
+        <!-- 헤더 -->
+        <header class="mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Portfolio <span
+                            class="text-lg font-normal text-gray-400">Analysis</span></h1>
+                    <div class="text-sm text-gray-500 mt-1" id="header-meta">로딩 중...</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="loadAll()" class="px-3 py-1 text-xs rounded font-medium"
+                        style="background:#0f172a;color:#fff;border:1px solid #334155;">새로고침</button>
+                    <a href="./eqai.html"
+                        class="px-3 py-1 text-xs rounded bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium">AI
+                        분석</a>
+                    <a href="https://eqmon.duckdns.org"
+                        style="font-size:12px;color:#fff;text-decoration:none;padding:4px 10px;border:1px solid #334155;border-radius:6px;background:#1e293b;">HOME</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- 로딩 -->
+        <div id="loading-state" class="text-center py-20 text-gray-400">
+            <div class="text-lg font-medium text-gray-600 mb-2">포트폴리오 분석 중</div>
+            <div class="text-sm">현재가 및 RRG 데이터를 불러오고 있어요</div>
+        </div>
+
+        <div id="main-content" style="display:none;">
+
+            <!-- SECTION 1: 포트폴리오 요약 -->
+            <div class="section-card mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">포트폴리오 요약</h2>
+                    <span class="text-xs text-gray-400" id="updated-at">-</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="summary-cards"></div>
+            </div>
+
+            <!-- SECTION 2: 종목별 현황 -->
+            <div class="section-card mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">종목별 현황</h2>
+                    <div class="flex gap-2">
+                        <select id="sort-select" onchange="renderPositions()"
+                            class="text-xs border border-gray-200 rounded px-2 py-1 bg-white">
+                            <option value="pnl_pct">수익률순</option>
+                            <option value="exposure">비중순</option>
+                            <option value="name">종목명순</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="positions-list"></div>
+            </div>
+
+            <!-- SECTION 3: 리스크 분석 -->
+            <div class="section-card mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">리스크 분석</h2>
+                    <span class="text-xs text-gray-400">집중도 · 섹터 편중</span>
+                </div>
+                <div id="risk-content"></div>
+            </div>
+
+            <!-- SECTION 4: AI 매매 전략 -->
+            <div class="section-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">AI 매매 전략</h2>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full font-medium">AI 분석</span>
+                        <button onclick="runAIAnalysis()" id="ai-btn" class="text-xs px-3 py-1 rounded font-medium"
+                            style="background:#1e40af;color:#fff;border:none;cursor:pointer;">분석 실행</button>
+                    </div>
+                </div>
+                <div id="ai-content">
+                    <div class="text-sm text-gray-400 text-center py-8">분석 실행 버튼을 눌러주세요</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "https://eqmon.duckdns.org/api"
+        const NAVER_BASE = "https://m.stock.naver.com/api/stock"
+        const EQAI_JSON = "./data/eqai_report.json"
+        const CHAT_URL = "https://eqmon.duckdns.org/eqai-chat/chat"
+
+        let positions = []   // 활성 포지션
+        let priceMap = {}   // {code: {price, change, status}}
+        let rrgMap = {}   // {섹터명: {quadrant, rs_ratio, rs_momentum}}
+        let eqaiData = null
+        let totalExposure = 0
+
+        // ── 데이터 로드 ───────────────────────────────────────────────
+        async function loadAll() {
+            document.getElementById("loading-state").style.display = "block"
+            document.getElementById("main-content").style.display = "none"
+            try {
+                await Promise.all([loadPositions(), loadEqai()])
+                await loadPrices()
+                render()
+            } catch (e) {
+                document.getElementById("loading-state").innerHTML =
+                    `<div class="text-red-500">로드 실패: ${e.message}</div>`
+            }
+        }
+
+        async function loadPositions() {
+            const res = await fetch(`${API_BASE}/positions`)
+            const all = await res.json()
+            positions = all.filter(p => !p.deleted && p.qty > 0)
+        }
+
+        async function loadEqai() {
+            const res = await fetch(EQAI_JSON + "?t=" + Date.now())
+            eqaiData = await res.json()
+            // RRG 맵 구성
+            for (const [sector, d] of Object.entries(eqaiData.sector_rrg || {})) {
+                rrgMap[sector] = d
+            }
+        }
+
+        async function loadPrices() {
+            await Promise.all(positions.map(async p => {
+                try {
+                    const res = await fetch(`${NAVER_BASE}/${p.symbol}/basic`)
+                    if (!res.ok) return
+                    const d = await res.json()
+                    priceMap[p.symbol] = {
+                        price: parseInt(d.closePrice.replace(/,/g, "")),
+                        change: parseFloat(d.fluctuationsRatio),
+                        status: d.marketStatus || ""
+                    }
+                } catch (e) { }
+            }))
+        }
+
+        // ── 렌더링 ───────────────────────────────────────────────────
+        function render() {
+            document.getElementById("loading-state").style.display = "none"
+            document.getElementById("main-content").style.display = "block"
+            document.getElementById("updated-at").textContent = new Date().toLocaleTimeString("ko-KR")
+            document.getElementById("header-meta").textContent =
+                `활성 종목 ${positions.length}개 | ${eqaiData?.generated_at || ""} 기준`
+
+            calcTotals()
+            renderSummary()
+            renderPositions()
+            renderRisk()
+        }
+
+        function calcTotals() {
+            totalExposure = positions.reduce((s, p) => {
+                const price = priceMap[p.symbol]?.price || p.avg_price
+                return s + price * p.qty
+            }, 0)
+        }
+
+        function getPnl(p) {
+            const curr = priceMap[p.symbol]?.price || p.avg_price
+            const cost = p.avg_price * p.qty
+            const val = curr * p.qty
+            const pnl = val - cost
+            const pct = (pnl / cost) * 100
+            return { curr, cost, val, pnl, pct }
+        }
+
+        function renderSummary() {
+            let totalCost = 0, totalVal = 0, winCount = 0, lossCount = 0
+            for (const p of positions) {
+                const { cost, val, pnl } = getPnl(p)
+                totalCost += cost; totalVal += val
+                if (pnl >= 0) winCount++; else lossCount++
+            }
+            const totalPnl = totalVal - totalCost
+            const totalPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0
+            const pnlColor = totalPnl >= 0 ? "#16a34a" : "#dc2626"
+
+            document.getElementById("summary-cards").innerHTML = `
+            <div class="stat-card">
+                <div class="text-xs text-gray-400 mb-1">총 평가금액</div>
+                <div class="text-base font-bold text-gray-800">${fmtNum(totalVal)}</div>
+                <div class="text-xs text-gray-500 mt-1">투자원금 ${fmtNum(totalCost)}</div>
+            </div>
+            <div class="stat-card">
+                <div class="text-xs text-gray-400 mb-1">총 손익</div>
+                <div class="text-base font-bold" style="color:${pnlColor}">${totalPnl >= 0 ? "+" : ""}${fmtNum(totalPnl)}</div>
+                <div class="text-xs font-medium mt-1" style="color:${pnlColor}">${totalPct >= 0 ? "+" : ""}${totalPct.toFixed(2)}%</div>
+            </div>
+            <div class="stat-card">
+                <div class="text-xs text-gray-400 mb-1">종목 현황</div>
+                <div class="text-base font-bold text-gray-800">${positions.length}종목</div>
+                <div class="text-xs mt-1">
+                    <span style="color:#16a34a;">수익 ${winCount}</span>
+                    <span class="text-gray-300 mx-1">|</span>
+                    <span style="color:#dc2626;">손실 ${lossCount}</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="text-xs text-gray-400 mb-1">시장 심리</div>
+                <div class="text-base font-bold" style="color:${eqaiData?.global_sentiment === 'risk_on' ? '#16a34a' : '#dc2626'}">
+                    ${eqaiData?.global_sentiment === 'risk_on' ? '리스크 온' : '리스크 오프'}
+                </div>
+                <div class="text-xs text-gray-400 mt-1">${(eqaiData?.sentiment_reason || "").slice(0, 30)}...</div>
+            </div>
+        `
+        }
+
+        function renderPositions() {
+            const sort = document.getElementById("sort-select").value
+            const sorted = [...positions].sort((a, b) => {
+                if (sort === "pnl_pct") return getPnl(a).pct - getPnl(b).pct  // 손실 먼저
+                if (sort === "exposure") return getPnl(b).val - getPnl(a).val
+                return a.name.localeCompare(b.name)
+            })
+
+            document.getElementById("positions-list").innerHTML = sorted.map(p => {
+                const { curr, cost, val, pnl, pct } = getPnl(p)
+                const pnlColor = pnl >= 0 ? "#16a34a" : "#dc2626"
+                const weight = totalExposure > 0 ? (val / totalExposure * 100) : 0
+                const chg = priceMap[p.symbol]?.change || 0
+                const chgColor = chg >= 0 ? "#16a34a" : "#dc2626"
+
+                // RRG 분면 찾기 (섹터명 매핑은 근사치)
+                const rrg = findRRG(p.name)
+                const rrgBadge = rrg
+                    ? `<span class="badge badge-${rrg.quadrant}">${rrg.quadrant.toUpperCase()}</span>`
+                    : `<span class="badge badge-unknown">-</span>`
+
+                return `<div class="pos-row">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <a href="https://finance.naver.com/item/main.naver?code=${p.symbol}" target="_blank"
+                                   class="text-sm font-semibold text-gray-800 hover:text-blue-600">${p.name}</a>
+                                <span class="text-xs text-gray-400">${p.symbol}</span>
+                                ${rrgBadge}
+                            </div>
+                            <div class="text-xs text-gray-400 mt-0.5">
+                                평균 ${fmtNum(p.avg_price)}원 · ${fmtNum(p.qty)}주 · 비중 ${weight.toFixed(1)}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-gray-800">${fmtNum(curr)}원
+                            <span style="font-size:11px;color:${chgColor};font-weight:500;">${chg >= 0 ? "+" : ""}${chg.toFixed(2)}%</span>
+                        </div>
+                        <div class="text-xs font-medium mt-0.5" style="color:${pnlColor}">
+                            ${pnl >= 0 ? "+" : ""}${fmtNum(pnl)} (${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%)
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <div class="profit-bar">
+                        <div class="profit-bar-fill" style="width:${Math.min(Math.abs(pct), 50) * 2}%;background:${pnl >= 0 ? '#16a34a' : '#dc2626'};${pnl < 0 ? 'margin-left:auto' : ''}"></div>
+                    </div>
+                </div>
+            </div>`
+            }).join("")
+        }
+
+        function findRRG(name) {
+            // top_picks에서 종목명으로 섹터 찾기
+            if (!eqaiData) return null
+            for (const pick of eqaiData.top_picks || []) {
+                for (const s of pick.stocks || []) {
+                    if (s.name === name) {
+                        return rrgMap[pick.sector] || null
+                    }
+                }
+            }
+            return null
+        }
+
+        function renderRisk() {
+            // 집중도 분석
+            const weightedPositions = positions.map(p => {
+                const { val } = getPnl(p)
+                return { ...p, val, weight: totalExposure > 0 ? (val / totalExposure * 100) : 0 }
+            }).sort((a, b) => b.weight - a.weight)
+
+            const top3Weight = weightedPositions.slice(0, 3).reduce((s, p) => s + p.weight, 0)
+            const maxWeight = weightedPositions[0]?.weight || 0
+
+            // 손실 종목
+            const lossPositions = positions.filter(p => getPnl(p).pnl < 0)
+                .map(p => ({ ...p, ...getPnl(p) }))
+                .sort((a, b) => a.pct - b.pct)
+
+            document.getElementById("risk-content").innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <div class="text-xs font-semibold text-gray-600 mb-3">종목 집중도</div>
+                    ${weightedPositions.slice(0, 5).map(p => `
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="text-xs text-gray-600 w-24 flex-shrink-0">${p.name}</div>
+                        <div class="flex-1 risk-bar">
+                            <div class="risk-bar-fill" style="width:${p.weight}%;background:${p.weight > 30 ? '#dc2626' : p.weight > 20 ? '#d97706' : '#2563eb'};"></div>
+                        </div>
+                        <div class="text-xs font-medium text-gray-700 w-10 text-right">${p.weight.toFixed(1)}%</div>
+                    </div>`).join("")}
+                    <div class="mt-3 p-3 rounded-lg text-xs ${top3Weight > 60 ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}">
+                        상위 3종목 비중: <strong>${top3Weight.toFixed(1)}%</strong>
+                        ${top3Weight > 60 ? ' — 집중도 높음, 분산 검토 권장' : ''}
+                    </div>
+                </div>
+                <div>
+                    <div class="text-xs font-semibold text-gray-600 mb-3">손실 종목 현황</div>
+                    ${lossPositions.length === 0
+                    ? '<div class="text-xs text-gray-400 py-4 text-center">손실 종목 없음</div>'
+                    : lossPositions.slice(0, 5).map(p => `
+                    <div class="flex items-center justify-between mb-2 p-2 bg-red-50 rounded-lg">
+                        <div class="text-xs font-medium text-gray-700">${p.name}</div>
+                        <div class="text-xs font-bold text-red-600">${p.pct.toFixed(2)}%</div>
+                    </div>`).join("")}
+                    ${lossPositions.length > 0 ? `
+                    <div class="mt-3 p-3 bg-amber-50 rounded-lg text-xs text-amber-700">
+                        손실 종목 ${lossPositions.length}개 · 평균 ${(lossPositions.reduce((s, p) => s + p.pct, 0) / lossPositions.length).toFixed(2)}%
+                    </div>`: ""}
+                </div>
+            </div>
+        `
+        }
+
+        // ── AI 분석 ───────────────────────────────────────────────────
+        async function runAIAnalysis() {
+            const btn = document.getElementById("ai-btn")
+            btn.disabled = true; btn.textContent = "분석 중..."
+            document.getElementById("ai-content").innerHTML = `
+            <div class="flex items-center gap-2 py-8 justify-center text-gray-400 text-sm">
+                <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+                <span class="ml-2">AI가 포트폴리오를 분석하고 있어요</span>
+            </div>`
+
+            const positionSummary = positions.map(p => {
+                const { curr, pnl, pct, val, weight } = { ...getPnl(p), weight: totalExposure > 0 ? (getPnl(p).val / totalExposure * 100) : 0 }
+                const rrg = findRRG(p.name)
+                return `${p.name}(${p.symbol}): 현재가 ${curr.toLocaleString()}원, 수익률 ${pct.toFixed(2)}%, 비중 ${(val / totalExposure * 100).toFixed(1)}%, RRG ${rrg?.quadrant || "미확인"}`
+            }).join("\n")
+
+            const prompt = `아래는 현재 보유 중인 포트폴리오입니다. 각 종목에 대해 홀드/손절/추가매수 전략을 제안하고, 전체 포트폴리오 관점에서 리스크와 개선 방향을 분석해주세요.
+
+[보유 종목]
+${positionSummary}
+
+[시장 상황]
+- 심리: ${eqaiData?.global_sentiment} (${eqaiData?.sentiment_reason})
+- 핵심 리스크: ${(eqaiData?.key_factors || []).join(", ")}
+
+각 종목마다 전략(홀드/손절/추가매수/관망)과 근거를 명확히 제시하고, 마지막에 포트폴리오 전체 총평을 해주세요.`
+
+            try {
+                const res = await fetch(CHAT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ messages: [{ role: "user", content: prompt }] })
+                })
+                const data = await res.json()
+                document.getElementById("ai-content").innerHTML = markdownToHtml(data.answer || "응답 없음")
+            } catch (e) {
+                document.getElementById("ai-content").innerHTML = `<div class="text-red-500 text-sm">오류: ${e.message}</div>`
+            }
+            btn.disabled = false; btn.textContent = "다시 분석"
+        }
+
+        // ── 유틸 ─────────────────────────────────────────────────────
+        function fmtNum(n) {
+            return Math.round(n).toLocaleString("ko-KR")
+        }
+
+        function markdownToHtml(text) {
+            text = text.replace(/```[\s\S]*?```/g, "")
+            const bold = s => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+            const lines = text.split("\n")
+            let html = "", inTable = false
+            for (const line of lines) {
+                const trim = line.trim()
+                if (trim.startsWith("|") && trim.endsWith("|")) {
+                    if (/^[|\s-]+$/.test(trim)) continue
+                    const cells = trim.slice(1, -1).split("|").map(c => bold(c.trim()))
+                    if (!inTable) {
+                        html += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0;">'; inTable = true
+                        html += '<tr>' + cells.map(c => `<th style="text-align:left;padding:5px 8px;background:#f3f4f6;border:1px solid #e5e7eb;">${c}</th>`).join("") + '</tr>'
+                    } else {
+                        html += '<tr>' + cells.map(c => `<td style="padding:5px 8px;border:1px solid #e5e7eb;">${c}</td>`).join("") + '</tr>'
+                    }
+                    continue
+                }
+                if (inTable) { html += '</table>'; inTable = false }
+                if (!trim) { html += '<div style="height:6px"></div>'; continue }
+                if (trim.startsWith("### ")) html += `<div style="font-size:13px;font-weight:700;color:#1e40af;margin-top:14px;margin-bottom:4px;">${bold(trim.slice(4))}</div>`
+                else if (trim.startsWith("## ")) html += `<div style="font-size:14px;font-weight:700;color:#111827;margin-top:16px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e5e7eb;">${bold(trim.slice(3))}</div>`
+                else if (trim.startsWith("# ")) html += `<div style="font-size:15px;font-weight:700;color:#111827;margin-top:16px;margin-bottom:8px;">${bold(trim.slice(2))}</div>`
+                else if (trim.startsWith("- ") || trim.startsWith("* ")) html += `<div style="display:flex;gap:6px;margin:3px 0;"><span style="color:#6b7280;flex-shrink:0;">•</span><span>${bold(trim.slice(2))}</span></div>`
+                else if (/^\d+\.\s/.test(trim)) {
+                    const num = trim.match(/^(\d+)\.\s/)[1]
+                    html += `<div style="display:flex;gap:6px;margin:3px 0;"><span style="color:#3b82f6;font-weight:600;flex-shrink:0;min-width:16px;">${num}.</span><span>${bold(trim.replace(/^\d+\.\s/, ""))}</span></div>`
+                }
+                else if (trim === "---") html += `<hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 0;">`
+                else html += `<div style="margin:2px 0;line-height:1.6;">${bold(trim)}</div>`
+            }
+            if (inTable) html += '</table>'
+            return html
+        }
+
+        loadAll()
+    </script>
+</body>
+
+</html>
