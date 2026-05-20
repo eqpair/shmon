@@ -370,7 +370,8 @@
                         <br>
                         <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
                             <a href="https://eqmon.duckdns.org" class="nav-link">🏠HOME</a>
-                            <a href="./portfolio.html" class="nav-link">Portfolio</a>
+                            <button onclick="switchTab('report')" id="tab-report" class="nav-link active">Trading REPORT</button>
+                            <button onclick="switchTab('portfolio')" id="tab-portfolio" class="nav-link">Portfolio</button>
                             <button onclick="openAdd()" class="nav-link">＋ ADD POSITION</button>
                         </nav>
                     </div>
@@ -378,6 +379,7 @@
             </div>
         </header>
 
+        <div id="tab-report-content">
         <div class="bg-white rounded-lg shadow-md p-4">
             <div class="table-scroll-wrap">
                 <div class="table-scroll">
@@ -426,6 +428,28 @@
                         </thead>
                         <tbody id="deleted-body"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+        </div><!-- /tab-report-content -->
+
+        <!-- Portfolio 탭 -->
+        <div id="tab-portfolio-content" style="display:none;">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="pf-summary"></div>
+            <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-sm font-semibold text-gray-700 uppercase tracking-wide">리스크 분석</div>
+                    <span class="text-xs text-gray-400">집중도 · 손실 현황</span>
+                </div>
+                <div id="pf-risk"></div>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-sm font-semibold text-gray-700 uppercase tracking-wide">AI 매매 전략</div>
+                    <button onclick="runPortfolioAI()" id="pf-ai-btn" class="btn-icon btn-save" style="font-size:.75rem;">다시 분석</button>
+                </div>
+                <div id="pf-ai-content">
+                    <div class="text-sm text-gray-400 text-center py-8">분석 중...</div>
                 </div>
             </div>
         </div>
@@ -1055,7 +1079,155 @@
             _dmdown = null;
         });
 
+        // ─── 탭 전환 ─────────────────────────────────────────────────────────────────
+        var currentTab = 'report';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-report-content').style.display = tab === 'report' ? '' : 'none';
+            document.getElementById('tab-portfolio-content').style.display = tab === 'portfolio' ? '' : 'none';
+            document.getElementById('tab-report').classList.toggle('active', tab === 'report');
+            document.getElementById('tab-portfolio').classList.toggle('active', tab === 'portfolio');
+            if (tab === 'portfolio') renderPortfolio();
+        }
+
+        // ─── Portfolio 렌더 ───────────────────────────────────────────────────────────
+        var pfAiRan = false;
+
+        function renderPortfolio() {
+            if (!liveData) return;
+            var ps = liveData.positions || [];
+            var totalExp = Number(liveData.total_exposure) || 0;
+            var totalPnl = Number(liveData.total_pnl) || 0;
+            var totalMv  = ps.reduce(function(s,p){ return s+(p.mv||0); }, 0);
+            var pnlRatio = totalExp > 0 ? (totalPnl/totalExp*100) : 0;
+            var winCount  = ps.filter(function(p){ return p.pnl >= 0; }).length;
+            var lossCount = ps.filter(function(p){ return p.pnl < 0; }).length;
+            var pnlCls = totalPnl >= 0 ? 'text-red-600' : 'text-blue-600';
+            var ratioCls = totalPnl >= 0 ? 'text-red-500' : 'text-blue-500';
+
+            // 요약
+            document.getElementById('pf-summary').innerHTML =
+                '<div class="bg-white rounded-lg shadow-md p-4" style="grid-column:span 2">' +
+                '  <div class="text-sm text-gray-600 font-bold mb-1">Total Exposure</div>' +
+                '  <div class="text-xl font-bold text-green-600">' + Math.round(totalExp).toLocaleString('ko-KR') + '</div>' +
+                '  <div class="text-sm mt-1">' +
+                '    <span class="font-medium ' + pnlCls + '">' + (totalPnl>=0?'+':'') + Math.round(totalPnl).toLocaleString('ko-KR') + '</span>' +
+                '    <span class="' + ratioCls + '" style="font-size:.8rem;font-weight:600;margin-left:6px;">(' + (pnlRatio>=0?'+':'') + pnlRatio.toFixed(2) + '%)</span>' +
+                '  </div>' +
+                '</div>' +
+                '<div class="bg-white rounded-lg shadow-md p-4">' +
+                '  <div class="text-xs text-gray-400 mb-1">종목 현황</div>' +
+                '  <div class="text-base font-bold text-gray-800">' + ps.length + '종목</div>' +
+                '  <div class="text-xs mt-1"><span style="color:#16a34a">수익 ' + winCount + '</span> | <span style="color:#dc2626">손실 ' + lossCount + '</span></div>' +
+                '</div>' +
+                '<div class="bg-white rounded-lg shadow-md p-4">' +
+                '  <div class="text-xs text-gray-400 mb-1">Market</div>' +
+                '  <div id="pf-market" class="text-base font-bold">-</div>' +
+                '</div>';
+
+            // 마켓 상태
+            var msEl = document.getElementById('pf-market');
+            if (msEl) {
+                var now = new Date();
+                var kst = new Date(now.getTime() + (9*60+now.getTimezoneOffset())*60000);
+                var t = kst.getHours()*60+kst.getMinutes();
+                if (t>=540&&t<=930) { msEl.textContent='KRX'; msEl.style.color='#16a34a'; }
+                else if ((t>=480&&t<540)||(t>930&&t<=1200)) { msEl.textContent='NXT'; msEl.style.color='#2563eb'; }
+                else { msEl.textContent='CLOSED'; msEl.style.color='#9ca3af'; }
+            }
+
+            // 리스크 분석
+            var sorted = ps.slice().sort(function(a,b){ return b.mv-a.mv; });
+            var top3w = sorted.slice(0,3).reduce(function(s,p){ return s+(totalMv>0?p.mv/totalMv*100:0); }, 0);
+            var lossPs = ps.filter(function(p){ return p.pnl<0; }).sort(function(a,b){ return a.pnl_ratio-b.pnl_ratio; });
+
+            var bars = sorted.slice(0,5).map(function(p) {
+                var w = totalExp>0?(p.exposure/totalExp*100):0;
+                return '<div class="flex items-center gap-3 mb-2">' +
+                    '<div class="text-xs text-gray-600 w-24 flex-shrink-0">' + p.name + '</div>' +
+                    '<div class="flex-1" style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;">' +
+                    '<div style="height:100%;width:' + Math.min(w,100) + '%;background:' + (w>30?'#dc2626':w>20?'#d97706':'#2563eb') + ';border-radius:4px;"></div></div>' +
+                    '<div class="text-xs font-medium text-gray-700 w-10 text-right">' + w.toFixed(1) + '%</div></div>';
+            }).join('');
+
+            var lossList = lossPs.length === 0 ? '<div class="text-xs text-gray-400 py-4 text-center">손실 종목 없음</div>' :
+                lossPs.slice(0,6).map(function(p) {
+                    return '<div class="flex items-center justify-between mb-2 p-2 bg-red-50 rounded-lg">' +
+                        '<div class="text-xs font-medium text-gray-700">' + p.name + '</div>' +
+                        '<div class="text-xs font-bold text-red-600">' + (p.pnl_ratio*100).toFixed(2) + '%</div></div>';
+                }).join('');
+            if (lossPs.length > 0) {
+                var avg = lossPs.reduce(function(s,p){ return s+p.pnl_ratio; }, 0)/lossPs.length*100;
+                lossList += '<div class="mt-3 p-3 rounded-lg text-xs bg-amber-50 text-amber-700">손실 종목 ' + lossPs.length + '개 · 평균 ' + avg.toFixed(2) + '%</div>';
+            }
+
+            var warnCls = top3w>60 ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700';
+            document.getElementById('pf-risk').innerHTML =
+                '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+                '<div><div class="text-xs font-semibold text-gray-600 mb-3">종목 집중도</div>' + bars +
+                '<div class="mt-3 p-3 rounded-lg text-xs ' + warnCls + '">상위 3종목 비중: <strong>' + top3w.toFixed(1) + '%</strong>' + (top3w>60?' — 집중도 높음, 분산 검토 권장':'') + '</div></div>' +
+                '<div><div class="text-xs font-semibold text-gray-600 mb-3">손실 종목 현황</div>' + lossList + '</div></div>';
+
+            // AI 분석 자동 실행 (최초 1회)
+            if (!pfAiRan) { pfAiRan = true; runPortfolioAI(); }
+        }
+
+        async function runPortfolioAI() {
+            var btn = document.getElementById('pf-ai-btn');
+            btn.disabled = true; btn.textContent = '분석 중...';
+            document.getElementById('pf-ai-content').innerHTML =
+                '<div class="text-center py-8 text-gray-400 text-sm">AI가 포트폴리오를 분석하고 있어요...</div>';
+
+            var ps = liveData ? (liveData.positions || []) : [];
+            var totalExp = liveData ? (liveData.total_exposure||0) : 0;
+            var totalMv  = ps.reduce(function(s,p){ return s+(p.mv||0); }, 0);
+
+            var summary = ps.map(function(p) {
+                return p.name+'('+p.symbol+'): 현재가 '+fmt(p.last_price)+'원, 수익률 '+(p.pnl_ratio*100).toFixed(2)+'%, 비중 '+(totalExp>0?(p.exposure/totalExp*100).toFixed(1):0)+'%';
+            }).join('\n');
+
+            var prompt = '아래는 현재 보유 포트폴리오입니다. 각 종목별 홀드/손절/추가매수 전략을 제안하고 포트폴리오 전체 총평을 해주세요.\n\n[보유 종목]\n' + summary;
+
+            try {
+                var res = await fetch('https://eqmon.duckdns.org/eqai-chat/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({messages:[{role:'user',content:prompt}]})
+                });
+                if (!res.ok) throw new Error('서버 오류 '+res.status);
+                var data = await res.json();
+                if (data.error) throw new Error(data.error);
+                document.getElementById('pf-ai-content').innerHTML = pfMarkdown(data.answer||'응답 없음');
+            } catch(e) {
+                document.getElementById('pf-ai-content').innerHTML =
+                    '<div class="text-sm text-gray-500 p-4">분석 오류: '+e.message+
+                    '<br><button onclick="runPortfolioAI()" class="btn-icon btn-save" style="margin-top:8px;font-size:.75rem;">재시도</button></div>';
+            }
+            btn.disabled = false; btn.textContent = '다시 분석';
+        }
+
+        function pfMarkdown(text) {
+            text = text.replace(/```[\s\S]*?```/g,'');
+            var bold = function(s){ return s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>'); };
+            var lines = text.split('\n'), html = '';
+            for (var i=0;i<lines.length;i++) {
+                var t = lines[i].trim();
+                if (!t) { html+='<div style="height:5px"></div>'; continue; }
+                if (t.startsWith('### ')) html+='<div style="font-size:13px;font-weight:700;color:#1e40af;margin-top:12px;margin-bottom:3px;">'+bold(t.slice(4))+'</div>';
+                else if (t.startsWith('## ')) html+='<div style="font-size:14px;font-weight:700;color:#111827;margin-top:14px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #e5e7eb;">'+bold(t.slice(3))+'</div>';
+                else if (t.startsWith('- ')||t.startsWith('* ')) html+='<div style="display:flex;gap:5px;margin:2px 0;font-size:13px;"><span style="color:#6b7280;">•</span><span>'+bold(t.slice(2))+'</span></div>';
+                else if (/^\d+\.\s/.test(t)) { var n=t.match(/^(\d+)\.\s/)[1]; html+='<div style="display:flex;gap:5px;margin:2px 0;font-size:13px;"><span style="color:#3b82f6;font-weight:600;">'+n+'.</span><span>'+bold(t.replace(/^\d+\.\s/,''))+'</span></div>'; }
+                else if (t==='---') html+='<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0;">';
+                else html+='<div style="margin:2px 0;line-height:1.6;font-size:13px;">'+bold(t)+'</div>';
+            }
+            return html;
+        }
+
         // ─── 시작 ─────────────────────────────────────────────────────────────────────
+        // URL hash로 탭 초기화
+        if (window.location.hash === '#portfolio') switchTab('portfolio');
+
         loadAll();
         setInterval(loadAll, 10000);
     </script>
