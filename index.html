@@ -1543,7 +1543,7 @@
                 else if (t.startsWith('- ')||t.startsWith('* ')) html+='<div style="display:flex;gap:5px;margin:2px 0;font-size:13px;"><span style="color:#6b7280;">•</span><span>'+bold(t.slice(2))+'</span></div>';
                 else if (/^\d+\.\s/.test(t)) { var n=t.match(/^(\d+)\.\s/)[1]; html+='<div style="display:flex;gap:5px;margin:2px 0;font-size:13px;"><span style="color:#3b82f6;font-weight:600;">'+n+'.</span><span>'+bold(t.replace(/^\d+\.\s/,''))+'</span></div>'; }
                 else if (t==='---') html+='<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0;">';
-                else html+='<div style="margin:2px 0;line-height:1.6;font-size:13px;">'+bold(t)+'</div>';
+                else html+='<div style="margin:2px 0;line-height:1.7;font-size:13px;color:#1f2937;">'+bold(t)+'</div>';
             }
             return html;
         }
