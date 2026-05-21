@@ -1126,6 +1126,14 @@
             document.getElementById('tab-report').classList.toggle('active', tab === 'report');
             document.getElementById('tab-portfolio').classList.toggle('active', tab === 'portfolio');
             document.getElementById('tab-technical').classList.toggle('active', tab === 'technical');
+
+            // URL hash 업데이트 (리프레쉬 시 탭 유지)
+            if (tab === 'report') {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            } else {
+                history.replaceState(null, '', '#' + tab);
+            }
+
             if (tab === 'portfolio') renderPortfolio();
             // Technical 탭은 자동 실행 제거 - 사용자가 Analyze 버튼을 눌러야만 실행
         }
