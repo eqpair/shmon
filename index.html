@@ -440,9 +440,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <div class="text-sm font-bold text-gray-800">기술적 지표 분석</div>
-                        <div class="text-xs text-gray-400 mt-1">KIS API 500일 일봉 기반 · 전설의 기술적 분석가</div>
+                        <div class="text-xs text-gray-400 mt-1">KIS API 500일 일봉 기반</div>
                     </div>
-                    <button onclick="runTechnical()" id="tech-run-btn" class="btn-icon btn-save" style="font-size:.75rem;">분석 시작</button>
+                    <button onclick="runTechnical()" id="tech-run-btn" class="btn-icon btn-save" style="font-size:.75rem;">Analyze</button>
                 </div>
             </div>
             <div id="tech-status" class="text-center py-8 text-gray-400 text-sm" style="display:none;">
@@ -465,10 +465,10 @@
             <div class="bg-white rounded-lg shadow-md p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-sm font-semibold text-gray-700 uppercase tracking-wide">AI 매매 전략</div>
-                    <button onclick="runPortfolioAI()" id="pf-ai-btn" class="btn-icon btn-save" style="font-size:.75rem;">다시 분석</button>
+                    <button onclick="runPortfolioAI()" id="pf-ai-btn" class="btn-icon btn-save" style="font-size:.75rem;">Reanalyze</button>
                 </div>
                 <div id="pf-ai-content">
-                    <div class="text-sm text-gray-400 text-center py-8">분석 중...</div>
+                    <div class="text-sm text-gray-400 text-center py-8">Analyzing...</div>
                 </div>
             </div>
         </div>
@@ -1200,7 +1200,7 @@
         async function runTechnical() {
             if (!liveData) { alert('데이터 로딩 중입니다. 잠시 후 다시 시도하세요.'); return; }
             const btn = document.getElementById('tech-run-btn');
-            btn.disabled = true; btn.textContent = '분석 중...';
+            btn.disabled = true; btn.textContent = 'Analyzing...';
             document.getElementById('tech-status').style.display = 'block';
             document.getElementById('tech-content').innerHTML = '';
             document.getElementById('tech-status-msg').textContent = '일봉 데이터 로딩 중...';
@@ -1231,7 +1231,7 @@
             } catch(e) {
                 document.getElementById('tech-status-msg').textContent = '오류: ' + e.message;
             }
-            btn.disabled = false; btn.textContent = '다시 분석';
+            btn.disabled = false; btn.textContent = 'Reanalyze';
         }
 
         function calcIndicators(closes, volumes) {
@@ -1459,7 +1459,7 @@
                     '<div style="border-top:1px solid #f3f4f6;margin-top:10px;padding-top:10px;">' +
                         '<div class="text-xs font-semibold text-gray-500 mb-2">AI 기술적 의견</div>' +
                         '<div id="tech-ai-' + pos.symbol + '" class="text-xs text-gray-400">' +
-                        '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> 분석 중...</div>' +
+                        '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> Analyzing...</div>' +
                     '</div>' +
                     '</div>';
             }).join('') + '</div>';
@@ -1499,7 +1499,7 @@
 
         async function runPortfolioAI() {
             var btn = document.getElementById('pf-ai-btn');
-            btn.disabled = true; btn.textContent = '분석 중...';
+            btn.disabled = true; btn.textContent = 'Analyzing...';
             document.getElementById('pf-ai-content').innerHTML =
                 '<div class="text-center py-8 text-gray-400 text-sm">AI가 포트폴리오를 분석하고 있어요...</div>';
 
@@ -1528,7 +1528,7 @@
                     '<div class="text-sm text-gray-500 p-4">분석 오류: '+e.message+
                     '<br><button onclick="runPortfolioAI()" class="btn-icon btn-save" style="margin-top:8px;font-size:.75rem;">재시도</button></div>';
             }
-            btn.disabled = false; btn.textContent = '다시 분석';
+            btn.disabled = false; btn.textContent = 'Reanalyze';
         }
 
         function pfMarkdown(text) {
