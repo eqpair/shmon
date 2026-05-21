@@ -372,6 +372,7 @@
                             <a href="https://eqmon.duckdns.org" class="nav-link">HOME</a>
                             <button onclick="switchTab('report')" id="tab-report" class="nav-link active">Trading REPORT</button>
                             <button onclick="switchTab('portfolio')" id="tab-portfolio" class="nav-link">Portfolio</button>
+                            <button onclick="switchTab('technical')" id="tab-technical" class="nav-link">Technical</button>
                             <button onclick="openAdd()" class="nav-link">＋ ADD POSITION</button>
                         </nav>
                     </div>
@@ -432,6 +433,24 @@
             </div>
         </div>
         </div><!-- /tab-report-content -->
+
+        <!-- Technical 탭 -->
+        <div id="tab-technical-content" style="display:none;">
+            <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm font-bold text-gray-800">기술적 지표 분석</div>
+                        <div class="text-xs text-gray-400 mt-1">KIS API 500일 일봉 기반 · 전설의 기술적 분석가</div>
+                    </div>
+                    <button onclick="runTechnical()" id="tech-run-btn" class="btn-icon btn-save" style="font-size:.75rem;">분석 시작</button>
+                </div>
+            </div>
+            <div id="tech-status" class="text-center py-8 text-gray-400 text-sm" style="display:none;">
+                <div id="tech-status-msg">일봉 데이터 로딩 중...</div>
+                <div class="mt-2 text-xs text-gray-300" id="tech-progress"></div>
+            </div>
+            <div id="tech-content"></div>
+        </div>
 
         <!-- Portfolio 탭 -->
         <div id="tab-portfolio-content" style="display:none;">
@@ -1086,8 +1105,10 @@
             currentTab = tab;
             document.getElementById('tab-report-content').style.display = tab === 'report' ? '' : 'none';
             document.getElementById('tab-portfolio-content').style.display = tab === 'portfolio' ? '' : 'none';
+            document.getElementById('tab-technical-content').style.display = tab === 'technical' ? '' : 'none';
             document.getElementById('tab-report').classList.toggle('active', tab === 'report');
             document.getElementById('tab-portfolio').classList.toggle('active', tab === 'portfolio');
+            document.getElementById('tab-technical').classList.toggle('active', tab === 'technical');
             if (tab === 'portfolio') renderPortfolio();
         }
 
@@ -1173,6 +1194,308 @@
             if (!pfAiRan) { pfAiRan = true; runPortfolioAI(); }
         }
 
+        // ── Technical 분석 ────────────────────────────────────────────────────────
+        var techDone = false;
+
+        async function runTechnical() {
+            if (!liveData) { alert('데이터 로딩 중입니다. 잠시 후 다시 시도하세요.'); return; }
+            const btn = document.getElementById('tech-run-btn');
+            btn.disabled = true; btn.textContent = '분석 중...';
+            document.getElementById('tech-status').style.display = 'block';
+            document.getElementById('tech-content').innerHTML = '';
+            document.getElementById('tech-status-msg').textContent = '일봉 데이터 로딩 중...';
+
+            const ps = liveData.positions || [];
+            const codes = ps.map(p => p.symbol).join(',');
+
+            try {
+                document.getElementById('tech-progress').textContent = '종목 ' + ps.length + '개 · 최대 500일 일봉 수집 중 (30~60초 소요)';
+                const res = await fetch('https://eqmon.duckdns.org/api/ohlcv?codes=' + codes);
+                const ohlcv = await res.json();
+                document.getElementById('tech-status-msg').textContent = '지표 계산 중...';
+                document.getElementById('tech-progress').textContent = '';
+
+                // 지표 계산 후 카드 렌더
+                const cards = ps.map(p => {
+                    const data = ohlcv[p.symbol];
+                    if (!data || !data.closes || data.closes.length < 20) return null;
+                    const ind = calcIndicators(data.closes, data.volumes);
+                    return { pos: p, ind: ind };
+                }).filter(Boolean);
+
+                renderTechCards(cards);
+                document.getElementById('tech-status').style.display = 'none';
+
+                // AI 분석
+                await runTechAI(cards);
+            } catch(e) {
+                document.getElementById('tech-status-msg').textContent = '오류: ' + e.message;
+            }
+            btn.disabled = false; btn.textContent = '다시 분석';
+        }
+
+        function calcIndicators(closes, volumes) {
+            const n = closes.length;
+            const last = closes[n-1];
+
+            // ── 이동평균 ──
+            const sma = (arr, p) => { if (arr.length < p) return null; const sl=arr.slice(-p); return sl.reduce((a,b)=>a+b,0)/p; };
+            const ma5   = sma(closes, 5);
+            const ma20  = sma(closes, 20);
+            const ma60  = sma(closes, 60);
+            const ma120 = sma(closes, 120);
+            const ma200 = closes.length >= 200 ? sma(closes, 200) : null;
+
+            // ── EMA ──
+            const ema = (arr, p) => {
+                if (arr.length < p) return null;
+                const k = 2/(p+1); let e = arr.slice(0,p).reduce((a,b)=>a+b,0)/p;
+                for (let i=p; i<arr.length; i++) e = arr[i]*k + e*(1-k);
+                return e;
+            };
+            const ema12 = ema(closes, 12);
+            const ema26 = ema(closes, 26);
+
+            // ── MACD ──
+            let macd=null, signal=null, hist=null;
+            if (closes.length >= 35) {
+                const macdLine = ema12 - ema26;
+                // signal = 9일 EMA of MACD
+                const macdArr = [];
+                const k26=2/27, k12=2/13, k9=2/10;
+                let e12=closes.slice(0,12).reduce((a,b)=>a+b,0)/12;
+                let e26=closes.slice(0,26).reduce((a,b)=>a+b,0)/26;
+                for (let i=12; i<26; i++) e12=closes[i]*k12+e12*(1-k12);
+                for (let i=26; i<closes.length; i++) {
+                    e12=closes[i]*k12+e12*(1-k12);
+                    e26=closes[i]*k26+e26*(1-k26);
+                    macdArr.push(e12-e26);
+                }
+                let sig=macdArr.slice(0,9).reduce((a,b)=>a+b,0)/9;
+                for (let i=9; i<macdArr.length; i++) sig=macdArr[i]*k9+sig*(1-k9);
+                macd=macdArr[macdArr.length-1]; signal=sig; hist=macd-sig;
+            }
+
+            // ── RSI ──
+            let rsi=null;
+            if (closes.length >= 15) {
+                let gains=0, losses=0;
+                for (let i=closes.length-14; i<closes.length; i++) {
+                    const d=closes[i]-closes[i-1];
+                    if (d>0) gains+=d; else losses-=d;
+                }
+                const avgG=gains/14, avgL=losses/14;
+                rsi = avgL===0 ? 100 : 100-(100/(1+avgG/avgL));
+            }
+
+            // ── 볼린저 밴드 ──
+            let bb=null;
+            if (closes.length >= 20) {
+                const mid = ma20;
+                const sl = closes.slice(-20);
+                const std = Math.sqrt(sl.reduce((a,b)=>a+(b-mid)**2,0)/20);
+                bb = { upper: mid+2*std, mid: mid, lower: mid-2*std, width: (4*std)/mid*100, pct: (last-(mid-2*std))/(4*std)*100 };
+            }
+
+            // ── 스토캐스틱 ──
+            let stoch=null;
+            if (closes.length >= 14) {
+                const sl=closes.slice(-14);
+                const lo=Math.min(...sl), hi=Math.max(...sl);
+                const k=hi===lo?50:(last-lo)/(hi-lo)*100;
+                const sl3=closes.slice(-3);
+                const lo3=Math.min(...sl3.map((_,i)=>Math.min(...closes.slice(-14+i,-14+i+14))));
+                stoch={k:k, d:k}; // 간소화
+            }
+
+            // ── Williams %R ──
+            let willR=null;
+            if (closes.length >= 14) {
+                const sl=closes.slice(-14);
+                const hi=Math.max(...sl), lo=Math.min(...sl);
+                willR = hi===lo?-50:((hi-last)/(hi-lo))*-100;
+            }
+
+            // ── ATR ──
+            let atr=null;
+            if (closes.length >= 15) {
+                let atrSum=0;
+                for (let i=closes.length-14; i<closes.length; i++) {
+                    atrSum+=Math.abs(closes[i]-closes[i-1]);
+                }
+                atr=atrSum/14;
+            }
+
+            // ── OBV ──
+            let obv=0;
+            for (let i=1; i<closes.length; i++) {
+                if (closes[i]>closes[i-1]) obv+=volumes[i];
+                else if (closes[i]<closes[i-1]) obv-=volumes[i];
+            }
+            const obvTrend = closes.length>=20 ? (obv > 0 ? "상승" : "하락") : null;
+
+            // ── CCI ──
+            let cci=null;
+            if (closes.length >= 20) {
+                const sl=closes.slice(-20);
+                const mean=sl.reduce((a,b)=>a+b,0)/20;
+                const mad=sl.reduce((a,b)=>a+Math.abs(b-mean),0)/20;
+                cci=mad===0?0:(last-mean)/(0.015*mad);
+            }
+
+            // ── 골든/데드 크로스 ──
+            let cross=null;
+            if (ma5 && ma20) {
+                const prev5=sma(closes.slice(0,-1),5), prev20=sma(closes.slice(0,-1),20);
+                if (prev5<prev20 && ma5>=ma20) cross="골든크로스(5/20)";
+                else if (prev5>prev20 && ma5<=ma20) cross="데드크로스(5/20)";
+                else if (ma5>ma20 && ma20>ma60) cross="정배열";
+                else if (ma5<ma20 && ma20<ma60) cross="역배열";
+            }
+
+            // ── 52주 고저 ──
+            const yr = closes.slice(-252);
+            const hi52=Math.max(...yr), lo52=Math.min(...yr);
+            const pctFromHi=(last-hi52)/hi52*100;
+            const pctFromLo=(last-lo52)/lo52*100;
+
+            // ── 추세 강도 (ADX 간소화) ──
+            let trend="중립";
+            if (ma5&&ma20&&ma60) {
+                if (last>ma5&&ma5>ma20&&ma20>ma60) trend="강한상승";
+                else if (last>ma20&&ma20>ma60) trend="상승";
+                else if (last<ma5&&ma5<ma20&&ma20<ma60) trend="강한하락";
+                else if (last<ma20&&ma20<ma60) trend="하락";
+            }
+
+            return { last, ma5, ma20, ma60, ma120, ma200, ema12, ema26,
+                     macd, signal, hist, rsi, bb, willR, atr, obv, obvTrend,
+                     cci, cross, hi52, lo52, pctFromHi, pctFromLo, trend, n };
+        }
+
+        function techSignal(ind) {
+            let bull=0, bear=0;
+            if (ind.rsi) { if (ind.rsi<30) bull+=2; else if (ind.rsi<45) bull+=1; else if (ind.rsi>70) bear+=2; else if (ind.rsi>55) bear+=1; }
+            if (ind.macd!==null&&ind.hist!==null) { if (ind.hist>0) bull+=1; else bear+=1; if (ind.macd>0) bull+=1; else bear+=1; }
+            if (ind.bb) { if (ind.bb.pct<20) bull+=2; else if (ind.bb.pct>80) bear+=2; }
+            if (ind.willR!==null) { if (ind.willR<-80) bull+=1; else if (ind.willR>-20) bear+=1; }
+            if (ind.cci!==null) { if (ind.cci<-100) bull+=1; else if (ind.cci>100) bear+=1; }
+            if (ind.trend==="강한상승") bull+=2; else if (ind.trend==="상승") bull+=1;
+            else if (ind.trend==="강한하락") bear+=2; else if (ind.trend==="하락") bear+=1;
+            if (ind.cross==="골든크로스(5/20)") bull+=2; else if (ind.cross==="데드크로스(5/20)") bear+=2;
+            const total=bull+bear; if (total===0) return {score:50,label:"중립",color:"#9ca3af"};
+            const score=Math.round(bull/total*100);
+            if (score>=70) return {score,label:"강한매수",color:"#16a34a"};
+            if (score>=55) return {score,label:"매수",color:"#22c55e"};
+            if (score<=30) return {score,label:"강한매도",color:"#dc2626"};
+            if (score<=45) return {score,label:"매도",color:"#f87171"};
+            return {score,label:"중립",color:"#9ca3af"};
+        }
+
+        function renderTechCards(cards) {
+            const el = document.getElementById('tech-content');
+            const f = n => n!=null ? n.toLocaleString('ko-KR',{maximumFractionDigits:2}) : '-';
+            const fp = n => n!=null ? (n>=0?'+':'')+n.toFixed(2)+'%' : '-';
+            el.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">' +
+            cards.map(({pos,ind}) => {
+                const sig = techSignal(ind);
+                const maColor = ind.last>ind.ma20?'#16a34a':'#dc2626';
+                const rsiColor = ind.rsi<30?'#16a34a':ind.rsi>70?'#dc2626':'#374151';
+                const macdColor = ind.hist>0?'#16a34a':'#dc2626';
+                return '<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">' +
+                    '<div class="flex items-center justify-between mb-3">' +
+                        '<div><div class="font-bold text-gray-800">' + pos.name + '</div>' +
+                        '<div class="text-xs text-gray-400">' + pos.symbol + ' · ' + ind.n + '일 데이터</div></div>' +
+                        '<div style="background:' + sig.color + ';color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;">' + sig.label + ' ' + sig.score + '</div>' +
+                    '</div>' +
+                    '<div class="grid grid-cols-3 gap-2 mb-3">' +
+                        '<div style="background:#f9fafb;border-radius:6px;padding:6px 8px;">' +
+                            '<div class="text-xs text-gray-400">현재가</div>' +
+                            '<div class="text-sm font-bold text-gray-800">' + f(ind.last) + '</div>' +
+                            '<div class="text-xs" style="color:' + maColor + '">MA20 ' + f(ind.ma20) + '</div>' +
+                        '</div>' +
+                        '<div style="background:#f9fafb;border-radius:6px;padding:6px 8px;">' +
+                            '<div class="text-xs text-gray-400">RSI(14)</div>' +
+                            '<div class="text-sm font-bold" style="color:' + rsiColor + '">' + (ind.rsi?ind.rsi.toFixed(1):'-') + '</div>' +
+                            '<div class="text-xs text-gray-400">' + (ind.rsi<30?'과매도':ind.rsi>70?'과매수':'중립') + '</div>' +
+                        '</div>' +
+                        '<div style="background:#f9fafb;border-radius:6px;padding:6px 8px;">' +
+                            '<div class="text-xs text-gray-400">MACD</div>' +
+                            '<div class="text-sm font-bold" style="color:' + macdColor + '">' + (ind.macd?ind.macd.toFixed(0):'-') + '</div>' +
+                            '<div class="text-xs text-gray-400">히스토그램 ' + (ind.hist?ind.hist.toFixed(0):'-') + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="grid grid-cols-2 gap-2 mb-3">' +
+                        '<div style="background:#f9fafb;border-radius:6px;padding:6px 8px;">' +
+                            '<div class="text-xs text-gray-400">볼린저밴드</div>' +
+                            '<div class="text-xs font-medium text-gray-700">상단 ' + f(ind.bb?.upper) + '</div>' +
+                            '<div class="text-xs font-medium text-gray-700">하단 ' + f(ind.bb?.lower) + '</div>' +
+                            '<div class="text-xs text-gray-400">%B ' + (ind.bb?ind.bb.pct.toFixed(1):'-') + '</div>' +
+                        '</div>' +
+                        '<div style="background:#f9fafb;border-radius:6px;padding:6px 8px;">' +
+                            '<div class="text-xs text-gray-400">이동평균</div>' +
+                            '<div class="text-xs text-gray-600">MA5 ' + f(ind.ma5) + ' MA20 ' + f(ind.ma20) + '</div>' +
+                            '<div class="text-xs text-gray-600">MA60 ' + f(ind.ma60) + ' MA120 ' + f(ind.ma120) + '</div>' +
+                            '<div class="text-xs font-medium" style="color:' + (ind.trend.includes('상승')?'#16a34a':'#dc2626') + '">' + ind.trend + ' · ' + (ind.cross||'크로스없음') + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="grid grid-cols-3 gap-2 mb-3">' +
+                        '<div style="background:#f9fafb;border-radius:6px;padding:6px 8px;">' +
+                            '<div class="text-xs text-gray-400">Williams %R</div>' +
+                            '<div class="text-sm font-bold text-gray-700">' + (ind.willR?ind.willR.toFixed(1):'-') + '</div>' +
+                            '<div class="text-xs text-gray-400">' + (ind.willR<-80?'과매도':ind.willR>-20?'과매수':'중립') + '</div>' +
+                        '</div>' +
+                        '<div style="background:#f9fafb;border-radius:6px;padding:6px 8px;">' +
+                            '<div class="text-xs text-gray-400">CCI(20)</div>' +
+                            '<div class="text-sm font-bold text-gray-700">' + (ind.cci?ind.cci.toFixed(1):'-') + '</div>' +
+                            '<div class="text-xs text-gray-400">' + (ind.cci<-100?'과매도':ind.cci>100?'과매수':'중립') + '</div>' +
+                        '</div>' +
+                        '<div style="background:#f9fafb;border-radius:6px;padding:6px 8px;">' +
+                            '<div class="text-xs text-gray-400">52주</div>' +
+                            '<div class="text-xs text-gray-600">고점比 ' + fp(ind.pctFromHi) + '</div>' +
+                            '<div class="text-xs text-gray-600">저점比 ' + fp(ind.pctFromLo) + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '</div>';
+            }).join('') + '</div>';
+        }
+
+        async function runTechAI(cards) {
+            const aiEl = document.getElementById('tech-content');
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'bg-white rounded-xl border border-gray-200 shadow-sm p-4';
+            aiDiv.innerHTML = '<div class="flex items-center justify-between mb-3">' +
+                '<div class="text-sm font-bold text-gray-800">AI 기술적 종합 분석</div>' +
+                '<div class="text-xs text-gray-400">전설의 기술적 분석가</div></div>' +
+                '<div id="tech-ai-body"><div class="text-center py-6 text-gray-400 text-sm">AI 분석 중...</div></div>';
+            aiEl.appendChild(aiDiv);
+
+            const summary = cards.map(({pos,ind}) => {
+                const sig = techSignal(ind);
+                return pos.name+'('+pos.symbol+'): '+
+                    '현재가='+ind.last+', MA5='+Math.round(ind.ma5||0)+', MA20='+Math.round(ind.ma20||0)+', MA60='+Math.round(ind.ma60||0)+', MA120='+Math.round(ind.ma120||0)+
+                    ', RSI='+( ind.rsi?ind.rsi.toFixed(1):'-')+', MACD='+( ind.macd?ind.macd.toFixed(0):'-')+', MACD_Signal='+( ind.signal?ind.signal.toFixed(0):'-')+', MACD_Hist='+( ind.hist?ind.hist.toFixed(0):'-')+
+                    ', BB상단='+Math.round(ind.bb?.upper||0)+', BB하단='+Math.round(ind.bb?.lower||0)+', BB%B='+( ind.bb?ind.bb.pct.toFixed(1):'-')+
+                    ', Williams%R='+( ind.willR?ind.willR.toFixed(1):'-')+', CCI='+( ind.cci?ind.cci.toFixed(1):'-')+
+                    ', 52주고점比='+( ind.pctFromHi?ind.pctFromHi.toFixed(1):'-')+'%, 52주저점比='+( ind.pctFromLo?ind.pctFromLo.toFixed(1):'-')+'%'+
+                    ', 추세='+ind.trend+', '+( ind.cross||'')+', 기술신호='+sig.label+'('+sig.score+')';
+            }).join('\n');
+
+            const prompt = '당신은 기술적 분석만으로 주식을 판단하는 전설의 차티스트입니다. 마크 미너비니, 스탠 와인스타인, 닥터 엘더의 기법을 완벽하게 체화하고 있습니다. 펀더멘탈은 일절 언급하지 말고 오직 기술적 지표만으로 아래 종목들을 분석해주세요. 이모지나 이모티콘은 절대 사용하지 마세요.\n\n' +
+                '각 종목별로: 스테이지 판단, 매수/홀드/매도 신호, 손절선, 목표가 제시\n\n[기술적 지표]\n' + summary;
+
+            try {
+                const res = await fetch('https://eqmon.duckdns.org/eqai-chat/chat', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({messages:[{role:'user',content:prompt}]})
+                });
+                const data = await res.json();
+                document.getElementById('tech-ai-body').innerHTML = pfMarkdown(data.answer||'응답 없음');
+            } catch(e) {
+                document.getElementById('tech-ai-body').innerHTML = '<div class="text-sm text-red-500">오류: '+e.message+'</div>';
+            }
+        }
+
         async function runPortfolioAI() {
             var btn = document.getElementById('pf-ai-btn');
             btn.disabled = true; btn.textContent = '분석 중...';
@@ -1227,6 +1550,7 @@
         // ─── 시작 ─────────────────────────────────────────────────────────────────────
         // URL hash로 탭 초기화
         if (window.location.hash === '#portfolio') switchTab('portfolio');
+        if (window.location.hash === '#technical') switchTab('technical');
 
         loadAll();
         setInterval(loadAll, 10000);
