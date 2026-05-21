@@ -1456,43 +1456,44 @@
                             '<div class="text-xs text-gray-600">저점比 ' + fp(ind.pctFromLo) + '</div>' +
                         '</div>' +
                     '</div>' +
+                    '<div style="border-top:1px solid #f3f4f6;margin-top:10px;padding-top:10px;">' +
+                        '<div class="text-xs font-semibold text-gray-500 mb-2">AI 기술적 의견</div>' +
+                        '<div id="tech-ai-' + pos.symbol + '" class="text-xs text-gray-400">' +
+                        '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span> 분석 중...</div>' +
+                    '</div>' +
                     '</div>';
             }).join('') + '</div>';
         }
 
         async function runTechAI(cards) {
-            const aiEl = document.getElementById('tech-content');
-            const aiDiv = document.createElement('div');
-            aiDiv.className = 'bg-white rounded-xl border border-gray-200 shadow-sm p-4';
-            aiDiv.innerHTML = '<div class="flex items-center justify-between mb-3">' +
-                '<div class="text-sm font-bold text-gray-800">AI 기술적 종합 분석</div>' +
-                '<div class="text-xs text-gray-400">전설의 기술적 분석가</div></div>' +
-                '<div id="tech-ai-body"><div class="text-center py-6 text-gray-400 text-sm">AI 분석 중...</div></div>';
-            aiEl.appendChild(aiDiv);
-
-            const summary = cards.map(({pos,ind}) => {
+            // 종목별 개별 AI 분석
+            for (const {pos, ind} of cards) {
                 const sig = techSignal(ind);
-                return pos.name+'('+pos.symbol+'): '+
+                const aiId = 'tech-ai-' + pos.symbol;
+                const aiEl = document.getElementById(aiId);
+                if (!aiEl) continue;
+
+                const indSummary = pos.name+'('+pos.symbol+'): '+
                     '현재가='+ind.last+', MA5='+Math.round(ind.ma5||0)+', MA20='+Math.round(ind.ma20||0)+', MA60='+Math.round(ind.ma60||0)+', MA120='+Math.round(ind.ma120||0)+
-                    ', RSI='+( ind.rsi?ind.rsi.toFixed(1):'-')+', MACD='+( ind.macd?ind.macd.toFixed(0):'-')+', MACD_Signal='+( ind.signal?ind.signal.toFixed(0):'-')+', MACD_Hist='+( ind.hist?ind.hist.toFixed(0):'-')+
-                    ', BB상단='+Math.round(ind.bb?.upper||0)+', BB하단='+Math.round(ind.bb?.lower||0)+', BB%B='+( ind.bb?ind.bb.pct.toFixed(1):'-')+
-                    ', Williams%R='+( ind.willR?ind.willR.toFixed(1):'-')+', CCI='+( ind.cci?ind.cci.toFixed(1):'-')+
-                    ', 52주고점比='+( ind.pctFromHi?ind.pctFromHi.toFixed(1):'-')+'%, 52주저점比='+( ind.pctFromLo?ind.pctFromLo.toFixed(1):'-')+'%'+
-                    ', 추세='+ind.trend+', '+( ind.cross||'')+', 기술신호='+sig.label+'('+sig.score+')';
-            }).join('\n');
+                    ', RSI='+(ind.rsi?ind.rsi.toFixed(1):'-')+', MACD='+(ind.macd?ind.macd.toFixed(0):'-')+', MACD_Hist='+(ind.hist?ind.hist.toFixed(0):'-')+
+                    ', BB상단='+Math.round(ind.bb?.upper||0)+', BB하단='+Math.round(ind.bb?.lower||0)+', BB%B='+(ind.bb?ind.bb.pct.toFixed(1):'-')+
+                    ', Williams%R='+(ind.willR?ind.willR.toFixed(1):'-')+', CCI='+(ind.cci?ind.cci.toFixed(1):'-')+
+                    ', 52주고점比='+(ind.pctFromHi?ind.pctFromHi.toFixed(1):'-')+'%, 52주저점比='+(ind.pctFromLo?ind.pctFromLo.toFixed(1):'-')+'%'+
+                    ', 추세='+ind.trend+', '+(ind.cross||'')+', 기술신호='+sig.label+'('+sig.score+')';
 
-            const prompt = '당신은 기술적 분석만으로 주식을 판단하는 전설의 차티스트입니다. 마크 미너비니, 스탠 와인스타인, 닥터 엘더의 기법을 완벽하게 체화하고 있습니다. 펀더멘탈은 일절 언급하지 말고 오직 기술적 지표만으로 아래 종목들을 분석해주세요. 이모지나 이모티콘은 절대 사용하지 마세요.\n\n' +
-                '각 종목별로: 스테이지 판단, 매수/홀드/매도 신호, 손절선, 목표가 제시\n\n[기술적 지표]\n' + summary;
+                const prompt = '당신은 기술적 분석만으로 주식을 판단하는 전설의 차티스트입니다. 마크 미너비니, 스탠 와인스타인, 닥터 엘더의 기법을 완벽하게 체화하고 있습니다. 펀더멘탈은 일절 언급하지 말고 오직 기술적 지표만으로 분석해주세요. 이모지나 이모티콘은 절대 사용하지 마세요.\n\n' +
+                    '아래 종목을 분석하여 3~5줄로 간결하게: 스테이지 판단, 매수/홀드/매도 의견, 손절선, 단기 목표가를 제시하세요.\n\n[기술적 지표]\n' + indSummary;
 
-            try {
-                const res = await fetch('https://eqmon.duckdns.org/eqai-chat/chat', {
-                    method:'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({messages:[{role:'user',content:prompt}]})
-                });
-                const data = await res.json();
-                document.getElementById('tech-ai-body').innerHTML = pfMarkdown(data.answer||'응답 없음');
-            } catch(e) {
-                document.getElementById('tech-ai-body').innerHTML = '<div class="text-sm text-red-500">오류: '+e.message+'</div>';
+                try {
+                    const res = await fetch('https://eqmon.duckdns.org/eqai-chat/chat', {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({messages:[{role:'user',content:prompt}]})
+                    });
+                    const data = await res.json();
+                    aiEl.innerHTML = pfMarkdown(data.answer||'응답 없음');
+                } catch(e) {
+                    aiEl.innerHTML = '<div class="text-sm text-red-500">오류: '+e.message+'</div>';
+                }
             }
         }
 
