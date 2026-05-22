@@ -368,7 +368,7 @@
 </head>
 
 <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-6 max-w-full">
+    <div class="container mx-auto px-4 py-6 max-w-screen-2xl">
 
         <header class="mb-6">
             <div class="flex justify-between items-start flex-wrap gap-3">
@@ -583,7 +583,7 @@
 
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
-        const SEMON_SIGNALS_URL = 'https://eqpair.github.io/semon/data/signals.json';
+        const SEMON_SIGNALS_URL = 'https://eqpair.github.io/semon/docs/data/signals.json';
         let liveData = null;
         let positions = [];
         let editIndex = -1;
@@ -745,7 +745,8 @@
                         if (sectorRet != null) {
                             sectorRetStr = '<span style="font-size:.7rem;color:' + srColor + ';font-weight:600;margin-left:4px;">(' + (sectorRet > 0 ? '+' : '') + sectorRet.toFixed(2) + '%)</span>';
                         }
-                        sectorHtml = '<span class="text-xs text-gray-600">' + sectorName + '</span>' + sectorRetStr;
+                        var momentumUrl = 'https://eqpair.github.io/semon/docs/momentum.html?sector=' + encodeURIComponent(sectorName);
+                        sectorHtml = '<a href="' + momentumUrl + '" target="_blank" class="text-xs text-gray-600 hover:text-blue-600 hover:underline" title="' + sectorName + ' 섹터 모멘텀 보기">' + sectorName + '</a>' + sectorRetStr;
                     }
 
                     var existingTr = tbody.querySelector('tr[data-wid="' + wid + '"]');
