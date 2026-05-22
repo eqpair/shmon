@@ -385,7 +385,8 @@
                         <table class="report-table min-w-full text-sm text-gray-700">
                             <thead>
                                 <tr class="bg-gray-100 text-gray-800">
-                                    <th class="px-3 py-2 text-left"></th>
+                                    <th class="px-3 py-2 text-left">종목</th>
+                                    <th class="px-3 py-2 text-left">SECTOR</th>
                                     <th class="px-3 py-2 text-center">DIR</th>
                                     <th class="px-3 py-2 text-right">REF PX</th>
                                     <th class="px-3 py-2 text-right">VAL PX</th>
@@ -400,7 +401,7 @@
                             </thead>
                             <tbody id="report-body">
                                 <tr>
-                                    <td colspan="11" class="text-center py-4">Loading…</td>
+                                    <td colspan="12" class="text-center py-4">Loading…</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -561,10 +562,14 @@
 
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
+        const SEMON_SIGNALS_URL = 'https://eqpair.github.io/semon/data/signals.json';
         let liveData = null;
         let positions = [];
         let editIndex = -1;
         let deleteIndex = -1;
+        // 종목코드 → { sector, ret_1d } 매핑
+        let sectorMap = {};
+        let sectorRetMap = {};
 
         const wavgState = {};
         let wavgRowId = 0;
@@ -580,12 +585,28 @@
 
         async function loadAll() {
             try {
-                const [liveRes, posRes] = await Promise.all([
+                const [liveRes, posRes, semonRes] = await Promise.all([
                     fetch('https://eqmon.duckdns.org/live.json?_=' + Date.now()),
-                    fetch(API_BASE + '/positions')
+                    fetch(API_BASE + '/positions'),
+                    fetch(SEMON_SIGNALS_URL + '?_=' + Date.now()).catch(() => null)
                 ]);
                 if (liveRes.ok) liveData = await liveRes.json();
                 if (posRes.ok) positions = await posRes.json();
+                if (semonRes && semonRes.ok) {
+                    try {
+                        const semonData = await semonRes.json();
+                        sectorMap = {};
+                        sectorRetMap = {};
+                        const sectors = semonData.sectors || {};
+                        for (const sectorName in sectors) {
+                            const sd = sectors[sectorName];
+                            sectorRetMap[sectorName] = sd.sector_ret_1d;
+                            (sd.candidates || []).forEach(function (c) {
+                                if (c.code) sectorMap[c.code] = sectorName;
+                            });
+                        }
+                    } catch (e) { /* ignore */ }
+                }
             } catch (e) { }
             render();
         }
@@ -652,7 +673,7 @@
             var tbody = document.getElementById('report-body');
 
             if (active.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-gray-400">포지션 없음</td></tr>';
             } else {
                 active.forEach(function (p, activeIdx) {
                     var i = p._i;
@@ -693,26 +714,41 @@
                         };
                     }
 
+                    // 섹터 정보
+                    var sectorName = sectorMap[p.symbol] || '-';
+                    var sectorRet = sectorRetMap[sectorName];
+                    var sectorRetStr = '';
+                    var sectorHtml = '<span class="text-gray-400">-</span>';
+                    if (sectorName !== '-') {
+                        var srColor = (sectorRet > 0) ? '#dc2626' : (sectorRet < 0) ? '#2563eb' : '#6b7280';
+                        if (sectorRet != null) {
+                            sectorRetStr = '<span style="font-size:.7rem;color:' + srColor + ';font-weight:600;margin-left:4px;">(' + (sectorRet > 0 ? '+' : '') + sectorRet.toFixed(2) + '%)</span>';
+                        }
+                        sectorHtml = '<span class="text-xs text-gray-600">' + sectorName + '</span>' + sectorRetStr;
+                    }
+
                     var existingTr = tbody.querySelector('tr[data-wid="' + wid + '"]');
                     if (existingTr) {
                         var tds = existingTr.querySelectorAll('td');
                         tds[0].innerHTML = '<a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a>';
-                        tds[1].innerHTML = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span>';
-                        tds[2].textContent = fmt(Math.round(avg));
-                        tds[3].innerHTML = '<span class="font-bold text-green-700">' + fmt(last) + '</span>' + changeStr + mktBadge
-                        tds[4].textContent = fmt(qty);
-                        tds[5].innerHTML = fmt(Math.round(cost)) + allocStr;
-                        tds[6].textContent = fmt(Math.round(mv));
-                        tds[7].textContent = fmt(Math.round(pnl));
-                        tds[7].className = 'px-3 py-2 text-right ' + pnlColor;
-                        tds[8].textContent = (ratio * 100).toFixed(1) + '%';
+                        tds[1].innerHTML = sectorHtml;
+                        tds[2].innerHTML = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span>';
+                        tds[3].textContent = fmt(Math.round(avg));
+                        tds[4].innerHTML = '<span class="font-bold text-green-700">' + fmt(last) + '</span>' + changeStr + mktBadge
+                        tds[5].textContent = fmt(qty);
+                        tds[6].innerHTML = fmt(Math.round(cost)) + allocStr;
+                        tds[7].textContent = fmt(Math.round(mv));
+                        tds[8].textContent = fmt(Math.round(pnl));
                         tds[8].className = 'px-3 py-2 text-right ' + pnlColor;
+                        tds[9].textContent = (ratio * 100).toFixed(1) + '%';
+                        tds[9].className = 'px-3 py-2 text-right ' + pnlColor;
                         renderAdminCell(wid, i, activeIdx, active.length);
                     } else {
                         var tr = document.createElement('tr');
                         tr.setAttribute('data-wid', wid);
                         tr.innerHTML = ''
                             + '<td class="px-3 py-2 text-left font-bold"><a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a></td>'
+                            + '<td class="px-3 py-2 text-left">' + sectorHtml + '</td>'
                             + '<td class="px-3 py-2 text-center"><span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span></td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(avg)) + '</td>'
                             + '<td class="px-3 py-2 text-right"><span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge + '</td>'
@@ -793,8 +829,8 @@
             cell.innerHTML = ''
                 + '<button class="btn-icon btn-edit" onclick="movePos(' + posIdx + ',\'up\')"' + upDisabled + ' style="margin-right:2px' + (activeIdx === 0 ? ';opacity:.35;cursor:default' : '') + '">▲</button>'
                 + '<button class="btn-icon btn-edit" onclick="movePos(' + posIdx + ',\'down\')"' + downDisabled + ' style="margin-right:4px' + (activeIdx === activeCount - 1 ? ';opacity:.35;cursor:default' : '') + '">▼</button>'
-                + '<button class="btn-icon btn-edit" onclick="openEdit(' + posIdx + ')" style="margin-right:3px">Modify</button>'
-                + '<button class="btn-icon btn-del" onclick="openDeleteModal(' + posIdx + ')">Delete</button>';
+                + '<button class="btn-icon btn-edit" onclick="openEdit(' + posIdx + ')" style="margin-right:3px" title="Modify">M</button>'
+                + '<button class="btn-icon btn-del" onclick="openDeleteModal(' + posIdx + ')" title="Delete">D</button>';
         }
 
         function buildWavgPanelHTML(wid, posIdx) {
