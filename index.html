@@ -1161,7 +1161,7 @@
                 '<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">' +
                 '  <div class="text-xs text-gray-400 mb-1">종목 현황</div>' +
                 '  <div class="text-base font-bold text-gray-800">' + ps.length + '종목</div>' +
-                '  <div class="text-xs mt-1"><span style="color:#16a34a">수익 ' + winCount + '</span> | <span style="color:#dc2626">손실 ' + lossCount + '</span></div>' +
+                '  <div class="text-xs mt-1"><span style="color:#dc2626">수익 ' + winCount + '</span> | <span style="color:#2563eb">손실 ' + lossCount + '</span></div>' +
                 '</div>' +
                 '<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">' +
                 '  <div class="text-xs text-gray-400 mb-1">Market</div>' +
@@ -1174,8 +1174,8 @@
                 var now = new Date();
                 var kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
                 var t = kst.getHours() * 60 + kst.getMinutes();
-                if (t >= 540 && t <= 930) { msEl.textContent = 'KRX'; msEl.style.color = '#16a34a'; }
-                else if ((t >= 480 && t < 540) || (t > 930 && t <= 1200)) { msEl.textContent = 'NXT'; msEl.style.color = '#2563eb'; }
+                if (t >= 540 && t <= 930) { msEl.textContent = 'KRX'; msEl.style.color = '#1f2937'; }
+                else if ((t >= 480 && t < 540) || (t > 930 && t <= 1200)) { msEl.textContent = 'NXT'; msEl.style.color = '#6366f1'; }
                 else { msEl.textContent = 'CLOSED'; msEl.style.color = '#9ca3af'; }
             }
 
@@ -1189,15 +1189,15 @@
                 return '<div class="flex items-center gap-3 mb-2">' +
                     '<div class="text-xs text-gray-600 w-24 flex-shrink-0">' + p.name + '</div>' +
                     '<div class="flex-1" style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;">' +
-                    '<div style="height:100%;width:' + Math.min(w, 100) + '%;background:' + (w > 30 ? '#dc2626' : w > 20 ? '#d97706' : '#2563eb') + ';border-radius:4px;"></div></div>' +
+                    '<div style="height:100%;width:' + Math.min(w, 100) + '%;background:' + (w > 30 ? '#dc2626' : w > 20 ? '#f59e0b' : '#94a3b8') + ';border-radius:4px;"></div></div>' +
                     '<div class="text-xs font-medium text-gray-700 w-10 text-right">' + w.toFixed(1) + '%</div></div>';
             }).join('');
 
             var lossList = lossPs.length === 0 ? '<div class="text-xs text-gray-400 py-4 text-center">손실 종목 없음</div>' :
                 lossPs.slice(0, 6).map(function (p) {
-                    return '<div class="flex items-center justify-between mb-2 p-2 bg-red-50 rounded-lg">' +
+                    return '<div class="flex items-center justify-between mb-2 p-2 bg-blue-50 rounded-lg">' +
                         '<div class="text-xs font-medium text-gray-700">' + p.name + '</div>' +
-                        '<div class="text-xs font-bold text-red-600">' + (p.pnl_ratio * 100).toFixed(2) + '%</div></div>';
+                        '<div class="text-xs font-bold text-blue-600">' + (p.pnl_ratio * 100).toFixed(2) + '%</div></div>';
                 }).join('');
             if (lossPs.length > 0) {
                 var avg = lossPs.reduce(function (s, p) { return s + p.pnl_ratio; }, 0) / lossPs.length * 100;
@@ -1415,10 +1415,10 @@
             if (ind.cross === "골든크로스(5/20)") bull += 2; else if (ind.cross === "데드크로스(5/20)") bear += 2;
             const total = bull + bear; if (total === 0) return { score: 50, label: "중립", color: "#9ca3af" };
             const score = Math.round(bull / total * 100);
-            if (score >= 70) return { score, label: "강한매수", color: "#16a34a" };
-            if (score >= 55) return { score, label: "매수", color: "#22c55e" };
-            if (score <= 30) return { score, label: "강한매도", color: "#dc2626" };
-            if (score <= 45) return { score, label: "매도", color: "#f87171" };
+            if (score >= 70) return { score, label: "강한매수", color: "#dc2626" };
+            if (score >= 55) return { score, label: "매수", color: "#ef4444" };
+            if (score <= 30) return { score, label: "강한매도", color: "#2563eb" };
+            if (score <= 45) return { score, label: "매도", color: "#3b82f6" };
             return { score, label: "중립", color: "#9ca3af" };
         }
 
@@ -1429,9 +1429,9 @@
             el.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">' +
                 cards.map(({ pos, ind }) => {
                     const sig = techSignal(ind);
-                    const maColor = ind.last > ind.ma20 ? '#16a34a' : '#dc2626';
+                    const maColor = ind.last > ind.ma20 ? '#dc2626' : '#2563eb';
                     const rsiColor = ind.rsi < 30 ? '#16a34a' : ind.rsi > 70 ? '#dc2626' : '#374151';
-                    const macdColor = ind.hist > 0 ? '#16a34a' : '#dc2626';
+                    const macdColor = ind.hist > 0 ? '#dc2626' : '#2563eb';
                     return '<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">' +
                         '<div class="flex items-center justify-between mb-3">' +
                         '<div><div class="font-bold text-gray-800">' + pos.name + '</div>' +
@@ -1466,7 +1466,7 @@
                         '<div class="text-xs text-gray-400">이동평균</div>' +
                         '<div class="text-xs text-gray-600">MA5 ' + f(ind.ma5) + ' MA20 ' + f(ind.ma20) + '</div>' +
                         '<div class="text-xs text-gray-600">MA60 ' + f(ind.ma60) + ' MA120 ' + f(ind.ma120) + '</div>' +
-                        '<div class="text-xs font-medium" style="color:' + (ind.trend.includes('상승') ? '#16a34a' : '#dc2626') + '">' + ind.trend + ' · ' + (ind.cross || '크로스없음') + '</div>' +
+                        '<div class="text-xs font-medium" style="color:' + (ind.trend.includes('상승') ? '#dc2626' : '#2563eb') + '">' + ind.trend + ' · ' + (ind.cross || '크로스없음') + '</div>' +
                         '</div>' +
                         '</div>' +
                         '<div class="grid grid-cols-3 gap-2 mb-3">' +
