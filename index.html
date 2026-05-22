@@ -309,6 +309,27 @@
             margin-left: 4px;
         }
 
+        /* 테이블 컴팩트 — 화면에 한 번에 보이도록 */
+        .report-table th,
+        .report-table td {
+            padding: .5rem .5rem !important;
+            font-size: .78rem !important;
+        }
+        .report-table th {
+            white-space: nowrap;
+        }
+        /* 종목/SECTOR 열 — 왼쪽 정렬 명시 + 너비 제한 */
+        .report-table td.col-name,
+        .report-table th.col-name {
+            text-align: left !important;
+            min-width: 90px;
+        }
+        .report-table td.col-sector,
+        .report-table th.col-sector {
+            text-align: left !important;
+            min-width: 110px;
+        }
+
         @media(max-width:640px) {
             h1 {
                 font-size: 1.4rem !important
@@ -385,8 +406,8 @@
                         <table class="report-table min-w-full text-sm text-gray-700">
                             <thead>
                                 <tr class="bg-gray-100 text-gray-800">
-                                    <th class="px-3 py-2 text-left">종목</th>
-                                    <th class="px-3 py-2 text-left">SECTOR</th>
+                                    <th class="px-3 py-2 col-name">종목</th>
+                                    <th class="px-3 py-2 col-sector">SECTOR</th>
                                     <th class="px-3 py-2 text-center">DIR</th>
                                     <th class="px-3 py-2 text-right">REF PX</th>
                                     <th class="px-3 py-2 text-right">VAL PX</th>
@@ -747,8 +768,8 @@
                         var tr = document.createElement('tr');
                         tr.setAttribute('data-wid', wid);
                         tr.innerHTML = ''
-                            + '<td class="px-3 py-2 text-left font-bold"><a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a></td>'
-                            + '<td class="px-3 py-2 text-left">' + sectorHtml + '</td>'
+                            + '<td class="col-name font-bold"><a href="https://finance.naver.com/item/main.naver?code=' + p.symbol + '" target="_blank" class="hover:underline text-gray-800">' + p.name + '</a></td>'
+                            + '<td class="col-sector">' + sectorHtml + '</td>'
                             + '<td class="px-3 py-2 text-center"><span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span></td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(avg)) + '</td>'
                             + '<td class="px-3 py-2 text-right"><span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge + '</td>'
