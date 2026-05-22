@@ -346,45 +346,40 @@
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
 
         <header class="mb-6">
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800">Trading REPORT</h1>
-                    <div class="text-sm text-gray-600 mt-1">Last Update(KST): <span id="lastUpdated"
-                            class="font-medium">-</span></div>
-                    <div class="text-sm text-gray-600 mt-1">Market: <span id="market-status" class="font-bold">-</span>
+                    <h1 class="text-3xl font-bold text-gray-800">Trading <span class="text-lg font-normal text-gray-400">REPORT</span></h1>
+                    <div class="text-sm text-gray-500 mt-1">
+                        Last Update: <span id="lastUpdated" class="font-medium text-gray-700">-</span>
+                        &nbsp;|&nbsp;
+                        Market: <span id="market-status" class="font-bold">-</span>
                     </div>
-
                 </div>
-                <div class="flex flex-col items-end gap-2 header-right">
+                <div class="flex flex-col items-end gap-3 header-right">
                     <div class="text-right">
-                        <div class="text-sm text-gray-600 font-bold">Total Exposure</div>
-                        <div id="totalExposure" class="text-xl font-bold text-green-600">-</div>
-                        <div class="text-sm text-gray-500 mt-1">
-                            <span id="totalPnL" class="font-medium">-</span><span id="totalPnLRatio"
-                                class="pnl-ratio"></span>
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Total Exposure</div>
+                        <div id="totalExposure" class="text-2xl font-bold text-green-600 leading-tight">-</div>
+                        <div class="text-sm text-gray-500 mt-0.5">
+                            <span id="totalPnL" class="font-medium">-</span><span id="totalPnLRatio" class="pnl-ratio"></span>
                         </div>
-                        <br>
-                        <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-                            <a href="https://eqmon.duckdns.org" class="nav-link">HOME</a>
-                            <button onclick="switchTab('report')" id="tab-report" class="nav-link active">Trading
-                                REPORT</button>
-                            <button onclick="switchTab('portfolio')" id="tab-portfolio"
-                                class="nav-link">Portfolio</button>
-                            <button onclick="switchTab('technical')" id="tab-technical"
-                                class="nav-link">Technical</button>
-                            <button onclick="openAdd()" class="nav-link">＋ ADD POSITION</button>
-                        </nav>
                     </div>
+                    <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm flex-wrap">
+                        <a href="https://eqmon.duckdns.org" class="nav-link">HOME</a>
+                        <button onclick="switchTab('report')" id="tab-report" class="nav-link active">Trading REPORT</button>
+                        <button onclick="switchTab('portfolio')" id="tab-portfolio" class="nav-link">Portfolio</button>
+                        <button onclick="switchTab('technical')" id="tab-technical" class="nav-link">Technical</button>
+                        <button onclick="openAdd()" class="nav-link">＋ ADD</button>
+                    </nav>
                 </div>
             </div>
         </header>
 
         <div id="tab-report-content">
-            <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                 <div class="table-scroll-wrap">
                     <div class="table-scroll">
                         <table class="report-table min-w-full text-sm text-gray-700">
@@ -415,7 +410,7 @@
 
             <div id="deleted-section" class="deleted-section" style="display:none">
                 <div class="deleted-title"></div>
-                <div class="bg-white rounded-lg shadow-md p-4">
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                     <div class="table-scroll">
                         <table class="report-table min-w-full text-sm text-gray-700">
                             <thead>
@@ -439,7 +434,7 @@
 
         <!-- Technical 탭 -->
         <div id="tab-technical-content" style="display:none;">
-            <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
                 <div class="flex items-center justify-between">
                     <div>
                         <div class="text-sm font-bold text-gray-800">기술적 지표 분석</div>
@@ -454,7 +449,7 @@
                 <div class="mt-2 text-xs text-gray-300" id="tech-progress"></div>
             </div>
             <div id="tech-content">
-                <div id="tech-placeholder" class="bg-white rounded-lg shadow-md p-8 text-center">
+                <div id="tech-placeholder" class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
                     <div class="text-sm text-gray-500 mb-3">기술적 분석을 실행해주세요</div>
                     <div class="text-xs text-gray-400 mb-4">보유 종목의 500일 일봉 데이터를 기반으로 RSI, MACD, 볼린저밴드 등 지표를 분석합니다
                         (30~60초 소요)</div>
@@ -467,14 +462,14 @@
         <!-- Portfolio 탭 -->
         <div id="tab-portfolio-content" style="display:none;">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="pf-summary"></div>
-            <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-sm font-semibold text-gray-700 uppercase tracking-wide">리스크 분석</div>
                     <span class="text-xs text-gray-400">집중도 · 손실 현황</span>
                 </div>
                 <div id="pf-risk"></div>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-sm font-semibold text-gray-700 uppercase tracking-wide">AI 매매 전략</div>
                     <button onclick="runPortfolioAI()" id="pf-ai-btn" class="btn-icon btn-save"
@@ -491,7 +486,7 @@
         </div>
     </div>
 
-    <footer class="bg-white py-6 mt-8">
+    <footer class="bg-white py-6 mt-8 border-t border-gray-100">
         <div class="container mx-auto px-4 text-center text-gray-600 text-sm">© 2026 Trading REPORT.</div>
     </footer>
 
@@ -1155,7 +1150,7 @@
 
             // 요약
             document.getElementById('pf-summary').innerHTML =
-                '<div class="bg-white rounded-lg shadow-md p-4" style="grid-column:span 2">' +
+                '<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4" style="grid-column:span 2">' +
                 '  <div class="text-sm text-gray-600 font-bold mb-1">Total Exposure</div>' +
                 '  <div class="text-xl font-bold text-green-600">' + Math.round(totalExp).toLocaleString('ko-KR') + '</div>' +
                 '  <div class="text-sm mt-1">' +
@@ -1163,12 +1158,12 @@
                 '    <span class="' + ratioCls + '" style="font-size:.8rem;font-weight:600;margin-left:6px;">(' + (pnlRatio >= 0 ? '+' : '') + pnlRatio.toFixed(2) + '%)</span>' +
                 '  </div>' +
                 '</div>' +
-                '<div class="bg-white rounded-lg shadow-md p-4">' +
+                '<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">' +
                 '  <div class="text-xs text-gray-400 mb-1">종목 현황</div>' +
                 '  <div class="text-base font-bold text-gray-800">' + ps.length + '종목</div>' +
                 '  <div class="text-xs mt-1"><span style="color:#16a34a">수익 ' + winCount + '</span> | <span style="color:#dc2626">손실 ' + lossCount + '</span></div>' +
                 '</div>' +
-                '<div class="bg-white rounded-lg shadow-md p-4">' +
+                '<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">' +
                 '  <div class="text-xs text-gray-400 mb-1">Market</div>' +
                 '  <div id="pf-market" class="text-base font-bold">-</div>' +
                 '</div>';
