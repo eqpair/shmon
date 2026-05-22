@@ -583,7 +583,7 @@
 
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
-        const SEMON_SIGNALS_URL = 'https://eqpair.github.io/semon/docs/data/signals.json';
+        const SEMON_SIGNALS_URL = 'https://eqpair.github.io/semon/data/signals.json';
         let liveData = null;
         let positions = [];
         let editIndex = -1;
@@ -745,7 +745,7 @@
                         if (sectorRet != null) {
                             sectorRetStr = '<span style="font-size:.7rem;color:' + srColor + ';font-weight:600;margin-left:4px;">(' + (sectorRet > 0 ? '+' : '') + sectorRet.toFixed(2) + '%)</span>';
                         }
-                        var momentumUrl = 'https://eqpair.github.io/semon/docs/momentum.html?sector=' + encodeURIComponent(sectorName);
+                        var momentumUrl = 'https://eqpair.github.io/semon/momentum.html?sector=' + encodeURIComponent(sectorName);
                         sectorHtml = '<a href="' + momentumUrl + '" target="_blank" class="text-xs text-gray-600 hover:text-blue-600 hover:underline" title="' + sectorName + ' 섹터 모멘텀 보기">' + sectorName + '</a>' + sectorRetStr;
                     }
 
