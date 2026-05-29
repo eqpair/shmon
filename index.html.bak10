@@ -334,9 +334,7 @@
             text-align: left !important;
             min-width: 90px;
         }
-        .report-table td.col-sector {
-            text-align: left !important;
-        }
+        .report-table td.col-sector,
         .report-table th.col-sector {
             text-align: center !important;
         }
