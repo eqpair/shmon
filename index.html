@@ -303,8 +303,9 @@
         }
 
         .num-cell { display:inline-block; min-width:62px; text-align:right; }
-        .paren-cell { display:inline-block; min-width:60px; text-align:right; font-size:.7rem; font-weight:600; margin-left:3px; }
+        .paren-cell { display:inline-block; min-width:54px; text-align:right; font-size:.7rem; font-weight:600; margin-left:1px; }
         .krx-badge-wrap { display:inline-block; min-width:34px; text-align:left; }
+        .alloc-ratio.paren-cell { min-width:46px; margin-left:1px; }
         .alloc-ratio {
             font-size: .72rem;
             color: #9ca3af;
@@ -333,9 +334,11 @@
             min-width: 110px;
         }
         /* 숫자 데이터 컬럼 오른쪽 정렬 강제 (REF PX, VAL PX, QTY, EXP, VAL, N PROFIT, N %) */
-        .report-table thead th:nth-child(n+4):nth-child(-n+10),
         .report-table tbody td:nth-child(n+4):nth-child(-n+10) {
             text-align: right !important;
+        }
+        .report-table thead th:nth-child(n+3):nth-child(-n+12) {
+            text-align: center !important;
         }
 
         @media(max-width:640px) {
