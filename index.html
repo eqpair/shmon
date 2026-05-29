@@ -149,12 +149,23 @@
             box-shadow: 0 0 0 2px #dbeafe
         }
 
+        .report-table td.wavg-td {
+            position: relative;
+            overflow: visible !important;
+        }
         .wavg-panel {
             background: #f9fafb;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
             padding: 12px;
-            margin-top: 6px
+            margin-top: 6px;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 340px;
+            z-index: 30;
+            box-shadow: 0 8px 24px rgba(0,0,0,.12);
+            text-align: left;
         }
 
         .wavg-row {
@@ -431,17 +442,17 @@
                     <div class="table-scroll">
                         <table class="report-table min-w-full text-sm text-gray-700">
                             <colgroup>
-                                <col style="width:8%">
-                                <col style="width:11%">
-                                <col style="width:4%">
-                                <col style="width:7%">
-                                <col style="width:13%">
-                                <col style="width:6%">
+                                <col style="width:9%">
                                 <col style="width:12%">
-                                <col style="width:9%">
-                                <col style="width:9%">
-                                <col style="width:5%">
                                 <col style="width:4%">
+                                <col style="width:6%">
+                                <col style="width:13%">
+                                <col style="width:5%">
+                                <col style="width:12%">
+                                <col style="width:8%">
+                                <col style="width:8%">
+                                <col style="width:5%">
+                                <col style="width:6%">
                                 <col style="width:12%">
                             </colgroup>
                             <thead>
@@ -819,7 +830,7 @@
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(mv)) + '</td>'
                             + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + fmt(Math.round(pnl)) + '</td>'
                             + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (ratio * 100).toFixed(1) + '%</td>'
-                            + '<td class="px-3 py-2 text-center" id="wavg-cell-' + wid + '"></td>'
+                            + '<td class="px-3 py-2 text-center wavg-td" id="wavg-cell-' + wid + '"></td>'
                             + '<td class="px-3 py-2 text-center" style="white-space:nowrap" id="admin-cell-' + wid + '"></td>';
                         tbody.appendChild(tr);
                         renderWavgCell(wid, i);
