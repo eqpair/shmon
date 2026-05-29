@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-05-29 14:04:46",
+  "as_of": "2026-05-29 14:06:57",
   "currency": "KRW",
   "positions": [
     {
@@ -9,13 +9,13 @@
       "qty": 29000.0,
       "avg_price": 62500.0,
       "group": "파두",
-      "last_price": 111700.0,
-      "change_rate": 0.27,
+      "last_price": 111300.0,
+      "change_rate": -0.09,
       "actual_market": "J",
       "exposure": 1812500000.0,
-      "mv": 3239300000.0,
-      "pnl": 1426800000.0,
-      "pnl_ratio": 0.7872
+      "mv": 3227700000.0,
+      "pnl": 1415200000.0,
+      "pnl_ratio": 0.7808
     },
     {
       "symbol": "004020",
@@ -24,13 +24,13 @@
       "qty": 10949.0,
       "avg_price": 43452.0,
       "group": "현대제철",
-      "last_price": 40300.0,
-      "change_rate": 2.03,
+      "last_price": 40150.0,
+      "change_rate": 1.65,
       "actual_market": "J",
       "exposure": 475755948.0,
-      "mv": 441244700.0,
-      "pnl": -34511248.0,
-      "pnl_ratio": -0.0725398140476848
+      "mv": 439602350.0,
+      "pnl": -36153598.0,
+      "pnl_ratio": -0.07599189910706067
     },
     {
       "symbol": "011210",
@@ -39,13 +39,13 @@
       "qty": 6350.0,
       "avg_price": 94599.0,
       "group": "현대위아",
-      "last_price": 91000.0,
-      "change_rate": 3.06,
+      "last_price": 90400.0,
+      "change_rate": 2.38,
       "actual_market": "J",
       "exposure": 600703650.0,
-      "mv": 577850000.0,
-      "pnl": -22853650.0,
-      "pnl_ratio": -0.038044799627903046
+      "mv": 574040000.0,
+      "pnl": -26663650.0,
+      "pnl_ratio": -0.04438736138859819
     },
     {
       "symbol": "456160",
@@ -69,13 +69,13 @@
       "qty": 1580.0,
       "avg_price": 62620.0,
       "group": "카카오",
-      "last_price": 42000.0,
-      "change_rate": 4.74,
+      "last_price": 41950.0,
+      "change_rate": 4.61,
       "actual_market": "J",
       "exposure": 98939600.0,
-      "mv": 66360000.0,
-      "pnl": -32579600.0,
-      "pnl_ratio": -0.3292877674864261
+      "mv": 66281000.0,
+      "pnl": -32658600.0,
+      "pnl_ratio": -0.3300862344298946
     },
     {
       "symbol": "003380",
@@ -99,13 +99,13 @@
       "qty": 7147.0,
       "avg_price": 56599.0,
       "group": "펄어비스",
-      "last_price": 43350.0,
-      "change_rate": -1.25,
+      "last_price": 43400.0,
+      "change_rate": -1.14,
       "actual_market": "J",
       "exposure": 404513053.0,
-      "mv": 309822450.0,
-      "pnl": -94690603.0,
-      "pnl_ratio": -0.234085407869397
+      "mv": 310179800.0,
+      "pnl": -94333253.0,
+      "pnl_ratio": -0.2332020000353363
     },
     {
       "symbol": "352820",
@@ -114,13 +114,13 @@
       "qty": 950.0,
       "avg_price": 260975.0,
       "group": "하이브",
-      "last_price": 218500.0,
-      "change_rate": -2.24,
+      "last_price": 219000.0,
+      "change_rate": -2.01,
       "actual_market": "J",
       "exposure": 247926250.0,
-      "mv": 207575000.0,
-      "pnl": -40351250.0,
-      "pnl_ratio": -0.16275505316601208
+      "mv": 208050000.0,
+      "pnl": -39876250.0,
+      "pnl_ratio": -0.16083916083916083
     },
     {
       "symbol": "373220",
@@ -129,13 +129,13 @@
       "qty": 826.0,
       "avg_price": 456509.0,
       "group": "LG에너지솔루션",
-      "last_price": 457000.0,
-      "change_rate": 3.39,
+      "last_price": 456500.0,
+      "change_rate": 3.28,
       "actual_market": "J",
       "exposure": 377076434.0,
-      "mv": 377482000.0,
-      "pnl": 405566.0,
-      "pnl_ratio": 0.0010755538225971448
+      "mv": 377069000.0,
+      "pnl": -7434.0,
+      "pnl_ratio": -1.9714835852086158e-05
     },
     {
       "symbol": "002020",
@@ -144,13 +144,13 @@
       "qty": 2940.0,
       "avg_price": 67456.0,
       "group": "코오롱",
-      "last_price": 57300.0,
-      "change_rate": -4.98,
+      "last_price": 56900.0,
+      "change_rate": -5.64,
       "actual_market": "J",
       "exposure": 198320640.0,
-      "mv": 168462000.0,
-      "pnl": -29858640.0,
-      "pnl_ratio": -0.15055740037950663
+      "mv": 167286000.0,
+      "pnl": -31034640.0,
+      "pnl_ratio": -0.1564871916508539
     },
     {
       "symbol": "180640",
@@ -159,13 +159,13 @@
       "qty": 2000.0,
       "avg_price": 110013.0,
       "group": "한진칼",
-      "last_price": 113500.0,
-      "change_rate": 4.61,
+      "last_price": 114300.0,
+      "change_rate": 5.35,
       "actual_market": "J",
       "exposure": 220026000.0,
-      "mv": 227000000.0,
-      "pnl": 6974000.0,
-      "pnl_ratio": 0.03169625407906338
+      "mv": 228600000.0,
+      "pnl": 8574000.0,
+      "pnl_ratio": 0.03896812194922418
     },
     {
       "symbol": "229200",
@@ -174,13 +174,13 @@
       "qty": 20200.0,
       "avg_price": 19131.0,
       "group": "KODEX 코스닥 150",
-      "last_price": 18690.0,
-      "change_rate": -2.25,
+      "last_price": 18705.0,
+      "change_rate": -2.17,
       "actual_market": "J",
       "exposure": 386446200.0,
-      "mv": 377538000.0,
-      "pnl": -8908200.0,
-      "pnl_ratio": -0.02305159165751921
+      "mv": 377841000.0,
+      "pnl": -8605200.0,
+      "pnl_ratio": -0.022267523914066174
     },
     {
       "symbol": "017670",
@@ -204,13 +204,13 @@
       "qty": 1150.0,
       "avg_price": 176700.0,
       "group": "삼성에스디에스",
-      "last_price": 298500.0,
-      "change_rate": 20.12,
+      "last_price": 295500.0,
+      "change_rate": 18.91,
       "actual_market": "J",
       "exposure": 203205000.0,
-      "mv": 343275000.0,
-      "pnl": 140070000.0,
-      "pnl_ratio": 0.6893039049235993
+      "mv": 339825000.0,
+      "pnl": 136620000.0,
+      "pnl_ratio": 0.6723259762308998
     },
     {
       "symbol": "005935",
@@ -229,8 +229,8 @@
     }
   ],
   "total_exposure": 6023255855.0,
-  "total_pnl": 1138965295.0,
-  "total_pnl_ratio": 0.18909462297779148,
+  "total_pnl": 1119530295.0,
+  "total_pnl_ratio": 0.18586796276811987,
   "usd_krw": 1498.369449,
-  "wti": 87.66999816894531
+  "wti": 87.7699966430664
 }
