@@ -15,3 +15,5 @@ venv/
 __pycache__/
 *.py
 *.log
+config.json
+*.bak
