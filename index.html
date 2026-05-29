@@ -316,7 +316,7 @@
         /* 테이블 컴팩트 — 화면에 한 번에 보이도록 */
         .report-table th,
         .report-table td {
-            padding: 3px 6px !important;
+            padding: 3px 8px !important;
             font-size: .78rem !important;
         }
         .report-table th {
@@ -337,8 +337,13 @@
         .report-table tbody td:nth-child(n+4):nth-child(-n+10) {
             text-align: right !important;
         }
-        .report-table thead th:nth-child(n+3):nth-child(-n+12) {
+        .report-table thead th:nth-child(3),
+        .report-table thead th:nth-child(11),
+        .report-table thead th:nth-child(12) {
             text-align: center !important;
+        }
+        .report-table thead th:nth-child(n+4):nth-child(-n+10) {
+            text-align: right !important;
         }
 
         @media(max-width:640px) {
@@ -769,7 +774,7 @@
                         tds[1].innerHTML = sectorHtml;
                         tds[2].innerHTML = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span>';
                         tds[3].textContent = fmt(Math.round(avg));
-                        tds[4].innerHTML = '<span class="num-cell font-bold text-green-700">' + fmt(last) + '</span>' + changeStr + '<span class="krx-badge-wrap">' + mktBadge + '</span>'
+                        tds[4].innerHTML = '<span class="num-cell text-green-700">' + fmt(last) + '</span>' + changeStr + '<span class="krx-badge-wrap">' + mktBadge + '</span>'
                         tds[5].textContent = fmt(qty);
                         tds[6].innerHTML = '<span class="num-cell">' + fmt(Math.round(cost)) + '</span>' + allocStr;
                         tds[7].textContent = fmt(Math.round(mv));
@@ -786,7 +791,7 @@
                             + '<td class="col-sector">' + sectorHtml + '</td>'
                             + '<td class="px-3 py-2 text-center"><span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span></td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(avg)) + '</td>'
-                            + '<td class="px-3 py-2 text-right" style="white-space:nowrap"><span class="num-cell font-bold text-green-700">' + fmt(last) + '</span>' + changeStr + '<span class="krx-badge-wrap">' + mktBadge + '</span></td>'
+                            + '<td class="px-3 py-2 text-right" style="white-space:nowrap"><span class="num-cell text-green-700">' + fmt(last) + '</span>' + changeStr + '<span class="krx-badge-wrap">' + mktBadge + '</span></td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(qty) + '</td>'
                             + '<td class="px-3 py-2 text-right" style="white-space:nowrap"><span class="num-cell">' + fmt(Math.round(cost)) + '</span>' + allocStr + '</td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(mv)) + '</td>'

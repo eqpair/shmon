@@ -27,13 +27,13 @@
 
 .profit-plus {
     color: #dc2626;
-    font-weight: 700;
+    font-weight: 400;
 }
 
 /* + 손익 빨강 */
 .profit-minus {
     color: #0284c7;
-    font-weight: 700;
+    font-weight: 400;
 }
 
 /* - 손익 파랑 */
