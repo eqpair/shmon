@@ -17,3 +17,4 @@ __pycache__/
 *.log
 config.json
 *.bak
+*.bak*
