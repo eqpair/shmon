@@ -329,6 +329,11 @@
             text-align: left !important;
             min-width: 110px;
         }
+        /* 숫자 데이터 컬럼 오른쪽 정렬 강제 (REF PX, VAL PX, QTY, EXP, VAL, N PROFIT, N %) */
+        .report-table thead th:nth-child(n+4):nth-child(-n+10),
+        .report-table tbody td:nth-child(n+4):nth-child(-n+10) {
+            text-align: right !important;
+        }
 
         @media(max-width:640px) {
             h1 {

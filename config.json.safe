@@ -135,13 +135,14 @@
             "symbol": "229200",
             "name": "KODEX 코스닥 150",
             "side": "LONG",
-            "qty": 20200.0,
-            "avg_price": 19131.0,
+            "qty": 15200.0,
+            "avg_price": 19297.0,
             "group": "KODEX 코스닥 150",
             "deleted": false,
             "exit_price": null,
             "exit_date": null,
-            "realized_pnl": null
+            "realized_pnl": null,
+            "order": 17
         },
         {
             "symbol": "017670",
