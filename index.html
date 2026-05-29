@@ -303,9 +303,9 @@
         }
 
         .num-cell { display:inline-block; min-width:62px; text-align:right; }
-        .paren-cell { display:inline-block; min-width:54px; text-align:right; font-size:.7rem; font-weight:600; margin-left:1px; }
+        .paren-cell { display:inline-block; min-width:60px; text-align:right; font-size:.7rem; font-weight:400; margin-left:10px; }
         .krx-badge-wrap { display:inline-block; min-width:34px; text-align:left; }
-        .alloc-ratio.paren-cell { min-width:46px; margin-left:1px; }
+        .alloc-ratio.paren-cell { min-width:48px; margin-left:8px; }
         .alloc-ratio {
             font-size: .72rem;
             color: #9ca3af;
@@ -434,15 +434,15 @@
                                 <col style="width:8%">
                                 <col style="width:11%">
                                 <col style="width:4%">
+                                <col style="width:7%">
+                                <col style="width:13%">
                                 <col style="width:6%">
                                 <col style="width:12%">
+                                <col style="width:9%">
+                                <col style="width:9%">
                                 <col style="width:5%">
-                                <col style="width:11%">
-                                <col style="width:8%">
-                                <col style="width:8%">
-                                <col style="width:5%">
-                                <col style="width:5%">
-                                <col style="width:17%">
+                                <col style="width:4%">
+                                <col style="width:12%">
                             </colgroup>
                             <thead>
                                 <tr class="bg-gray-100 text-gray-800">
@@ -783,7 +783,7 @@
                     if (sectorName !== '-') {
                         var srColor = (sectorRet > 0) ? '#dc2626' : (sectorRet < 0) ? '#2563eb' : '#6b7280';
                         if (sectorRet != null) {
-                            sectorRetStr = '<span style="font-size:.7rem;color:' + srColor + ';font-weight:600;margin-left:4px;">(' + (sectorRet > 0 ? '+' : '') + sectorRet.toFixed(2) + '%)</span>';
+                            sectorRetStr = '<span style="font-size:.7rem;color:' + srColor + ';font-weight:400;margin-left:4px;">(' + (sectorRet > 0 ? '+' : '') + sectorRet.toFixed(2) + '%)</span>';
                         }
                         var momentumUrl = 'https://eqpair.github.io/semon/momentum.html?sector=' + encodeURIComponent(sectorName);
                         sectorHtml = '<a href="' + momentumUrl + '" target="_blank" class="text-xs text-gray-600 hover:text-blue-600 hover:underline" title="' + sectorName + ' 섹터 모멘텀 보기">' + sectorName + '</a>' + sectorRetStr;
