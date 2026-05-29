@@ -302,6 +302,9 @@
             margin-left: 6px;
         }
 
+        .num-cell { display:inline-block; min-width:62px; text-align:right; }
+        .paren-cell { display:inline-block; min-width:60px; text-align:right; font-size:.7rem; font-weight:600; margin-left:3px; }
+        .krx-badge-wrap { display:inline-block; min-width:34px; text-align:left; }
         .alloc-ratio {
             font-size: .72rem;
             color: #9ca3af;
@@ -720,7 +723,7 @@
                     var changeStr = '';
                     if (changeRate !== null && changeRate !== undefined) {
                         var changeColor = changeRate > 0 ? '#dc2626' : changeRate < 0 ? '#2563eb' : '#6b7280';
-                        changeStr = '<span style="font-size:.7rem;color:' + changeColor + ';margin-left:3px;font-weight:600;">(' + (changeRate > 0 ? '+' : '') + changeRate.toFixed(2) + '%)</span>';
+                        changeStr = '<span class="paren-cell" style="color:' + changeColor + ';">(' + (changeRate > 0 ? '+' : '') + changeRate.toFixed(2) + '%)</span>';
                     }
                     var mktBadge = mktMarket === 'NX'
                         ? '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>'
@@ -731,7 +734,7 @@
                     var allocStr = '';
                     if (totalExp > 0) {
                         var allocRatio = cost / totalExp * 100;
-                        allocStr = '<span class="alloc-ratio">(' + allocRatio.toFixed(1) + '%)</span>';
+                        allocStr = '<span class="alloc-ratio paren-cell">(' + allocRatio.toFixed(1) + '%)</span>';
                     }
 
                     if (!wavgState[wid]) {
@@ -763,9 +766,9 @@
                         tds[1].innerHTML = sectorHtml;
                         tds[2].innerHTML = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span>';
                         tds[3].textContent = fmt(Math.round(avg));
-                        tds[4].innerHTML = '<span class="font-bold text-green-700">' + fmt(last) + '</span>' + changeStr + mktBadge
+                        tds[4].innerHTML = '<span class="num-cell font-bold text-green-700">' + fmt(last) + '</span>' + changeStr + '<span class="krx-badge-wrap">' + mktBadge + '</span>'
                         tds[5].textContent = fmt(qty);
-                        tds[6].innerHTML = fmt(Math.round(cost)) + allocStr;
+                        tds[6].innerHTML = '<span class="num-cell">' + fmt(Math.round(cost)) + '</span>' + allocStr;
                         tds[7].textContent = fmt(Math.round(mv));
                         tds[8].textContent = fmt(Math.round(pnl));
                         tds[8].className = 'px-3 py-2 text-right ' + pnlColor;
@@ -780,9 +783,9 @@
                             + '<td class="col-sector">' + sectorHtml + '</td>'
                             + '<td class="px-3 py-2 text-center"><span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'L' : 'S') + '</span></td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(avg)) + '</td>'
-                            + '<td class="px-3 py-2 text-right"><span class="font-bold text-green-700">' + fmt(last) + '</span>' + mktBadge + '</td>'
+                            + '<td class="px-3 py-2 text-right" style="white-space:nowrap"><span class="num-cell font-bold text-green-700">' + fmt(last) + '</span>' + changeStr + '<span class="krx-badge-wrap">' + mktBadge + '</span></td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(qty) + '</td>'
-                            + '<td class="px-3 py-2 text-right">' + fmt(Math.round(cost)) + allocStr + '</td>'
+                            + '<td class="px-3 py-2 text-right" style="white-space:nowrap"><span class="num-cell">' + fmt(Math.round(cost)) + '</span>' + allocStr + '</td>'
                             + '<td class="px-3 py-2 text-right">' + fmt(Math.round(mv)) + '</td>'
                             + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + fmt(Math.round(pnl)) + '</td>'
                             + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (ratio * 100).toFixed(1) + '%</td>'
