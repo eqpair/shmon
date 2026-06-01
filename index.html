@@ -57,35 +57,17 @@
             background: #e5e7eb
         }
 
-        .btn-del {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca
-        }
+        .btn-del { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db }
 
-        .btn-del:hover {
-            background: #fecaca
-        }
+        .btn-del:hover { background: #e5e7eb }
 
-        .btn-restore {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0
-        }
+        .btn-restore { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db }
 
-        .btn-restore:hover {
-            background: #a7f3d0
-        }
+        .btn-restore:hover { background: #e5e7eb }
 
-        .btn-save {
-            background: #1d4ed8;
-            color: #fff;
-            border: none
-        }
+        .btn-save { background: #374151; color: #fff; border: none }
 
-        .btn-save:hover {
-            background: #1e40af
-        }
+        .btn-save:hover { background: #1f2937 }
 
         .modal-backdrop {
             display: none;
@@ -144,10 +126,7 @@
             width: 100%
         }
 
-        .form-input:focus {
-            border-color: #1d4ed8;
-            box-shadow: 0 0 0 2px #dbeafe
-        }
+        .form-input:focus { border-color: #9ca3af; box-shadow: 0 0 0 2px #e5e7eb }
 
         .report-table td.wavg-td {
             position: relative;
@@ -187,10 +166,7 @@
             box-sizing: border-box
         }
 
-        .wavg-row input:focus {
-            border-color: #1d4ed8;
-            box-shadow: 0 0 0 2px #dbeafe
-        }
+        .wavg-row input:focus { border-color: #9ca3af; box-shadow: 0 0 0 2px #e5e7eb }
 
         .wavg-result {
             display: grid;
@@ -430,7 +406,7 @@
                         <button onclick="switchTab('report')" id="tab-report" class="nav-link active">REPORT</button>
                         <button onclick="switchTab('portfolio')" id="tab-portfolio" class="nav-link">PORT</button>
                         <button onclick="switchTab('technical')" id="tab-technical" class="nav-link">TECH</button>
-                        <button onclick="openAdd()" class="nav-link">＋ ADD</button>
+                        <button onclick="openAdd()" class="nav-link">ADD</button>
                     </nav>
                 </div>
             </div>
@@ -527,7 +503,7 @@
                     <div class="text-xs text-gray-400 mb-4">보유 종목의 500일 일봉 데이터를 기반으로 RSI, MACD, 볼린저밴드 등 지표를 분석합니다
                         (30~60초 소요)</div>
                     <button onclick="runTechnical()" class="btn-icon btn-save"
-                        style="font-size:.85rem;padding:8px 20px;">▶ Analyze</button>
+                        style="font-size:.85rem;padding:8px 20px;">Analyze</button>
                 </div>
             </div>
         </div>
@@ -552,7 +528,7 @@
                     <div class="text-center py-8">
                         <div class="text-sm text-gray-500 mb-3">AI 매매 전략 분석을 실행해주세요</div>
                         <button onclick="runPortfolioAI()" class="btn-icon btn-save"
-                            style="font-size:.85rem;padding:8px 20px;">▶ Analyze</button>
+                            style="font-size:.85rem;padding:8px 20px;">Analyze</button>
                     </div>
                 </div>
             </div>
@@ -723,9 +699,9 @@
             var now = new Date();
             var kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
             var t = kst.getHours() * 60 + kst.getMinutes();
-            if (t >= 540 && t <= 930) { msEl.textContent = '🟢 KRX'; msEl.className = 'font-bold text-green-600'; }
-            else if ((t >= 480 && t < 540) || (t > 930 && t <= 1200)) { msEl.textContent = '🔵 NXT'; msEl.className = 'font-bold text-blue-600'; }
-            else { msEl.textContent = '⚫ Market Closed'; msEl.className = 'font-bold text-gray-400'; }
+            if (t >= 540 && t <= 930) { msEl.textContent = 'KRX'; msEl.className = 'font-bold text-gray-700'; }
+            else if ((t >= 480 && t < 540) || (t > 930 && t <= 1200)) { msEl.textContent = 'NXT'; msEl.className = 'font-bold text-gray-600'; }
+            else { msEl.textContent = 'Market Closed'; msEl.className = 'font-bold text-gray-400'; }
 
             var active = positions
                 .map(function (p, i) { return Object.assign({}, p, { _i: i }); })
@@ -767,7 +743,7 @@
                         changeStr = '<span class="paren-cell" style="color:' + changeColor + ';">(' + (changeRate > 0 ? '+' : '') + changeRate.toFixed(2) + '%)</span>';
                     }
                     var mktBadge = mktMarket === 'NX'
-                        ? '<span style="font-size:.65rem;background:#dbeafe;color:#1d4ed8;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>'
+                        ? '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">NXT</span>'
                         : mktMarket === 'J'
                             ? '<span style="font-size:.65rem;background:#f3f4f6;color:#6b7280;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700;">KRX</span>'
                             : '';
@@ -1284,7 +1260,7 @@
                 var kst = new Date(now.getTime() + (9 * 60 + now.getTimezoneOffset()) * 60000);
                 var t = kst.getHours() * 60 + kst.getMinutes();
                 if (t >= 540 && t <= 930) { msEl.textContent = 'KRX'; msEl.style.color = '#1f2937'; }
-                else if ((t >= 480 && t < 540) || (t > 930 && t <= 1200)) { msEl.textContent = 'NXT'; msEl.style.color = '#6366f1'; }
+                else if ((t >= 480 && t < 540) || (t > 930 && t <= 1200)) { msEl.textContent = 'NXT'; msEl.style.color = '#6b7280'; }
                 else { msEl.textContent = 'CLOSED'; msEl.style.color = '#9ca3af'; }
             }
 
@@ -1298,7 +1274,7 @@
                 return '<div class="flex items-center gap-3 mb-2">' +
                     '<div class="text-xs text-gray-600 w-24 flex-shrink-0">' + p.name + '</div>' +
                     '<div class="flex-1" style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;">' +
-                    '<div style="height:100%;width:' + Math.min(w, 100) + '%;background:' + (w > 30 ? '#dc2626' : w > 20 ? '#f59e0b' : '#94a3b8') + ';border-radius:4px;"></div></div>' +
+                    '<div style="height:100%;width:' + Math.min(w, 100) + '%;background:' + (w > 30 ? '#374151' : w > 20 ? '#6b7280' : '#94a3b8') + ';border-radius:4px;"></div></div>' +
                     '<div class="text-xs font-medium text-gray-700 w-10 text-right">' + w.toFixed(1) + '%</div></div>';
             }).join('');
 
@@ -1325,7 +1301,7 @@
                 document.getElementById('pf-ai-content').innerHTML =
                     '<div class="text-center py-8">' +
                     '<div class="text-sm text-gray-500 mb-3">AI 매매 전략 분석을 실행해주세요</div>' +
-                    '<button onclick="runPortfolioAI()" class="btn-icon btn-save" style="font-size:.85rem;padding:8px 20px;">▶ Analyze</button>' +
+                    '<button onclick="runPortfolioAI()" class="btn-icon btn-save" style="font-size:.85rem;padding:8px 20px;">Analyze</button>' +
                     '</div>';
             }
         }
@@ -1524,10 +1500,10 @@
             if (ind.cross === "골든크로스(5/20)") bull += 2; else if (ind.cross === "데드크로스(5/20)") bear += 2;
             const total = bull + bear; if (total === 0) return { score: 50, label: "중립", color: "#9ca3af" };
             const score = Math.round(bull / total * 100);
-            if (score >= 70) return { score, label: "강한매수", color: "#dc2626" };
-            if (score >= 55) return { score, label: "매수", color: "#ef4444" };
-            if (score <= 30) return { score, label: "강한매도", color: "#2563eb" };
-            if (score <= 45) return { score, label: "매도", color: "#3b82f6" };
+            if (score >= 70) return { score, label: "강한매수", color: "#374151" };
+            if (score >= 55) return { score, label: "매수", color: "#6b7280" };
+            if (score <= 30) return { score, label: "강한매도", color: "#374151" };
+            if (score <= 45) return { score, label: "매도", color: "#6b7280" };
             return { score, label: "중립", color: "#9ca3af" };
         }
 
@@ -1538,9 +1514,9 @@
             el.innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">' +
                 cards.map(({ pos, ind }) => {
                     const sig = techSignal(ind);
-                    const maColor = ind.last > ind.ma20 ? '#dc2626' : '#2563eb';
-                    const rsiColor = ind.rsi < 30 ? '#16a34a' : ind.rsi > 70 ? '#dc2626' : '#374151';
-                    const macdColor = ind.hist > 0 ? '#dc2626' : '#2563eb';
+                    const maColor = ind.last > ind.ma20 ? '#374151' : '#6b7280';
+                    const rsiColor = ind.rsi < 30 ? '#374151' : ind.rsi > 70 ? '#374151' : '#374151';
+                    const macdColor = ind.hist > 0 ? '#374151' : '#6b7280';
                     return '<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">' +
                         '<div class="flex items-center justify-between mb-3">' +
                         '<div><div class="font-bold text-gray-800">' + pos.name + '</div>' +
@@ -1575,7 +1551,7 @@
                         '<div class="text-xs text-gray-400">이동평균</div>' +
                         '<div class="text-xs text-gray-600">MA5 ' + f(ind.ma5) + ' MA20 ' + f(ind.ma20) + '</div>' +
                         '<div class="text-xs text-gray-600">MA60 ' + f(ind.ma60) + ' MA120 ' + f(ind.ma120) + '</div>' +
-                        '<div class="text-xs font-medium" style="color:' + (ind.trend.includes('상승') ? '#dc2626' : '#2563eb') + '">' + ind.trend + ' · ' + (ind.cross || '크로스없음') + '</div>' +
+                        '<div class="text-xs font-medium" style="color:' + (ind.trend.includes('상승') ? '#374151' : '#6b7280') + '">' + ind.trend + ' · ' + (ind.cross || '크로스없음') + '</div>' +
                         '</div>' +
                         '</div>' +
                         '<div class="grid grid-cols-3 gap-2 mb-3">' +
@@ -1678,10 +1654,10 @@
             for (var i = 0; i < lines.length; i++) {
                 var t = lines[i].trim();
                 if (!t) { html += '<div style="height:5px"></div>'; continue; }
-                if (t.startsWith('### ')) html += '<div style="font-size:13px;font-weight:700;color:#1e40af;margin-top:12px;margin-bottom:3px;">' + bold(t.slice(4)) + '</div>';
+                if (t.startsWith('### ')) html += '<div style="font-size:13px;font-weight:700;color:#111827;margin-top:12px;margin-bottom:3px;">' + bold(t.slice(4)) + '</div>';
                 else if (t.startsWith('## ')) html += '<div style="font-size:14px;font-weight:700;color:#111827;margin-top:14px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #e5e7eb;">' + bold(t.slice(3)) + '</div>';
                 else if (t.startsWith('- ') || t.startsWith('* ')) html += '<div style="display:flex;gap:5px;margin:2px 0;font-size:13px;"><span style="color:#6b7280;">•</span><span>' + bold(t.slice(2)) + '</span></div>';
-                else if (/^\d+\.\s/.test(t)) { var n = t.match(/^(\d+)\.\s/)[1]; html += '<div style="display:flex;gap:5px;margin:2px 0;font-size:13px;"><span style="color:#3b82f6;font-weight:600;">' + n + '.</span><span>' + bold(t.replace(/^\d+\.\s/, '')) + '</span></div>'; }
+                else if (/^\d+\.\s/.test(t)) { var n = t.match(/^(\d+)\.\s/)[1]; html += '<div style="display:flex;gap:5px;margin:2px 0;font-size:13px;"><span style="color:#6b7280;font-weight:600;">' + n + '.</span><span>' + bold(t.replace(/^\d+\.\s/, '')) + '</span></div>'; }
                 else if (t === '---') html += '<hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0;">';
                 else html += '<div style="margin:2px 0;line-height:1.7;font-size:13px;color:#1f2937;">' + bold(t) + '</div>';
             }
