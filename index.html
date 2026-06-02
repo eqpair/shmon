@@ -849,7 +849,11 @@
             var deleted = positions
                 .map(function (p, i) { return Object.assign({}, p, { _i: i }); })
                 .filter(function (p) { return p.deleted; })
-                .sort(function (a, b) { return a._i - b._i; });
+                .sort(function (a, b) {
+                    var da = a.exit_date || '', db = b.exit_date || '';
+                    if (da !== db) return db < da ? -1 : 1;  // 최신 날짜가 위
+                    return b._i - a._i;                       // 같은 날짜는 배열 역순
+                });
 
             var tbody = document.getElementById('report-body');
 
@@ -946,11 +950,15 @@
             var delSec = document.getElementById('deleted-section');
             if (deleted.length > 0) {
                 delSec.style.display = '';
-                document.getElementById('deleted-body').innerHTML = deleted.map(function (p) {
+                document.getElementById('deleted-body').innerHTML = deleted.map(function (p, dIdx, dArr) {
                     var cost = Number(p.avg_price) * Number(p.qty);
                     var ratio = cost ? (Number(p.realized_pnl) / cost) * 100 : NaN;
                     var pnlColor = p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : '';
                     var sectorHtml = buildSectorHtml(p.symbol);
+                    var dUpDis = dIdx === 0 ? ' disabled' : '';
+                    var dDownDis = dIdx === dArr.length - 1 ? ' disabled' : '';
+                    var dUpStyle = dIdx === 0 ? ';opacity:.35;cursor:default' : '';
+                    var dDownStyle = dIdx === dArr.length - 1 ? ';opacity:.35;cursor:default' : '';
                     return '<tr class="deleted-row">'
                         + '<td class="col-name px-3 py-2 font-bold text-gray-400">' + p.name + '</td>'
                         + '<td class="px-3 py-2 col-sector">' + sectorHtml + '</td>'
@@ -963,8 +971,8 @@
                         + '<td class="px-3 py-2 text-center" style="white-space:nowrap;font-size:.72rem;"><span class="text-gray-400" style="cursor:pointer;border-bottom:1px dashed #d1d5db;" data-date="' + (p.exit_date || '') + '" title="클릭하여 날짜 수정" onclick="editDelDate(' + p._i + ',this)">' + fmtDeletedDate(p) + '</span></td>'
                         + '<td class="px-3 py-2" style="white-space:nowrap">'
                         + '<span style="display:flex;gap:3px;justify-content:center;align-items:center;">'
-                        + '<button class="btn-icon btn-edit" onclick="movePos(' + p._i + ',\'up\')" title="Up">▲</button>'
-                        + '<button class="btn-icon btn-edit" onclick="movePos(' + p._i + ',\'down\')" title="Down">▼</button>'
+                        + '<button class="btn-icon btn-edit" onclick="movePos(' + p._i + ',\'up\')" title="Up"' + dUpDis + ' style="' + dUpStyle + '">▲</button>'
+                        + '<button class="btn-icon btn-edit" onclick="movePos(' + p._i + ',\'down\')" title="Down"' + dDownDis + ' style="' + dDownStyle + '">▼</button>'
                         + '<button class="btn-icon btn-edit" onclick="openEdit(' + p._i + ')" title="Modify">M</button>'
                         + '<button class="btn-icon btn-restore" onclick="restorePos(' + p._i + ')" title="Restore">R</button>'
                         + '<button class="btn-icon btn-del" onclick="hardDeletePos(' + p._i + ',\'' + p.name + '\')" title="Remove">X</button>'
