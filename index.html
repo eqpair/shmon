@@ -529,13 +529,13 @@
                                 <col style="width:9%">
                                 <col style="width:12%">
                                 <col style="width:4%">
-                                <col style="width:8%">
-                                <col style="width:7%">
-                                <col style="width:10%">
-                                <col style="width:12%">
+                                <col style="width:9%">
                                 <col style="width:8%">
                                 <col style="width:10%">
-                                <col style="width:12%">
+                                <col style="width:13%">
+                                <col style="width:8%">
+                                <col style="width:10%">
+                                <col style="width:17%">
                             </colgroup>
                             <thead>
                                 <tr class="bg-gray-100">
@@ -943,8 +943,8 @@
                         + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (p.realized_pnl !== undefined ? (p.realized_pnl >= 0 ? '+' : '') + fmt(Math.round(p.realized_pnl)) : '—') + '</td>'
                         + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (isNaN(ratio) ? '—' : (ratio >= 0 ? '+' : '') + ratio.toFixed(1) + '%') + '</td>'
                         + '<td class="px-3 py-2 text-center text-gray-400" style="white-space:nowrap;font-size:.72rem;">' + fmtDeletedDate(p) + '</td>'
-                        + '<td class="px-3 py-2 text-center" style="white-space:nowrap">'
-                        + '<span style="display:inline-flex;gap:3px;justify-content:center;align-items:center;">'
+                        + '<td class="px-3 py-2" style="white-space:nowrap">'
+                        + '<span style="display:flex;gap:3px;justify-content:center;align-items:center;">'
                         + '<button class="btn-icon btn-edit" onclick="openEdit(' + p._i + ')" title="Modify">M</button>'
                         + '<button class="btn-icon btn-restore" onclick="restorePos(' + p._i + ')" title="Restore">R</button>'
                         + '<button class="btn-icon btn-del" onclick="hardDeletePos(' + p._i + ',\'' + p.name + '\')" title="Remove">X</button>'
