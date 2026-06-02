@@ -770,14 +770,37 @@
             return '<a href="' + momentumUrl + '" target="_blank" class="text-xs text-gray-600 hover:text-blue-600 hover:underline" title="' + sectorName + ' 섹터 모멘텀 보기">' + sectorName + '</a>' + sectorRetStr;
         }
 
-        // 삭제일 표시용 (deleted_at 없으면 오늘 날짜)
+        // 삭제일 표시용 (exit_date 우선, 없으면 오늘)
         function fmtDeletedDate(p) {
-            var d = p.deleted_at ? new Date(p.deleted_at) : new Date();
-            if (isNaN(d.getTime())) d = new Date();
+            if (p.exit_date) return p.exit_date;
+            var d = new Date();
             var y = d.getFullYear();
             var m = ('0' + (d.getMonth() + 1)).slice(-2);
             var day = ('0' + d.getDate()).slice(-2);
             return y + '-' + m + '-' + day;
+        }
+
+        // DATE 셀 인라인 편집
+        function editDelDate(posIdx, span) {
+            var cur = span.getAttribute('data-date') || '';
+            var inp = document.createElement('input');
+            inp.type = 'date';
+            inp.value = cur;
+            inp.style.cssText = 'font-size:.72rem;border:1px solid #d1d5db;border-radius:4px;padding:1px 4px;';
+            inp.onclick = function (e) { e.stopPropagation(); };
+            inp.onchange = async function () {
+                var v = inp.value;
+                if (!v) { render(); return; }
+                await fetch(API_BASE + '/positions/' + posIdx + '/date', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ exit_date: v })
+                });
+                await loadAll();
+            };
+            inp.onblur = function () { render(); };
+            span.replaceWith(inp);
+            inp.focus();
         }
 
         // ─── 렌더 ─────────────────────────────────────────────────────────────────────
@@ -826,12 +849,7 @@
             var deleted = positions
                 .map(function (p, i) { return Object.assign({}, p, { _i: i }); })
                 .filter(function (p) { return p.deleted; })
-                .sort(function (a, b) {
-                    if (a.deleted_at && b.deleted_at) {
-                        return new Date(b.deleted_at) - new Date(a.deleted_at);
-                    }
-                    return b._i - a._i;
-                });
+                .sort(function (a, b) { return a._i - b._i; });
 
             var tbody = document.getElementById('report-body');
 
@@ -942,9 +960,11 @@
                         + '<td class="px-3 py-2 text-right">' + (p.exit_price ? fmt(Math.round(p.exit_price)) : '—') + '</td>'
                         + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (p.realized_pnl !== undefined ? (p.realized_pnl >= 0 ? '+' : '') + fmt(Math.round(p.realized_pnl)) : '—') + '</td>'
                         + '<td class="px-3 py-2 text-right ' + pnlColor + '">' + (isNaN(ratio) ? '—' : (ratio >= 0 ? '+' : '') + ratio.toFixed(1) + '%') + '</td>'
-                        + '<td class="px-3 py-2 text-center text-gray-400" style="white-space:nowrap;font-size:.72rem;">' + fmtDeletedDate(p) + '</td>'
+                        + '<td class="px-3 py-2 text-center" style="white-space:nowrap;font-size:.72rem;"><span class="text-gray-400" style="cursor:pointer;border-bottom:1px dashed #d1d5db;" data-date="' + (p.exit_date || '') + '" title="클릭하여 날짜 수정" onclick="editDelDate(' + p._i + ',this)">' + fmtDeletedDate(p) + '</span></td>'
                         + '<td class="px-3 py-2" style="white-space:nowrap">'
                         + '<span style="display:flex;gap:3px;justify-content:center;align-items:center;">'
+                        + '<button class="btn-icon btn-edit" onclick="movePos(' + p._i + ',\'up\')" title="Up">▲</button>'
+                        + '<button class="btn-icon btn-edit" onclick="movePos(' + p._i + ',\'down\')" title="Down">▼</button>'
                         + '<button class="btn-icon btn-edit" onclick="openEdit(' + p._i + ')" title="Modify">M</button>'
                         + '<button class="btn-icon btn-restore" onclick="restorePos(' + p._i + ')" title="Restore">R</button>'
                         + '<button class="btn-icon btn-del" onclick="hardDeletePos(' + p._i + ',\'' + p.name + '\')" title="Remove">X</button>'
