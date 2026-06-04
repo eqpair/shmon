@@ -520,6 +520,17 @@
                 </div>
             </div>
 
+            <!-- 담보 / 매매여력 한 줄 정보 -->
+            <div id="collateral-bar" class="flex justify-end items-center gap-2 mt-3 mb-1 text-sm text-gray-700">
+                <span class="text-gray-500">현재 담보</span>
+                <input id="collateral-input" type="number" placeholder="0" inputmode="numeric"
+                    class="w-32 text-right border border-gray-300 rounded px-2 py-0.5 text-sm outline-none focus:border-gray-400"
+                    oninput="onCollateralInput()">
+                <span class="text-gray-300">/</span>
+                <span class="text-gray-500">매매 여력</span>
+                <span id="buying-power" class="font-bold text-gray-800 min-w-[7rem] text-right">—</span>
+            </div>
+
             <div id="deleted-section" class="deleted-section" style="display:none">
                 <div class="deleted-title"></div>
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
@@ -702,6 +713,8 @@
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
         const SEMON_SIGNALS_URL = 'https://eqmon.duckdns.org/signals.json';
+        const STMON_SUMMARY_URL = 'https://eqmon.duckdns.org/stmon-summary.json';
+        let stmonSummary = null;
         let liveData = null;
         let positions = [];
         let editIndex = -1;
@@ -724,11 +737,15 @@
 
         async function loadAll() {
             try {
-                const [liveRes, posRes, semonRes] = await Promise.all([
+                const [liveRes, posRes, semonRes, stmonRes] = await Promise.all([
                     fetch('https://eqmon.duckdns.org/live.json?_=' + Date.now()),
                     fetch(API_BASE + '/positions'),
-                    fetch(SEMON_SIGNALS_URL + '?_=' + Date.now()).catch(() => null)
+                    fetch(SEMON_SIGNALS_URL + '?_=' + Date.now()).catch(() => null),
+                    fetch(STMON_SUMMARY_URL + '?_=' + Date.now()).catch(() => null)
                 ]);
+                if (stmonRes && stmonRes.ok) {
+                    try { stmonSummary = await stmonRes.json(); } catch (e) { stmonSummary = null; }
+                }
                 if (liveRes.ok) liveData = await liveRes.json();
                 if (posRes.ok) positions = await posRes.json();
                 if (semonRes && semonRes.ok) {
@@ -978,6 +995,8 @@
             } else {
                 delSec.style.display = 'none';
             }
+
+            updateBuyingPower();
         }
 
         // ─── Wavg Cell 렌더 ───────────────────────────────────────────────────────────
@@ -1170,6 +1189,38 @@
                 var btn = cell.querySelector('.expand-btn');
                 if (btn) btn.textContent = '▼';
             }
+        }
+
+        // ─── 담보 / 매매여력 ──────────────────────────────────────────────
+        const COLLATERAL_KEY = 'shmon_collateral';
+
+        function loadCollateral() {
+            try {
+                var v = localStorage.getItem(COLLATERAL_KEY);
+                if (v !== null && document.getElementById('collateral-input')) {
+                    document.getElementById('collateral-input').value = v;
+                }
+            } catch (e) { }
+        }
+
+        function onCollateralInput() {
+            var el = document.getElementById('collateral-input');
+            try { localStorage.setItem(COLLATERAL_KEY, el.value); } catch (e) { }
+            updateBuyingPower();
+        }
+
+        function updateBuyingPower() {
+            var out = document.getElementById('buying-power');
+            if (!out) return;
+            var inp = document.getElementById('collateral-input');
+            var collateral = inp ? (parseFloat(inp.value) || 0) : 0;
+            var shmonExp = liveData ? (Number(liveData.total_exposure) || 0) : 0;
+            var shmonPnl = liveData ? (Number(liveData.total_pnl) || 0) : 0;
+            var stmonExp = stmonSummary ? (Number(stmonSummary.total_exposure) || 0) : 0;
+            var stmonPnl = stmonSummary ? (Number(stmonSummary.total_open_pnl) || 0) : 0;
+            // 매매여력 = (담보/0.3 + shmon_pnl + shmon_exp + stmon_pnl + stmon_exp) / 3
+            var bp = (collateral / 0.3 + shmonPnl + shmonExp + stmonPnl + stmonExp) / 3;
+            out.textContent = Math.round(bp).toLocaleString('ko-KR');
         }
 
         // ─── movePos: 서버 /move API 사용 (서버에서 active 기준 swap 처리) ─────────────
@@ -1891,6 +1942,7 @@
         if (window.location.hash === '#portfolio') switchTab('portfolio');
         if (window.location.hash === '#technical') switchTab('technical');
 
+        loadCollateral();
         loadAll();
         setInterval(loadAll, 10000);
     </script>
