@@ -18,3 +18,4 @@ __pycache__/
 config.json
 *.bak
 *.bak*
+web/stmon-summary.json
