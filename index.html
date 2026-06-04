@@ -523,9 +523,8 @@
             <!-- 담보 / 매매여력 한 줄 정보 -->
             <div id="collateral-bar" class="flex justify-end items-center gap-2 mt-3 mb-1 text-sm text-gray-700">
                 <span class="text-gray-500">현재 담보</span>
-                <input id="collateral-input" type="number" placeholder="0" inputmode="numeric"
-                    class="w-32 text-right border border-gray-300 rounded px-2 py-0.5 text-sm outline-none focus:border-gray-400"
-                    oninput="onCollateralInput()">
+                <span id="collateral-display" class="font-medium text-gray-800 min-w-[6rem] text-right">—</span>
+                <button onclick="openCollateralModal()" class="btn-icon btn-edit" style="font-size:.72rem;">수정</button>
                 <span class="text-gray-300">/</span>
                 <span class="text-gray-500">매매 여력</span>
                 <span id="buying-power" class="font-bold text-gray-800 min-w-[7rem] text-right">—</span>
@@ -706,6 +705,21 @@
                 <button class="btn-icon btn-edit"
                     onclick="document.getElementById('del-modal').classList.remove('open')">Cancel</button>
                 <button class="btn-icon btn-del" onclick="confirmDelete()">Confirm Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 담보 입력 모달 -->
+    <div class="modal-backdrop" id="collateral-modal">
+        <div class="modal-box" style="max-width:360px">
+            <h2 class="text-base font-bold text-gray-900 mb-4">현재 담보 입력</h2>
+            <div class="form-group full">
+                <label class="form-label">담보 금액 (원)</label>
+                <input class="form-input" id="collateral-modal-input" type="number" inputmode="numeric" placeholder="0">
+            </div>
+            <div class="flex justify-end gap-2 mt-4">
+                <button class="btn-icon btn-edit" onclick="document.getElementById('collateral-modal').classList.remove('open')">Cancel</button>
+                <button class="btn-icon btn-save" onclick="saveCollateral()">Save</button>
             </div>
         </div>
     </div>
@@ -1191,44 +1205,53 @@
             }
         }
 
-        // ─── 담보 / 매매여력 (서버 저장) ──────────────────────────────────
-        var _collateralTimer = null;
+        // ─── 담보 / 매매여력 (서버 저장, 모달 입력) ───────────────────────
+        var _collateralValue = 0;
 
         async function loadCollateral() {
             try {
                 var res = await fetch(API_BASE + '/collateral?_=' + Date.now());
-                if (!res.ok) return;
-                var data = await res.json();
-                var el = document.getElementById('collateral-input');
-                if (el && data && data.collateral != null) {
-                    el.value = data.collateral ? data.collateral : '';
+                if (res.ok) {
+                    var data = await res.json();
+                    if (data && data.collateral != null) _collateralValue = Number(data.collateral) || 0;
                 }
             } catch (e) { }
+            renderCollateral();
             updateBuyingPower();
         }
 
-        function onCollateralInput() {
+        function renderCollateral() {
+            var disp = document.getElementById('collateral-display');
+            if (disp) disp.textContent = _collateralValue ? Math.round(_collateralValue).toLocaleString('ko-KR') : '—';
+        }
+
+        function openCollateralModal() {
+            var inp = document.getElementById('collateral-modal-input');
+            if (inp) inp.value = _collateralValue ? _collateralValue : '';
+            document.getElementById('collateral-modal').classList.add('open');
+            if (inp) inp.focus();
+        }
+
+        async function saveCollateral() {
+            var inp = document.getElementById('collateral-modal-input');
+            var val = inp ? (parseFloat(inp.value) || 0) : 0;
+            _collateralValue = val;
+            try {
+                await fetch(API_BASE + '/collateral', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ collateral: val })
+                });
+            } catch (e) { }
+            document.getElementById('collateral-modal').classList.remove('open');
+            renderCollateral();
             updateBuyingPower();
-            // 입력 멈춘 뒤 0.6초 후 서버 저장 (디바운스)
-            clearTimeout(_collateralTimer);
-            _collateralTimer = setTimeout(async function () {
-                var el = document.getElementById('collateral-input');
-                var val = el ? (parseFloat(el.value) || 0) : 0;
-                try {
-                    await fetch(API_BASE + '/collateral', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ collateral: val })
-                    });
-                } catch (e) { }
-            }, 600);
         }
 
         function updateBuyingPower() {
             var out = document.getElementById('buying-power');
             if (!out) return;
-            var inp = document.getElementById('collateral-input');
-            var collateral = inp ? (parseFloat(inp.value) || 0) : 0;
+            var collateral = _collateralValue || 0;
             var shmonExp = liveData ? (Number(liveData.total_exposure) || 0) : 0;
             var shmonPnl = liveData ? (Number(liveData.total_pnl) || 0) : 0;
             var stmonExp = stmonSummary ? (Number(stmonSummary.total_exposure) || 0) : 0;
