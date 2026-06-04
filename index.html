@@ -1191,22 +1191,37 @@
             }
         }
 
-        // ─── 담보 / 매매여력 ──────────────────────────────────────────────
-        const COLLATERAL_KEY = 'shmon_collateral';
+        // ─── 담보 / 매매여력 (서버 저장) ──────────────────────────────────
+        var _collateralTimer = null;
 
-        function loadCollateral() {
+        async function loadCollateral() {
             try {
-                var v = localStorage.getItem(COLLATERAL_KEY);
-                if (v !== null && document.getElementById('collateral-input')) {
-                    document.getElementById('collateral-input').value = v;
+                var res = await fetch(API_BASE + '/collateral?_=' + Date.now());
+                if (!res.ok) return;
+                var data = await res.json();
+                var el = document.getElementById('collateral-input');
+                if (el && data && data.collateral != null) {
+                    el.value = data.collateral ? data.collateral : '';
                 }
             } catch (e) { }
+            updateBuyingPower();
         }
 
         function onCollateralInput() {
-            var el = document.getElementById('collateral-input');
-            try { localStorage.setItem(COLLATERAL_KEY, el.value); } catch (e) { }
             updateBuyingPower();
+            // 입력 멈춘 뒤 0.6초 후 서버 저장 (디바운스)
+            clearTimeout(_collateralTimer);
+            _collateralTimer = setTimeout(async function () {
+                var el = document.getElementById('collateral-input');
+                var val = el ? (parseFloat(el.value) || 0) : 0;
+                try {
+                    await fetch(API_BASE + '/collateral', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ collateral: val })
+                    });
+                } catch (e) { }
+            }, 600);
         }
 
         function updateBuyingPower() {
