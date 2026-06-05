@@ -1270,7 +1270,7 @@
             var stmonExp = stmonSummary ? (Number(stmonSummary.total_exposure) || 0) : 0;
             var stmonPnl = stmonSummary ? (Number(stmonSummary.total_open_pnl) || 0) : 0;
             // 매매여력 = (담보/0.3 - shmon_exp - stmon_exp - shmon_pnl - stmon_pnl) / 3
-            var bp = (collateral / 0.3 - shmonExp - stmonExp - shmonPnl - stmonPnl) / 3;
+            var bp = (collateral / 0.3 - shmonExp - shmonPnl - stmonPnl) / 3;
             out.textContent = Math.round(bp).toLocaleString('ko-KR');
         }
 
