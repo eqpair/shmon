@@ -1265,13 +1265,17 @@
             var out = document.getElementById('buying-power');
             if (!out) return;
             var collateral = _collateralValue || 0;
-            var shmonExp = liveData ? (Number(liveData.total_exposure) || 0) : 0;
-            var shmonPnl = liveData ? (Number(liveData.total_pnl) || 0) : 0;
-            var stmonExp = stmonSummary ? (Number(stmonSummary.total_exposure) || 0) : 0;
-            var stmonPnl = stmonSummary ? (Number(stmonSummary.total_open_pnl) || 0) : 0;
-            // 매매여력 = (담보/0.3 - shmon_exp - stmon_exp - shmon_pnl - stmon_pnl) / 3
-            var bp = (collateral / 0.3 - shmonExp - shmonPnl - stmonPnl) / 3;
+            var shmonExp = liveData ? (Number(liveData.total_exposure) || 0) : 0;        // 롱 명목
+            var stmonExp = stmonSummary ? (Number(stmonSummary.total_exposure) || 0) : 0; // 숏 명목
+            var totalPnl = (liveData ? (Number(liveData.total_pnl) || 0) : 0)
+                + (stmonSummary ? (Number(stmonSummary.total_open_pnl) || 0) : 0);
+            var loss = totalPnl < 0 ? -totalPnl : 0;
+
+            // 담보여력 = 담보 - (롱+숏 명목)×0.3 - 평가손실(손실일 때만)
+            var bp = collateral - (shmonExp + stmonExp) * 0.3 - loss;
+
             out.textContent = Math.round(bp).toLocaleString('ko-KR');
+            out.style.color = bp < 0 ? '#dc2626' : '';
         }
 
         // ─── movePos: 서버 /move API 사용 (서버에서 active 기준 swap 처리) ─────────────
