@@ -254,7 +254,6 @@
 
         let positions = [];   // 활성 보유 종목
         let liveData = null;
-        let ohlcvData = {};   // 종목코드 → {closes, volumes} (기술지표 계산용)
         const fmt = n => Number(n).toLocaleString('ko-KR');
 
         // ─── 데이터 로드 ────────────────────────────────────────────────
@@ -271,18 +270,7 @@
                 if (liveRes && liveRes.ok) liveData = await liveRes.json();
             } catch (e) { }
             renderCards();
-            // 기술지표용 일봉 데이터 로드 (화면 표시 없이 프롬프트 근거로만 사용)
-            await loadOhlcv();
             // 자동 실행 제거 — '전체 분석' 버튼을 눌러야만 실행
-        }
-
-        async function loadOhlcv() {
-            if (positions.length === 0) return;
-            try {
-                const codes = positions.map(p => p.symbol).join(',');
-                const res = await fetch(API_BASE + '/ohlcv?codes=' + codes);
-                if (res.ok) ohlcvData = await res.json();
-            } catch (e) { ohlcvData = {}; }
         }
 
         function getLive(symbol) {
@@ -337,29 +325,23 @@
             const chg = live && live.change_rate != null ? live.change_rate.toFixed(2) + '%' : '-';
             const avg = Number(p.avg_price) || 0;
             const qty = Number(p.qty) || 0;
-            const cost = avg * qty;
-            const mv = last * qty;
+            const cost = avg * qty, mv = last * qty;
             const pnl = p.side === 'SHORT' ? (avg - last) * qty : (mv - cost);
             const ratio = cost ? (pnl / cost * 100).toFixed(2) : '0';
-            const tech = indSummary(p.symbol);
 
-            return '당신은 월스트리트와 여의도를 평정한 전설의 투자 전략가입니다. 워런 버핏도 당신의 리포트를 읽고, 소로스도 당신의 판단을 구합니다. 30년 경력의 글로벌 매크로 전략가이자 한국 주식시장의 살아있는 전설로, 중장기 투자 철학과 단기 트레이딩 기술을 모두 완벽하게 구사합니다. '
-                + '버핏의 내재가치·경제적 해자, 하워드 막스의 시장 사이클, 레이 달리오의 자본 흐름, 피터 린치의 바텀업 발굴, 소로스의 시장 심리 독해를 체화했고, 단기로는 마크 미너비니의 SEPA·VCP, 스탠 와인스타인의 스테이지 분석, 닥터 엘더의 삼중 스크린을 구사합니다. '
-                + '외국인 수급·환율 민감도·반도체 의존도·정책 변수 등 한국 시장 특수성과 해외 거시·업황 뉴스를 함께 고려하세요. '
-                + '아래 보유 종목의 최신 뉴스·공시와 함께 제공된 기술적 지표를 종합하여 간결하게 핵심만 전달하세요. '
+            return '당신은 30년 경력의 한국 주식시장 전문 애널리스트입니다. '
+                + '아래 보유 종목의 최신 뉴스와 공시를 검색·확인하여 간결하게 핵심만 전달하세요. 해외 거시·업황 뉴스도 함께 고려하세요. '
                 + '이모지나 이모티콘은 절대 사용하지 마세요. 증권사명·매체명·출처·URL·참고 링크는 절대 적지 마세요. 답변 끝에 출처 목록도 만들지 마세요. '
-                + '중요: 지표 수치(RSI, MACD, 이동평균 값 등)를 그대로 나열하지 마세요. 지표는 판단 근거로만 쓰고, 손절선·목표가·실행안에 자연스럽게 녹여 표현하세요. '
-                + '장황한 설명 없이 핵심만 압축해서 쓰세요. 아래 숫자들은 주가·지표 수치이며 종목코드가 아닙니다.\n\n'
+                + '장황한 설명 없이 핵심만 압축해서 쓰세요. 아래 숫자들은 주가·보유정보 수치이며 종목코드가 아닙니다.\n\n'
                 + '반드시 아래 형식과 분량을 지키세요:\n'
                 + '## ' + p.name + '(' + p.symbol + ')\n'
                 + '[뉴스] — 중요한 뉴스 2~3개를 각각 한 줄로 (날짜 + 핵심 사실만, 출처 없이)\n'
-                + '[해석] — 뉴스와 기술적 추세를 묶어 주가 영향을 1~2줄로 압축\n'
-                + '[실행안] — 매수 / 추가매수 / 홀드 / 일부청산 / 전량청산 중 하나로 시작하고 한 줄 근거(기술적 위치 반영)\n'
-                + '[가격대] — 기술적 지지/저항에 근거한 손절선 / 목표가를 숫자로 한 줄\n\n'
+                + '[해석] — 뉴스가 주가에 미칠 영향을 1~2줄로만 압축\n'
+                + '[실행안] — 매수 / 추가매수 / 홀드 / 일부청산 / 전량청산 중 하나로 시작하고 한 줄 근거\n'
+                + '[가격대] — 손절선 / 목표가를 숫자로 한 줄\n\n'
                 + '[보유 정보]\n'
                 + '포지션=' + p.side + ', 평단=' + fmt(Math.round(avg)) + '원, 수량=' + fmt(qty)
-                + ', 현재가=' + fmt(Math.round(last)) + '원(' + chg + '), 평가손익률=' + ratio + '%'
-                + (tech ? '\n\n[기술적 지표 (근거용, 화면에 나열 금지)]\n' + tech : '');
+                + ', 현재가=' + fmt(Math.round(last)) + '원(' + chg + '), 평가손익률=' + ratio + '%';
         }
 
         // ─── 단일 종목 분석 ─────────────────────────────────────────────
@@ -399,92 +381,6 @@
                 await runOne(i);
             }
             allBtn.disabled = false; allBtn.textContent = '전체 재분석';
-        }
-
-        // ─── 기술지표 계산 (화면 표시 없이 프롬프트 근거용) ────────────
-        function calcIndicators(closes, volumes) {
-            const n = closes.length;
-            const last = closes[n - 1];
-            const sma = (arr, p) => { if (arr.length < p) return null; const sl = arr.slice(-p); return sl.reduce((a, b) => a + b, 0) / p; };
-            const ma5 = sma(closes, 5), ma20 = sma(closes, 20), ma60 = sma(closes, 60), ma120 = sma(closes, 120);
-
-            let macd = null, hist = null;
-            if (closes.length >= 35) {
-                const k26 = 2 / 27, k12 = 2 / 13, k9 = 2 / 10;
-                let e12 = closes.slice(0, 12).reduce((a, b) => a + b, 0) / 12;
-                let e26 = closes.slice(0, 26).reduce((a, b) => a + b, 0) / 26;
-                for (let i = 12; i < 26; i++) e12 = closes[i] * k12 + e12 * (1 - k12);
-                const macdArr = [];
-                for (let i = 26; i < closes.length; i++) {
-                    e12 = closes[i] * k12 + e12 * (1 - k12);
-                    e26 = closes[i] * k26 + e26 * (1 - k26);
-                    macdArr.push(e12 - e26);
-                }
-                let sig = macdArr.slice(0, 9).reduce((a, b) => a + b, 0) / 9;
-                for (let i = 9; i < macdArr.length; i++) sig = macdArr[i] * k9 + sig * (1 - k9);
-                macd = macdArr[macdArr.length - 1]; hist = macd - sig;
-            }
-
-            let rsi = null;
-            if (closes.length >= 15) {
-                let gains = 0, losses = 0;
-                for (let i = closes.length - 14; i < closes.length; i++) {
-                    const d = closes[i] - closes[i - 1];
-                    if (d > 0) gains += d; else losses -= d;
-                }
-                const avgG = gains / 14, avgL = losses / 14;
-                rsi = avgL === 0 ? 100 : 100 - (100 / (1 + avgG / avgL));
-            }
-
-            let bb = null;
-            if (closes.length >= 20) {
-                const mid = ma20, sl = closes.slice(-20);
-                const std = Math.sqrt(sl.reduce((a, b) => a + (b - mid) ** 2, 0) / 20);
-                bb = { upper: mid + 2 * std, lower: mid - 2 * std, pct: (last - (mid - 2 * std)) / (4 * std) * 100 };
-            }
-
-            let atr = null;
-            if (closes.length >= 15) {
-                let sum = 0;
-                for (let i = closes.length - 14; i < closes.length; i++) sum += Math.abs(closes[i] - closes[i - 1]);
-                atr = sum / 14;
-            }
-
-            const yr = closes.slice(-252);
-            const hi52 = Math.max(...yr), lo52 = Math.min(...yr);
-            const pctFromHi = (last - hi52) / hi52 * 100;
-            const pctFromLo = (last - lo52) / lo52 * 100;
-
-            let trend = '중립';
-            if (ma5 && ma20 && ma60) {
-                if (last > ma5 && ma5 > ma20 && ma20 > ma60) trend = '강한상승';
-                else if (last > ma20 && ma20 > ma60) trend = '상승';
-                else if (last < ma5 && ma5 < ma20 && ma20 < ma60) trend = '강한하락';
-                else if (last < ma20 && ma20 < ma60) trend = '하락';
-            }
-            let cross = '';
-            if (ma5 && ma20) {
-                const p5 = sma(closes.slice(0, -1), 5), p20 = sma(closes.slice(0, -1), 20);
-                if (p5 < p20 && ma5 >= ma20) cross = '골든크로스';
-                else if (p5 > p20 && ma5 <= ma20) cross = '데드크로스';
-                else if (ma5 > ma20 && ma20 > ma60) cross = '정배열';
-                else if (ma5 < ma20 && ma20 < ma60) cross = '역배열';
-            }
-
-            return { last, ma5, ma20, ma60, ma120, macd, hist, rsi, bb, atr, hi52, lo52, pctFromHi, pctFromLo, trend, cross, n };
-        }
-
-        function indSummary(symbol) {
-            const d = ohlcvData[symbol];
-            if (!d || !d.closes || d.closes.length < 20) return null;
-            const ind = calcIndicators(d.closes, d.volumes || []);
-            const r = n => n != null ? Math.round(n).toLocaleString('ko-KR') : '-';
-            const f1 = n => n != null ? n.toFixed(1) : '-';
-            return 'MA5=' + r(ind.ma5) + ', MA20=' + r(ind.ma20) + ', MA60=' + r(ind.ma60) + ', MA120=' + r(ind.ma120)
-                + ', RSI=' + f1(ind.rsi) + ', MACD히스토그램=' + (ind.hist != null ? Math.round(ind.hist) : '-')
-                + ', 볼린저상단=' + r(ind.bb && ind.bb.upper) + ', 볼린저하단=' + r(ind.bb && ind.bb.lower) + ', 볼린저%B=' + f1(ind.bb && ind.bb.pct)
-                + ', ATR=' + r(ind.atr) + ', 52주고점=' + r(ind.hi52) + '(' + f1(ind.pctFromHi) + '%), 52주저점=' + r(ind.lo52) + '(' + f1(ind.pctFromLo) + '%)'
-                + ', 추세=' + ind.trend + (ind.cross ? ', ' + ind.cross : '');
         }
 
         // ─── 마크다운 렌더 (shmon pfMarkdown 기반, 시장색 적용) ──────────
