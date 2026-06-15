@@ -297,7 +297,6 @@
                     const c = chg > 0 ? '#dc2626' : chg < 0 ? '#2563eb' : '#6b7280';
                     chgStr = '<span style="color:' + c + ';font-size:.72rem;margin-left:6px;">(' + (chg > 0 ? '+' : '') + chg.toFixed(2) + '%)</span>';
                 }
-                const sideBadge = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'LONG' : 'SHORT') + '</span>';
 
                 return '<div class="stock-card" id="card-' + i + '">'
                     + '<div class="card-head">'
@@ -307,7 +306,6 @@
                     + '    <span class="card-code" style="color:#6b7280;font-family:inherit;">' + fmt(Math.round(last)) + '원' + chgStr + '</span>'
                     + '  </div>'
                     + '  <div style="display:flex;align-items:center;gap:8px;">'
-                    + '    ' + sideBadge
                     + '    <button class="btn-icon btn-edit" onclick="runOne(' + i + ')" id="btn-' + i + '">분석</button>'
                     + '  </div>'
                     + '</div>'
