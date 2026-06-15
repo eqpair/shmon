@@ -333,7 +333,7 @@
 
             return '당신은 한국 주식시장 전문 애널리스트입니다. '
                 + '아래 보유 종목의 최신 뉴스와 공시를 검색·확인하여 간결하게 핵심만 전달하세요. '
-                + '이모지나 이모티콘은 절대 사용하지 마세요. 증권사명·출처·매체명은 적지 마세요. '
+                + '이모지나 이모티콘은 절대 사용하지 마세요. 증권사명·매체명·출처·URL·참고 링크는 절대 적지 마세요. 답변 끝에 출처 목록도 만들지 마세요. '
                 + '장황한 설명 없이 핵심만 압축해서 쓰세요. 아래 숫자들은 주가·보유정보 수치이며 종목코드가 아닙니다.\n\n'
                 + '반드시 아래 형식과 분량을 지키세요:\n'
                 + '## ' + p.name + '(' + p.symbol + ')\n'
@@ -367,8 +367,7 @@
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
                 const answer = data.answer || '응답 없음';
-                body.innerHTML = renderMarkdown(answer)
-                    + '<div class="source-line">투자 판단의 참고용입니다.</div>';
+                body.innerHTML = renderMarkdown(answer);
             } catch (e) {
                 body.innerHTML = '<div class="text-sm text-blue-600 py-3">분석 오류: ' + e.message
                     + ' <button class="btn-icon btn-edit" style="margin-left:6px;" onclick="runOne(' + i + ')">재시도</button></div>';
@@ -389,6 +388,10 @@
         // ─── 마크다운 렌더 (shmon pfMarkdown 기반, 시장색 적용) ──────────
         function renderMarkdown(text) {
             text = text.replace(/```[\s\S]*?```/g, '');
+            // 백엔드가 답변 끝에 자동으로 붙이는 출처/참고링크 섹션 제거
+            text = text.replace(/\n+\s*#{0,3}\s*\**\s*(참고\s*출처|출처|참고\s*자료|references?|sources?)\s*\**[\s\S]*$/i, '');
+            // 본문 중 인라인 (http...) 링크 괄호도 제거 (출처 표기 흔적)
+            text = text.replace(/\s*\(https?:\/\/[^\s)]+\)/g, '');
             const bold = s => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
             const lines = text.split('\n');
             let html = '';
