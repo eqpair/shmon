@@ -273,8 +273,7 @@
             renderCards();
             // 기술지표용 일봉 데이터 로드 (화면 표시 없이 프롬프트 근거로만 사용)
             await loadOhlcv();
-            // 진입 시 자동으로 전체 분석 1회 실행
-            if (positions.length > 0) runAll();
+            // 자동 실행 제거 — '전체 분석' 버튼을 눌러야만 실행
         }
 
         async function loadOhlcv() {
