@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>News Action Plan</title>
+    <title>Report Check</title>
     <link rel="icon" href="./favicon.svg" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <style>
@@ -220,11 +220,11 @@
         <header class="mb-6">
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800">News <span
+                    <h1 class="text-3xl font-bold text-gray-800">Report Check <span
                             class="text-lg font-normal text-gray-400">ACTION PLAN</span></h1>
                     <div class="text-sm text-gray-500 mt-1">
-                        보유 종목 뉴스 기반 실행안 &nbsp;|&nbsp;
-                        대상 종목 <span id="stock-count" class="font-bold text-gray-700">-</span>
+                        보유 종목 실행안 &nbsp;|&nbsp;
+                        대상 <span id="stock-count" class="font-bold text-gray-700">-</span>
                     </div>
                 </div>
                 <div class="flex flex-col items-end gap-3">
@@ -238,17 +238,8 @@
             </div>
         </header>
 
-        <div id="intro" class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-5">
-            <div class="text-sm text-gray-600 leading-relaxed">
-                레포트에 등록된 보유 종목을 불러와 각 종목의 <strong>최신 뉴스·공시</strong>를 기반으로
-                매수 / 매도 / 홀드 실행안을 제시합니다. 종목별로 개별 분석하거나 상단의 <strong>전체 분석</strong> 버튼으로
-                한 번에 실행할 수 있습니다.
-            </div>
-            <div class="text-xs text-gray-400 mt-2">분석은 종목당 약 10~20초 소요됩니다.</div>
-        </div>
-
-        <div id="cards" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="col-span-full text-center py-10 text-gray-400 text-sm">보유 종목 로딩 중…</div>
+        <div id="cards" class="flex flex-col gap-4">
+            <div class="text-center py-10 text-gray-400 text-sm">보유 종목 로딩 중…</div>
         </div>
     </div>
 
@@ -292,7 +283,7 @@
             document.getElementById('stock-count').textContent = positions.length + '종목';
 
             if (positions.length === 0) {
-                el.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400 text-sm">보유 종목이 없습니다. REPORT에서 포지션을 추가하세요.</div>';
+                el.innerHTML = '<div class="text-center py-10 text-gray-400 text-sm">보유 종목이 없습니다. REPORT에서 포지션을 추가하세요.</div>';
                 return;
             }
 
@@ -339,15 +330,15 @@
             const ratio = cost ? (pnl / cost * 100).toFixed(2) : '0';
 
             return '당신은 한국 주식시장 전문 애널리스트입니다. '
-                + '아래 보유 종목에 대해 최신 뉴스와 공시를 반드시 검색·확인하여, 뉴스 흐름에 근거한 구체적 실행안을 제시하세요. '
-                + '이모지나 이모티콘은 절대 사용하지 마세요. 추상적 일반론이 아니라 실제 뉴스 내용을 인용해 판단 근거를 밝히세요. '
-                + '아래 숫자들은 주가·보유정보 수치이며 종목코드가 아닙니다.\n\n'
-                + '반드시 아래 형식으로 작성하세요:\n'
+                + '아래 보유 종목의 최신 뉴스와 공시를 검색·확인하여 간결하게 핵심만 전달하세요. '
+                + '이모지나 이모티콘은 절대 사용하지 마세요. 증권사명·출처·매체명은 적지 마세요. '
+                + '장황한 설명 없이 핵심만 압축해서 쓰세요. 아래 숫자들은 주가·보유정보 수치이며 종목코드가 아닙니다.\n\n'
+                + '반드시 아래 형식과 분량을 지키세요:\n'
                 + '## ' + p.name + '(' + p.symbol + ')\n'
-                + '[핵심 뉴스] — 최근 가장 중요한 뉴스 2~3개를 한 줄씩, 날짜와 함께\n'
-                + '[해석] — 이 뉴스들이 주가에 미칠 영향\n'
-                + '[실행안] — 반드시 매수 / 추가매수 / 홀드 / 일부청산 / 전량청산 중 하나로 명확히 시작하고 그 근거\n'
-                + '[가격대] — 손절선과 목표가(있다면)\n\n'
+                + '[뉴스] — 중요한 뉴스 2~3개를 각각 한 줄로 (날짜 + 핵심 사실만, 출처 없이)\n'
+                + '[해석] — 주가 영향을 1~2줄로만 압축\n'
+                + '[실행안] — 매수 / 추가매수 / 홀드 / 일부청산 / 전량청산 중 하나로 시작하고 한 줄 근거\n'
+                + '[가격대] — 손절선 / 목표가를 숫자로 한 줄\n\n'
                 + '[보유 정보]\n'
                 + '포지션=' + p.side + ', 평단=' + fmt(Math.round(avg)) + '원, 수량=' + fmt(qty)
                 + ', 현재가=' + fmt(Math.round(last)) + '원(' + chg + '), 평가손익률=' + ratio + '%';
@@ -375,7 +366,7 @@
                 if (data.error) throw new Error(data.error);
                 const answer = data.answer || '응답 없음';
                 body.innerHTML = renderMarkdown(answer)
-                    + '<div class="source-line">최신 뉴스·공시 검색 기반 · 투자 판단의 참고용입니다.</div>';
+                    + '<div class="source-line">투자 판단의 참고용입니다.</div>';
             } catch (e) {
                 body.innerHTML = '<div class="text-sm text-blue-600 py-3">분석 오류: ' + e.message
                     + ' <button class="btn-icon btn-edit" style="margin-left:6px;" onclick="runOne(' + i + ')">재시도</button></div>';
