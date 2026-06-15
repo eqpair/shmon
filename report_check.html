@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>News Action Plan</title>
+    <link rel="icon" href="./favicon.svg" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
+    <style>
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: .8rem;
+            font-weight: 600;
+            letter-spacing: .02em;
+            transition: background .15s, color .15s;
+            color: #4b5563;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .nav-link.active {
+            background: #1f2937;
+            color: #fff;
+        }
+
+        .btn-icon {
+            padding: 3px 9px;
+            border-radius: 5px;
+            font-size: .75rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .btn-save {
+            background: #374151;
+            color: #fff;
+        }
+
+        .btn-save:hover {
+            background: #1f2937;
+        }
+
+        .btn-save:disabled {
+            opacity: .55;
+            cursor: default;
+        }
+
+        .btn-edit {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-edit:hover {
+            background: #e5e7eb;
+        }
+
+        /* 종목 카드 */
+        .stock-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+            overflow: hidden;
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            gap: 10px;
+        }
+
+        .card-name {
+            font-weight: 700;
+            color: #111827;
+            font-size: .95rem;
+        }
+
+        .card-code {
+            font-size: .72rem;
+            color: #9ca3af;
+            font-family: monospace;
+            margin-left: 6px;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: .62rem;
+            font-weight: 700;
+            border-radius: 4px;
+            padding: 1px 6px;
+            letter-spacing: .03em;
+        }
+
+        .badge-L {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-S {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        /* 실행안 액션 칩 */
+        .action-chip {
+            font-size: .72rem;
+            font-weight: 700;
+            border-radius: 20px;
+            padding: 4px 12px;
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .card-body {
+            padding: 14px 16px;
+            font-size: .82rem;
+            line-height: 1.7;
+            color: #1f2937;
+        }
+
+        .card-body h2 {
+            font-size: .9rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 14px 0 5px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .card-body h3 {
+            font-size: .82rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 10px 0 3px;
+        }
+
+        .card-body .li {
+            display: flex;
+            gap: 6px;
+            margin: 3px 0;
+        }
+
+        .card-body .li .dot {
+            color: #6b7280;
+        }
+
+        .card-body hr {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 8px 0;
+        }
+
+        .pulse-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #9ca3af;
+            margin: 0 1px;
+            animation: pulse 1.2s infinite ease-in-out;
+        }
+
+        .pulse-dot:nth-child(2) {
+            animation-delay: .2s;
+        }
+
+        .pulse-dot:nth-child(3) {
+            animation-delay: .4s;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            80%,
+            100% {
+                opacity: .25;
+            }
+
+            40% {
+                opacity: 1;
+            }
+        }
+
+        .source-line {
+            font-size: .68rem;
+            color: #9ca3af;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        @media(max-width:640px) {
+            h1 {
+                font-size: 1.4rem !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-screen-2xl">
+
+        <header class="mb-6">
+            <div class="flex justify-between items-start flex-wrap gap-3">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">News <span
+                            class="text-lg font-normal text-gray-400">ACTION PLAN</span></h1>
+                    <div class="text-sm text-gray-500 mt-1">
+                        보유 종목 뉴스 기반 실행안 &nbsp;|&nbsp;
+                        대상 종목 <span id="stock-count" class="font-bold text-gray-700">-</span>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end gap-3">
+                    <button onclick="runAll()" id="run-all-btn" class="btn-icon btn-save"
+                        style="font-size:.85rem;padding:8px 20px;">전체 분석</button>
+                    <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm flex-wrap">
+                        <a href="./index.html" class="nav-link">REPORT</a>
+                        <a href="./report_check.html" class="nav-link active">CHECK</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <div id="intro" class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-5">
+            <div class="text-sm text-gray-600 leading-relaxed">
+                레포트에 등록된 보유 종목을 불러와 각 종목의 <strong>최신 뉴스·공시</strong>를 기반으로
+                매수 / 매도 / 홀드 실행안을 제시합니다. 종목별로 개별 분석하거나 상단의 <strong>전체 분석</strong> 버튼으로
+                한 번에 실행할 수 있습니다.
+            </div>
+            <div class="text-xs text-gray-400 mt-2">분석은 종목당 약 10~20초 소요됩니다.</div>
+        </div>
+
+        <div id="cards" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="col-span-full text-center py-10 text-gray-400 text-sm">보유 종목 로딩 중…</div>
+        </div>
+    </div>
+
+    <footer class="bg-white py-6 mt-8 border-t border-gray-100">
+        <div class="container mx-auto px-4 text-center text-gray-600 text-sm">© 2026 News Action Plan.</div>
+    </footer>
+
+    <script>
+        const API_BASE = 'https://eqmon.duckdns.org/api';
+        const CHAT_URL = 'https://eqmon.duckdns.org/eqai-chat/chat';
+        const LIVE_URL = 'https://eqmon.duckdns.org/live.json';
+
+        let positions = [];   // 활성 보유 종목
+        let liveData = null;
+        const fmt = n => Number(n).toLocaleString('ko-KR');
+
+        // ─── 데이터 로드 ────────────────────────────────────────────────
+        async function loadPositions() {
+            try {
+                const [posRes, liveRes] = await Promise.all([
+                    fetch(API_BASE + '/positions'),
+                    fetch(LIVE_URL + '?_=' + Date.now()).catch(() => null)
+                ]);
+                if (posRes.ok) {
+                    const all = await posRes.json();
+                    positions = all.filter(p => !p.deleted);
+                }
+                if (liveRes && liveRes.ok) liveData = await liveRes.json();
+            } catch (e) { }
+            renderCards();
+        }
+
+        function getLive(symbol) {
+            if (!liveData || !liveData.positions) return null;
+            return liveData.positions.find(p => p.symbol === symbol) || null;
+        }
+
+        // ─── 카드 렌더 (분석 전 골격) ───────────────────────────────────
+        function renderCards() {
+            const el = document.getElementById('cards');
+            document.getElementById('stock-count').textContent = positions.length + '종목';
+
+            if (positions.length === 0) {
+                el.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400 text-sm">보유 종목이 없습니다. REPORT에서 포지션을 추가하세요.</div>';
+                return;
+            }
+
+            el.innerHTML = positions.map((p, i) => {
+                const live = getLive(p.symbol);
+                const last = live ? live.last_price : p.avg_price;
+                const chg = live && live.change_rate != null ? live.change_rate : null;
+                let chgStr = '';
+                if (chg != null) {
+                    const c = chg > 0 ? '#dc2626' : chg < 0 ? '#2563eb' : '#6b7280';
+                    chgStr = '<span style="color:' + c + ';font-size:.72rem;margin-left:6px;">(' + (chg > 0 ? '+' : '') + chg.toFixed(2) + '%)</span>';
+                }
+                const sideBadge = '<span class="badge badge-' + (p.side === 'LONG' ? 'L' : 'S') + '">' + (p.side === 'LONG' ? 'LONG' : 'SHORT') + '</span>';
+
+                return '<div class="stock-card" id="card-' + i + '">'
+                    + '<div class="card-head">'
+                    + '  <div>'
+                    + '    <span class="card-name">' + p.name + '</span>'
+                    + '    <span class="card-code">' + p.symbol + '</span>'
+                    + '    <span class="card-code" style="color:#6b7280;font-family:inherit;">' + fmt(Math.round(last)) + '원' + chgStr + '</span>'
+                    + '  </div>'
+                    + '  <div style="display:flex;align-items:center;gap:8px;">'
+                    + '    ' + sideBadge
+                    + '    <button class="btn-icon btn-edit" onclick="runOne(' + i + ')" id="btn-' + i + '">분석</button>'
+                    + '  </div>'
+                    + '</div>'
+                    + '<div class="card-body" id="body-' + i + '">'
+                    + '  <div class="text-gray-400 text-xs py-3">분석 버튼을 눌러 뉴스 기반 실행안을 받아보세요.</div>'
+                    + '</div>'
+                    + '</div>';
+            }).join('');
+        }
+
+        // ─── 프롬프트 생성 ──────────────────────────────────────────────
+        function buildPrompt(p) {
+            const live = getLive(p.symbol);
+            const last = live ? live.last_price : p.avg_price;
+            const chg = live && live.change_rate != null ? live.change_rate.toFixed(2) + '%' : '-';
+            const avg = Number(p.avg_price) || 0;
+            const qty = Number(p.qty) || 0;
+            const cost = avg * qty;
+            const mv = last * qty;
+            const pnl = p.side === 'SHORT' ? (avg - last) * qty : (mv - cost);
+            const ratio = cost ? (pnl / cost * 100).toFixed(2) : '0';
+
+            return '당신은 한국 주식시장 전문 애널리스트입니다. '
+                + '아래 보유 종목에 대해 최신 뉴스와 공시를 반드시 검색·확인하여, 뉴스 흐름에 근거한 구체적 실행안을 제시하세요. '
+                + '이모지나 이모티콘은 절대 사용하지 마세요. 추상적 일반론이 아니라 실제 뉴스 내용을 인용해 판단 근거를 밝히세요. '
+                + '아래 숫자들은 주가·보유정보 수치이며 종목코드가 아닙니다.\n\n'
+                + '반드시 아래 형식으로 작성하세요:\n'
+                + '## ' + p.name + '(' + p.symbol + ')\n'
+                + '[핵심 뉴스] — 최근 가장 중요한 뉴스 2~3개를 한 줄씩, 날짜와 함께\n'
+                + '[해석] — 이 뉴스들이 주가에 미칠 영향\n'
+                + '[실행안] — 반드시 매수 / 추가매수 / 홀드 / 일부청산 / 전량청산 중 하나로 명확히 시작하고 그 근거\n'
+                + '[가격대] — 손절선과 목표가(있다면)\n\n'
+                + '[보유 정보]\n'
+                + '포지션=' + p.side + ', 평단=' + fmt(Math.round(avg)) + '원, 수량=' + fmt(qty)
+                + ', 현재가=' + fmt(Math.round(last)) + '원(' + chg + '), 평가손익률=' + ratio + '%';
+        }
+
+        // ─── 단일 종목 분석 ─────────────────────────────────────────────
+        async function runOne(i) {
+            const p = positions[i];
+            if (!p) return;
+            const btn = document.getElementById('btn-' + i);
+            const body = document.getElementById('body-' + i);
+            if (btn) { btn.disabled = true; btn.textContent = '분석 중'; }
+            body.innerHTML = '<div class="py-4 text-gray-400 text-xs">'
+                + '<span class="pulse-dot"></span><span class="pulse-dot"></span><span class="pulse-dot"></span> '
+                + '최신 뉴스 검색 및 분석 중…</div>';
+
+            try {
+                const res = await fetch(CHAT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: [{ role: 'user', content: buildPrompt(p) }] })
+                });
+                if (!res.ok) throw new Error('서버 오류 ' + res.status);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                const answer = data.answer || '응답 없음';
+                body.innerHTML = renderMarkdown(answer)
+                    + '<div class="source-line">최신 뉴스·공시 검색 기반 · 투자 판단의 참고용입니다.</div>';
+            } catch (e) {
+                body.innerHTML = '<div class="text-sm text-blue-600 py-3">분석 오류: ' + e.message
+                    + ' <button class="btn-icon btn-edit" style="margin-left:6px;" onclick="runOne(' + i + ')">재시도</button></div>';
+            }
+            if (btn) { btn.disabled = false; btn.textContent = '재분석'; }
+        }
+
+        // ─── 전체 분석 (순차 실행) ──────────────────────────────────────
+        async function runAll() {
+            const allBtn = document.getElementById('run-all-btn');
+            allBtn.disabled = true; allBtn.textContent = '분석 중…';
+            for (let i = 0; i < positions.length; i++) {
+                await runOne(i);
+            }
+            allBtn.disabled = false; allBtn.textContent = '전체 재분석';
+        }
+
+        // ─── 마크다운 렌더 (shmon pfMarkdown 기반, 시장색 적용) ──────────
+        function renderMarkdown(text) {
+            text = text.replace(/```[\s\S]*?```/g, '');
+            const bold = s => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            const lines = text.split('\n');
+            let html = '';
+            for (let i = 0; i < lines.length; i++) {
+                let t = lines[i].trim();
+                if (!t) { html += '<div style="height:4px"></div>'; continue; }
+
+                // [실행안] 줄 강조: 매수=빨강, 청산/매도=파랑
+                if (/^\[실행안\]/.test(t) || /^\[실행 ?안\]/.test(t)) {
+                    html += '<h3>' + bold(t.replace(/^\[|\]$/g, '').replace(/^\[/, '')) + '</h3>';
+                    continue;
+                }
+
+                if (t.startsWith('### ')) html += '<h3>' + bold(t.slice(4)) + '</h3>';
+                else if (t.startsWith('## ')) html += '<h2>' + bold(t.slice(3)) + '</h2>';
+                else if (t.startsWith('# ')) html += '<h2>' + bold(t.slice(2)) + '</h2>';
+                else if (t.startsWith('- ') || t.startsWith('* '))
+                    html += '<div class="li"><span class="dot">•</span><span>' + bold(t.slice(2)) + '</span></div>';
+                else if (/^\d+\.\s/.test(t)) {
+                    const n = t.match(/^(\d+)\.\s/)[1];
+                    html += '<div class="li"><span class="dot" style="font-weight:600;">' + n + '.</span><span>' + bold(t.replace(/^\d+\.\s/, '')) + '</span></div>';
+                }
+                else if (t === '---') html += '<hr>';
+                // [핵심 뉴스] [해석] [가격대] 등 대괄호 섹션 헤더
+                else if (/^\[.+\]/.test(t)) {
+                    const m = t.match(/^\[(.+?)\]\s*(.*)$/);
+                    if (m) {
+                        html += '<h3>' + m[1] + '</h3>';
+                        if (m[2]) html += '<div style="margin:2px 0;">' + bold(m[2]) + '</div>';
+                    } else {
+                        html += '<div style="margin:2px 0;">' + bold(t) + '</div>';
+                    }
+                }
+                else html += '<div style="margin:2px 0;">' + bold(t) + '</div>';
+            }
+            return html;
+        }
+
+        // ─── 시작 ───────────────────────────────────────────────────────
+        loadPositions();
+    </script>
+</body>
+
+</html>
