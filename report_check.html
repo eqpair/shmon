@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>Report Check</title>
+    <title>News Action Plan</title>
     <link rel="icon" href="./favicon.svg" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
     <style>
@@ -220,11 +220,11 @@
         <header class="mb-6">
             <div class="flex justify-between items-start flex-wrap gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800">Report Check <span
+                    <h1 class="text-3xl font-bold text-gray-800">News <span
                             class="text-lg font-normal text-gray-400">ACTION PLAN</span></h1>
                     <div class="text-sm text-gray-500 mt-1">
-                        보유 종목 실행안 &nbsp;|&nbsp;
-                        대상 <span id="stock-count" class="font-bold text-gray-700">-</span>
+                        보유 종목 뉴스 기반 실행안 &nbsp;|&nbsp;
+                        대상 종목 <span id="stock-count" class="font-bold text-gray-700">-</span>
                     </div>
                 </div>
                 <div class="flex flex-col items-end gap-3">
@@ -270,6 +270,8 @@
                 if (liveRes && liveRes.ok) liveData = await liveRes.json();
             } catch (e) { }
             renderCards();
+            // 진입 시 자동으로 전체 분석 1회 실행
+            if (positions.length > 0) runAll();
         }
 
         function getLive(symbol) {
