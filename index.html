@@ -478,10 +478,7 @@
                         </div>
                     </div>
                     <nav class="flex gap-1 bg-white border border-gray-200 rounded-lg p-1 shadow-sm flex-wrap">
-                        <a href="https://eqmon.duckdns.org" class="nav-link">HOME</a>
-                        <button onclick="switchTab('report')" id="tab-report" class="nav-link active">REPORT</button>
-                        <button onclick="switchTab('portfolio')" id="tab-portfolio" class="nav-link">PORT</button>
-                        <button onclick="switchTab('technical')" id="tab-technical" class="nav-link">TECH</button>
+                        <a href="./report_check.html" class="nav-link">CHECK</a>
                         <button onclick="openAdd()" class="nav-link">ADD</button>
                     </nav>
                 </div>
@@ -581,58 +578,6 @@
             </div>
         </div><!-- /tab-report-content -->
 
-        <!-- Technical 탭 -->
-        <div id="tab-technical-content" style="display:none;">
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-sm font-bold text-gray-800">기술적 지표 분석</div>
-                        <div class="text-xs text-gray-400 mt-1">KIS API 500일 일봉 기반</div>
-                    </div>
-                    <button onclick="runTechnical()" id="tech-run-btn" class="btn-icon btn-save"
-                        style="font-size:.75rem;">Analyze</button>
-                </div>
-            </div>
-            <div id="tech-status" class="text-center py-8 text-gray-400 text-sm" style="display:none;">
-                <div id="tech-status-msg">일봉 데이터 로딩 중...</div>
-                <div class="mt-2 text-xs text-gray-300" id="tech-progress"></div>
-            </div>
-            <div id="tech-content">
-                <div id="tech-placeholder" class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-                    <div class="text-sm text-gray-500 mb-3">기술적 분석을 실행해주세요</div>
-                    <div class="text-xs text-gray-400 mb-4">보유 종목의 500일 일봉 데이터를 기반으로 RSI, MACD, 볼린저밴드 등 지표를 분석합니다
-                        (30~60초 소요)</div>
-                    <button onclick="runTechnical()" class="btn-icon btn-save"
-                        style="font-size:.85rem;padding:8px 20px;">Analyze</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Portfolio 탭 -->
-        <div id="tab-portfolio-content" style="display:none;">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" id="pf-summary"></div>
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="text-sm font-semibold text-gray-700 uppercase tracking-wide">리스크 분석</div>
-                    <span class="text-xs text-gray-400">집중도 · 손실 현황</span>
-                </div>
-                <div id="pf-risk"></div>
-            </div>
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="text-sm font-semibold text-gray-700 uppercase tracking-wide">AI 매매 전략</div>
-                    <button onclick="runPortfolioAI()" id="pf-ai-btn" class="btn-icon btn-save"
-                        style="font-size:.75rem;">Analyze</button>
-                </div>
-                <div id="pf-ai-content">
-                    <div class="text-center py-8">
-                        <div class="text-sm text-gray-500 mb-3">AI 매매 전략 분석을 실행해주세요</div>
-                        <button onclick="runPortfolioAI()" class="btn-icon btn-save"
-                            style="font-size:.85rem;padding:8px 20px;">Analyze</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <footer class="bg-white py-6 mt-8 border-t border-gray-100">
@@ -1993,10 +1938,6 @@
         }
 
         // ─── 시작 ─────────────────────────────────────────────────────────────────────
-        // URL hash로 탭 초기화
-        if (window.location.hash === '#portfolio') switchTab('portfolio');
-        if (window.location.hash === '#technical') switchTab('technical');
-
         loadCollateral();
         loadAll();
         setInterval(loadAll, 10000);
