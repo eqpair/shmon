@@ -99,6 +99,21 @@
             margin-left: 6px;
         }
 
+        .gq-wrap {
+            margin-left: 10px;
+            font-size: .72rem;
+            font-weight: 600;
+        }
+
+        .gq {
+            cursor: help;
+        }
+
+        .gq-sep {
+            color: #d1d5db;
+            margin: 0 5px;
+        }
+
         .badge {
             display: inline-block;
             font-size: .62rem;
@@ -249,6 +264,51 @@
 
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
+
+        // 종목코드 → 해외 드라이버 종목 (주가 영향 큰 상류·전방 종목)
+        const GLOBAL_MAP = {
+            '440110': [
+                { t: 'NVDA', n: '엔비디아 — AI 데이터센터 수요 드라이버' },
+                { t: 'SNDK', n: '샌디스크 — NAND·SSD 업황' },
+                { t: 'MU',   n: '마이크론 — 메모리 업황' }
+            ],
+            '004020': [
+                { t: 'NUE', n: '뉴코어 — 글로벌 철강 시황' },
+                { t: 'X',   n: 'US스틸 — 미국 철강 가격' },
+                { t: 'MT',  n: '아르셀로미탈 — 글로벌 철강' }
+            ],
+            '011210': [
+                { t: 'F',   n: '포드 — 완성차 생산량' },
+                { t: 'GM',  n: 'GM — 완성차 생산량' },
+                { t: 'MGA', n: '마그나 — 합작·부품 수요' }
+            ],
+            '456160': [
+                { t: 'LLY', n: '일라이릴리 — GLP-1 장기지속 주사제 시장' },
+                { t: 'NVO', n: '노보노디스크 — GLP-1 시장' }
+            ],
+            '373220': [
+                { t: 'TSLA', n: '테슬라 — 전기차 배터리 수요' },
+                { t: 'ALB',  n: '앨버말 — 리튬 원가' },
+                { t: 'GM',   n: 'GM — 전기차 수요' }
+            ],
+            '005935': [
+                { t: 'NVDA', n: '엔비디아 — AI 반도체 수요' },
+                { t: 'TSM',  n: 'TSMC — 파운드리 업황' },
+                { t: 'MU',   n: '마이크론 — 메모리 업황' }
+            ],
+            '229200': [
+                { t: 'QQQ',  n: '나스닥100 — 위험선호' },
+                { t: 'SOXX', n: '반도체 ETF — 반도체 업황' }
+            ],
+            '180640': [
+                { t: 'DAL', n: '델타항공 — 글로벌 항공업황' },
+                { t: 'UAL', n: '유나이티드 — 항공업황' }
+            ],
+            '271050': [
+                { t: 'USO', n: 'WTI 유가 — 역상관(유가 상승 시 이 종목 하락)' }
+            ]
+        };
+        let globalQuotes = {};
         const CHAT_URL = 'https://eqmon.duckdns.org/eqai-chat/chat';
         const LIVE_URL = 'https://eqmon.duckdns.org/live.json';
 
@@ -271,6 +331,36 @@
             } catch (e) { }
             renderCards();
             // 자동 실행 제거 — '전체 분석' 버튼을 눌러야만 실행
+            await loadGlobalQuotes();
+        }
+
+        async function loadGlobalQuotes() {
+            const tickers = new Set();
+            positions.forEach(function (p) {
+                (GLOBAL_MAP[p.symbol] || []).forEach(function (g) { tickers.add(g.t); });
+            });
+            if (tickers.size === 0) return;
+            try {
+                const res = await fetch(API_BASE + '/global?tickers=' + Array.from(tickers).join(','));
+                if (res.ok) globalQuotes = await res.json();
+            } catch (e) { globalQuotes = {}; }
+            renderCards();
+        }
+
+        function buildGlobalHtml(symbol) {
+            const arr = GLOBAL_MAP[symbol];
+            if (!arr || arr.length === 0) return '';
+            const parts = arr.map(function (g) {
+                const q = globalQuotes[g.t];
+                if (!q) return '';
+                const pct = q.change_pct;
+                const col = pct > 0 ? '#dc2626' : pct < 0 ? '#2563eb' : '#6b7280';
+                const sign = pct > 0 ? '+' : '';
+                return '<span class="gq" title="' + g.n + '" style="color:' + col + ';">'
+                    + g.t + ' ' + sign + pct.toFixed(2) + '%</span>';
+            }).filter(Boolean);
+            if (parts.length === 0) return '';
+            return '<span class="gq-wrap">' + parts.join('<span class="gq-sep">·</span>') + '</span>';
         }
 
         function getLive(symbol) {
@@ -304,6 +394,7 @@
                     + '    <span class="card-name">' + p.name + '</span>'
                     + '    <span class="card-code">' + p.symbol + '</span>'
                     + '    <span class="card-code" style="color:#6b7280;font-family:inherit;">' + fmt(Math.round(last)) + '원' + chgStr + '</span>'
+                    + buildGlobalHtml(p.symbol)
                     + '  </div>'
                     + '  <div style="display:flex;align-items:center;gap:8px;">'
                     + '    <button class="btn-icon btn-edit" onclick="runOne(' + i + ')" id="btn-' + i + '">분석</button>'
@@ -338,7 +429,6 @@
                 + '[해석] — 뉴스가 주가에 미칠 영향을 1~2줄로만 압축\n'
                 + '[실행안] — 매수 / 추가매수 / 홀드 / 일부청산 / 전량청산 중 하나로 시작하고 한 줄 근거\n'
                 + '[가격대] — 손절선 / 목표가를 숫자로 한 줄\n'
-                + '[해외 관련주] — 이 종목과 연관된 해외 상장 종목 1~3개를 "티커(기업명): 연관 근거 한 줄" 형식으로. 예: 동종업계 경쟁사, 공급망 연결, 같은 테마. 연관성이 약하면 생략 가능\n\n'
                 + '[보유 정보]\n'
                 + '포지션=' + p.side + ', 평단=' + fmt(Math.round(avg)) + '원, 수량=' + fmt(qty)
                 + ', 현재가=' + fmt(Math.round(last)) + '원(' + chg + '), 평가손익률=' + ratio + '%';
