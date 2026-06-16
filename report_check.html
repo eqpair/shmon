@@ -369,6 +369,29 @@
         }
 
         // ─── 카드 렌더 (분석 전 골격) ───────────────────────────────────
+        function pxHtml(p) {
+            const live = getLive(p.symbol);
+            const last = live ? live.last_price : p.avg_price;
+            const chg = live && live.change_rate != null ? live.change_rate : null;
+            let chgStr = '';
+            if (chg != null) {
+                const c = chg > 0 ? '#dc2626' : chg < 0 ? '#2563eb' : '#6b7280';
+                chgStr = '<span style="color:' + c + ';font-size:.72rem;margin-left:6px;">(' + (chg > 0 ? '+' : '') + chg.toFixed(2) + '%)</span>';
+            }
+            return fmt(Math.round(last)) + '원' + chgStr;
+        }
+
+        async function refreshPrices() {
+            try {
+                const res = await fetch(LIVE_URL + '?_=' + Date.now());
+                if (res.ok) liveData = await res.json();
+            } catch (e) { return; }
+            positions.forEach(function (p) {
+                const el = document.getElementById('px-' + p.symbol);
+                if (el) el.innerHTML = pxHtml(p);
+            });
+        }
+
         function renderCards() {
             const el = document.getElementById('cards');
             document.getElementById('stock-count').textContent = positions.length + '종목';
@@ -393,7 +416,7 @@
                     + '  <div>'
                     + '    <span class="card-name">' + p.name + '</span>'
                     + '    <span class="card-code">' + p.symbol + '</span>'
-                    + '    <span class="card-code" style="color:#6b7280;font-family:inherit;">' + fmt(Math.round(last)) + '원' + chgStr + '</span>'
+                    + '    <span class="card-code" id="px-' + p.symbol + '" style="color:#6b7280;font-family:inherit;">' + pxHtml(p) + '</span>'
                     + buildGlobalHtml(p.symbol)
                     + '  </div>'
                     + '  <div style="display:flex;align-items:center;gap:8px;">'
@@ -522,6 +545,7 @@
 
         // ─── 시작 ───────────────────────────────────────────────────────
         loadPositions();
+        setInterval(refreshPrices, 10000);  // 국내 시세만 10초마다 갱신 (분석 결과 보존)
     </script>
 </body>
 
