@@ -530,16 +530,6 @@
                 </div>
             </div>
 
-            <!-- 담보 / 매매여력 한 줄 정보 -->
-            <div id="collateral-bar" class="flex justify-end items-center gap-2 mt-3 mb-1 text-sm text-gray-700">
-                <span class="text-gray-500">현재 담보</span>
-                <span id="collateral-display" class="font-medium text-gray-800 min-w-[6rem] text-right">—</span>
-                <button onclick="openCollateralModal()" class="btn-icon btn-edit" style="font-size:.72rem;">수정</button>
-                <span class="text-gray-300">/</span>
-                <span class="text-gray-500">매매 여력</span>
-                <span id="buying-power" class="font-bold text-gray-800 min-w-[7rem] text-right">—</span>
-            </div>
-
             <div id="deleted-section" class="deleted-section" style="display:none">
                 <div class="deleted-title"></div>
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
@@ -663,21 +653,6 @@
                 <button class="btn-icon btn-edit"
                     onclick="document.getElementById('del-modal').classList.remove('open')">Cancel</button>
                 <button class="btn-icon btn-del" onclick="confirmDelete()">Confirm Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 담보 입력 모달 -->
-    <div class="modal-backdrop" id="collateral-modal">
-        <div class="modal-box" style="max-width:360px">
-            <h2 class="text-base font-bold text-gray-900 mb-4">현재 담보 입력</h2>
-            <div class="form-group full">
-                <label class="form-label">담보 금액 (원)</label>
-                <input class="form-input" id="collateral-modal-input" type="number" inputmode="numeric" placeholder="0">
-            </div>
-            <div class="flex justify-end gap-2 mt-4">
-                <button class="btn-icon btn-edit" onclick="document.getElementById('collateral-modal').classList.remove('open')">Cancel</button>
-                <button class="btn-icon btn-save" onclick="saveCollateral()">Save</button>
             </div>
         </div>
     </div>
@@ -1938,7 +1913,6 @@
         }
 
         // ─── 시작 ─────────────────────────────────────────────────────────────────────
-        loadCollateral();
         loadAll();
         setInterval(loadAll, 10000);
     </script>
