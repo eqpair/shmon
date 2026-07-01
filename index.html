@@ -726,7 +726,7 @@
             var sectorRet = sectorRetMap[sectorName];
             var sectorRetStr = '';
             var srColor = (sectorRet > 0) ? '#dc2626' : (sectorRet < 0) ? '#2563eb' : '#6b7280';
-            if (sectorRet != null) {
+            if (sectorRet != null && sectorName !== '미분류') {
                 sectorRetStr = '<span style="font-size:.7rem;color:' + srColor + ';font-weight:400;margin-left:4px;">(' + (sectorRet > 0 ? '+' : '') + sectorRet.toFixed(2) + '%)</span>';
             }
             var momentumUrl = 'https://eqpair.github.io/semon/momentum.html?sector=' + encodeURIComponent(sectorName);
