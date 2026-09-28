@@ -681,36 +681,74 @@
 
         // ─── 데이터 로드 ──────────────────────────────────────────────────────────────
 
+        // 타임아웃 있는 fetch (서버가 멈춰도 무한 대기하지 않음)
+        function fetchT(url, ms) {
+            var c = new AbortController();
+            var t = setTimeout(function () { c.abort(); }, ms || 10000);
+            return fetch(url, { signal: c.signal }).finally(function () { clearTimeout(t); });
+        }
+
+        // 응답별 개별 파싱 — 하나가 깨져도 나머지는 살림
+        async function readJson(res, label) {
+            if (!res) return null;
+            if (!res.ok) { console.error('[shmon] ' + label + ' HTTP ' + res.status); return null; }
+            try { return await res.json(); }
+            catch (e) { console.error('[shmon] ' + label + ' JSON 파싱 실패:', e.message); return null; }
+        }
+
+        function showLoadError(msg) {
+            if (liveData) return; // 이전 데이터가 있으면 화면 유지
+            var tb = document.getElementById('report-body');
+            if (tb) tb.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-red-600">' + msg + '</td></tr>';
+        }
+
         async function loadAll() {
-            try {
-                const [liveRes, posRes, semonRes, stmonRes] = await Promise.all([
-                    fetch('https://eqmon.duckdns.org/live.json?_=' + Date.now()),
-                    fetch(API_BASE + '/positions'),
-                    fetch(SEMON_SIGNALS_URL + '?_=' + Date.now()).catch(() => null),
-                    fetch(STMON_SUMMARY_URL + '?_=' + Date.now()).catch(() => null)
-                ]);
-                if (stmonRes && stmonRes.ok) {
-                    try { stmonSummary = await stmonRes.json(); } catch (e) { stmonSummary = null; }
-                }
-                if (liveRes.ok) liveData = await liveRes.json();
-                if (posRes.ok) positions = await posRes.json();
-                if (semonRes && semonRes.ok) {
-                    try {
-                        const semonData = await semonRes.json();
-                        sectorMap = {};
-                        sectorRetMap = {};
-                        const sectors = semonData.sectors || {};
-                        for (const sectorName in sectors) {
-                            const sd = sectors[sectorName];
-                            sectorRetMap[sectorName] = sd.sector_ret_1d;
-                            (sd.candidates || []).forEach(function (c) {
-                                if (c.code) sectorMap[c.code] = sectorName;
-                            });
-                        }
-                    } catch (e) { /* ignore */ }
-                }
-            } catch (e) { }
-            render();
+            function req(url, label) {
+                return fetchT(url).catch(function (e) {
+                    console.error('[shmon] ' + label + ' 요청 실패:', e.name === 'AbortError' ? 'timeout' : e.message);
+                    return null;
+                });
+            }
+            const [liveRes, posRes, semonRes, stmonRes] = await Promise.all([
+                req('https://eqmon.duckdns.org/live.json?_=' + Date.now(), 'live.json'),
+                req(API_BASE + '/positions', '/positions'),
+                req(SEMON_SIGNALS_URL + '?_=' + Date.now(), 'signals.json'),
+                req(STMON_SUMMARY_URL + '?_=' + Date.now(), 'stmon-summary.json')
+            ]);
+
+            const live = await readJson(liveRes, 'live.json');
+            if (live && Array.isArray(live.positions)) liveData = live;
+            else if (live) console.error('[shmon] live.json 형식 이상 (positions 없음)');
+
+            const pos = await readJson(posRes, '/positions');
+            if (Array.isArray(pos)) positions = pos;
+
+            const stm = await readJson(stmonRes, 'stmon-summary.json');
+            if (stm) stmonSummary = stm;
+
+            const semonData = await readJson(semonRes, 'signals.json');
+            if (semonData) {
+                try {
+                    const newSectorMap = {};
+                    const newSectorRetMap = {};
+                    const sectors = semonData.sectors || {};
+                    for (const sectorName in sectors) {
+                        const sd = sectors[sectorName];
+                        newSectorRetMap[sectorName] = sd.sector_ret_1d;
+                        (sd.candidates || []).forEach(function (c) {
+                            if (c.code) newSectorMap[c.code] = sectorName;
+                        });
+                    }
+                    sectorMap = newSectorMap;
+                    sectorRetMap = newSectorRetMap;
+                } catch (e) { console.error('[shmon] signals.json 처리 실패:', e.message); }
+            }
+
+            if (!liveData) {
+                showLoadError('시세 데이터(live.json)를 불러오지 못했습니다 — 서버 상태를 확인하세요. 10초 후 재시도합니다.');
+                return;
+            }
+            try { render(); } catch (e) { console.error('[shmon] render 실패:', e); }
         }
 
         function getLivePrice(symbol) {
