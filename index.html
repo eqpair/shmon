@@ -659,6 +659,9 @@
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
         const SEMON_SIGNALS_URL = 'https://eqmon.duckdns.org/signals.json';
+        const SEMON_SECTOR_MAP_URL = 'https://eqpair.github.io/semon/data/sector_map.json'; // 전 종목 KRX 업종 (주 1회 갱신)
+        let fullSectorMap = {};
+        const ETF_RE = /^(KODEX|TIGER|KBSTAR|RISE|ACE|SOL|HANARO|ARIRANG|KOSEF|PLUS|KIWOOM|TIMEFOLIO|WOORI|BNK|파워|마이티|히어로즈)\b|ETN/;
         const STMON_SUMMARY_URL = 'https://eqmon.duckdns.org/stmon-summary.json';
         let stmonSummary = null;
         let liveData = null;
@@ -702,7 +705,16 @@
             if (tb) tb.innerHTML = '<tr><td colspan="12" class="text-center py-4 text-red-600">' + msg + '</td></tr>';
         }
 
+        function loadSectorMap() {
+            if (Object.keys(fullSectorMap).length) return;
+            fetchT(SEMON_SECTOR_MAP_URL + '?_=' + new Date().toISOString().slice(0, 10))
+                .then(function (r) { return r && r.ok ? r.json() : null; })
+                .then(function (m) { if (m) { fullSectorMap = m; try { render(); } catch (e) {} } })
+                .catch(function (e) { console.error('[shmon] sector_map.json 실패:', e.message); });
+        }
+
         async function loadAll() {
+            loadSectorMap();
             function req(url, label) {
                 return fetchT(url).catch(function (e) {
                     console.error('[shmon] ' + label + ' 요청 실패:', e.name === 'AbortError' ? 'timeout' : e.message);
@@ -758,8 +770,9 @@
         }
 
         // ─── 섹터 HTML 생성 (활성/삭제 테이블 공용) ───────────────────────────────────
-        function buildSectorHtml(symbol) {
-            var sectorName = sectorMap[symbol] || '-';
+        function buildSectorHtml(symbol, name) {
+            var sectorName = sectorMap[symbol] || fullSectorMap[symbol] || '-';
+            if (sectorName === '-' && name && ETF_RE.test(name)) return '<span class="text-xs text-gray-400">ETF</span>';
             if (sectorName === '-') return '<span class="text-gray-400">-</span>';
             var sectorRet = sectorRetMap[sectorName];
             var sectorRetStr = '';
@@ -897,7 +910,7 @@
                     }
 
                     // 섹터 정보
-                    var sectorHtml = buildSectorHtml(p.symbol);
+                    var sectorHtml = buildSectorHtml(p.symbol, p.name);
 
                     var existingTr = tbody.querySelector('tr[data-wid="' + wid + '"]');
                     if (existingTr) {
@@ -951,7 +964,7 @@
                     var cost = Number(p.avg_price) * Number(p.qty);
                     var ratio = cost ? (Number(p.realized_pnl) / cost) * 100 : NaN;
                     var pnlColor = p.realized_pnl > 0 ? 'profit-plus' : p.realized_pnl < 0 ? 'profit-minus' : '';
-                    var sectorHtml = buildSectorHtml(p.symbol);
+                    var sectorHtml = buildSectorHtml(p.symbol, p.name);
                     var dUpDis = dIdx === 0 ? ' disabled' : '';
                     var dDownDis = dIdx === dArr.length - 1 ? ' disabled' : '';
                     var dUpStyle = dIdx === 0 ? ';opacity:.35;cursor:default' : '';
