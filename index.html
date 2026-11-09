@@ -1964,7 +1964,12 @@
 
         // ─── 시작 ─────────────────────────────────────────────────────────────────────
         loadAll();
-        setInterval(loadAll, 10000);
+        var _loading = false;
+        setInterval(function () {
+            if (_loading || document.hidden) return;
+            _loading = true;
+            loadAll().finally(function () { _loading = false; });
+        }, 3000);
     </script>
 </body>
 
