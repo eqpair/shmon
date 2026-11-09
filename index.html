@@ -658,7 +658,7 @@
 
     <script>
         const API_BASE = 'https://eqmon.duckdns.org/api';
-        const SEMON_SIGNALS_URL = 'https://eqmon.duckdns.org/signals.json';
+        const SEMON_SIGNALS_URL = 'https://eqmon.duckdns.org/signals_v2.json';
         const SEMON_SECTOR_MAP_URL = 'https://eqpair.github.io/semon/data/sector_map.json'; // 전 종목 KRX 업종 (주 1회 갱신)
         let fullSectorMap = {};
         const ETF_RE = /^(KODEX|TIGER|KBSTAR|RISE|ACE|SOL|HANARO|ARIRANG|KOSEF|PLUS|KIWOOM|TIMEFOLIO|WOORI|BNK|파워|마이티|히어로즈)\b|ETN/;
@@ -1977,6 +1977,30 @@
             _loading = true;
             loadAll(true).finally(function () { _loading = false; });
         }, 3000);
+    </script>
+    <script>
+        // EQ_AUTO_RELOAD: 새 버전이 배포되면 탭을 자동 새로고침 (5분마다 확인, 탭이 보이고 입력 중이 아닐 때만)
+        (function () {
+            var base = null;
+            function h(t) { var x = 0; for (var i = 0; i < t.length; i++) x = (x * 31 + t.charCodeAt(i)) | 0; return x; }
+            function check() {
+                if (document.hidden) return;
+                fetch(location.pathname + '?_v=' + Date.now(), { cache: 'no-store' })
+                    .then(function (r) { return r.ok ? r.text() : null; })
+                    .then(function (t) {
+                        if (!t || t.indexOf('</html>') < 0) return;
+                        var v = h(t);
+                        if (base === null) { base = v; return; }
+                        var a = document.activeElement;
+                        var busy = document.querySelector('.modal-backdrop.open') ||
+                            (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+                        if (v !== base && !busy) location.reload();
+                    })
+                    .catch(function () {});
+            }
+            setTimeout(check, 3000);
+            setInterval(check, 5 * 60 * 1000);
+        })();
     </script>
 </body>
 
