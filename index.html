@@ -714,8 +714,11 @@
         }
 
         var _signalsAt = 0;          // signals.json(약 4MB) 마지막 수신 시각
-        var SIGNALS_EVERY = 60000;   // 업종 정보는 1분에 한 번이면 충분
-        async function loadAll() {
+        var SIGNALS_EVERY = 300000;  // 업종 정보(signals.json)는 5분에 한 번
+        var POSITIONS_EVERY = 30000; // 포지션 목록은 30초에 한 번 (수정 직후에는 즉시)
+        var _positionsAt = 0;
+        async function loadAll(isPoll) {
+            var needPositions = !isPoll || Date.now() - _positionsAt > POSITIONS_EVERY;
             loadSectorMap();
             var needSignals = Date.now() - _signalsAt > SIGNALS_EVERY;
             function req(url, label) {
@@ -726,7 +729,7 @@
             }
             const [liveRes, posRes, semonRes, stmonRes] = await Promise.all([
                 req('https://eqmon.duckdns.org/live.json?_=' + Date.now(), 'live.json'),
-                req(API_BASE + '/positions', '/positions'),
+                needPositions ? req(API_BASE + '/positions', '/positions') : Promise.resolve(null),
                 needSignals ? req(SEMON_SIGNALS_URL + '?_=' + Date.now(), 'signals.json') : Promise.resolve(null),
                 req(STMON_SUMMARY_URL + '?_=' + Date.now(), 'stmon-summary.json')
             ]);
@@ -736,7 +739,7 @@
             else if (live) console.error('[shmon] live.json 형식 이상 (positions 없음)');
 
             const pos = await readJson(posRes, '/positions');
-            if (Array.isArray(pos)) positions = pos;
+            if (Array.isArray(pos)) { positions = pos; _positionsAt = Date.now(); }
 
             const stm = await readJson(stmonRes, 'stmon-summary.json');
             if (stm) stmonSummary = stm;
@@ -1972,7 +1975,7 @@
         setInterval(function () {
             if (_loading || document.hidden) return;
             _loading = true;
-            loadAll().finally(function () { _loading = false; });
+            loadAll(true).finally(function () { _loading = false; });
         }, 3000);
     </script>
 </body>
