@@ -713,8 +713,11 @@
                 .catch(function (e) { console.error('[shmon] sector_map.json 실패:', e.message); });
         }
 
+        var _signalsAt = 0;          // signals.json(약 4MB) 마지막 수신 시각
+        var SIGNALS_EVERY = 60000;   // 업종 정보는 1분에 한 번이면 충분
         async function loadAll() {
             loadSectorMap();
+            var needSignals = Date.now() - _signalsAt > SIGNALS_EVERY;
             function req(url, label) {
                 return fetchT(url).catch(function (e) {
                     console.error('[shmon] ' + label + ' 요청 실패:', e.name === 'AbortError' ? 'timeout' : e.message);
@@ -724,7 +727,7 @@
             const [liveRes, posRes, semonRes, stmonRes] = await Promise.all([
                 req('https://eqmon.duckdns.org/live.json?_=' + Date.now(), 'live.json'),
                 req(API_BASE + '/positions', '/positions'),
-                req(SEMON_SIGNALS_URL + '?_=' + Date.now(), 'signals.json'),
+                needSignals ? req(SEMON_SIGNALS_URL + '?_=' + Date.now(), 'signals.json') : Promise.resolve(null),
                 req(STMON_SUMMARY_URL + '?_=' + Date.now(), 'stmon-summary.json')
             ]);
 
@@ -740,6 +743,7 @@
 
             const semonData = await readJson(semonRes, 'signals.json');
             if (semonData) {
+                _signalsAt = Date.now();
                 try {
                     const newSectorMap = {};
                     const newSectorRetMap = {};
